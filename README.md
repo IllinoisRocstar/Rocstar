@@ -15,6 +15,7 @@ $ git clone git@git.illinois.rocstar:rocstar_modern/rocstar.git
 ## Build Instructions ##
 ### Build Dependencies ###
 Make sure to `apt install` following before you start
+
 * build-essential
 * cmake
 * mpich
@@ -23,26 +24,26 @@ Make sure to `apt install` following before you start
 * liblapack-dev
 * libblas-dev
 * libjpeg-dev
-* libsm-dev
-* libice-dev
-* gfortran
-* swig (if you want python bindings)
 
 Make sure to compile and install following packages before you start compiling RocstarMP:
+
 * IMPACT (available at illinoir rocstar git repo)
 * METIS 4.0.3 (available http://glaros.dtc.umn.edu/gkhome/fsroot/sw/metis/OLD)
 
 ## Build RocstarMP ##
-For the following steps we assume $ROCSTAR_PROJECT_PATH is the path to RocstarMP, $ROCSTAR_INSTALL_PATH is the desired installation location, and $IMPACT_INSTALL_PATH is the path to the locatin IMPACT project is installed.
+For the following steps we assume $ROCSTAR_PROJECT_PATH is the path to RocstarMP, $ROCSTAR_INSTALL_PATH is 
+the desired installation location, $IMPACT_INSTALL_PATH is the path to the locatin IMPACT project is installed, 
+$METIS_LIB_PATH and $METIS_INC_PATH are the paths to the location of library and headers of metis.
 Star the build process by executing:
+
 ```
 $ cd $ROCSTAR_PROJECT_PATH
 $ mkdir build && cd build
-$ cmake -DCMAKE_INSTALL_PREFIX=$ROCSTAR_INSTALL_PATH -DENABLE_MPI=ON -DENABLE_CGNS=ON DSITCOM_LIB=$IMPACT_INSTALL_PATH/lib/libSITCOM.so  .. 
+$ cmake -DCMAKE_INSTALL_PREFIX=$ROCSTAR_INSTALL_PATH -DENABLE_MPI=ON -DENABLE_CGNS=ON -DIMPACT_HDR=$IMPACT_INSTALL_PATH/include/com.h -DMETIS_INC=$METIS_INC_PATH -DMETIS_LIB=$METIS_LIB_PATH -DSITCOM_LIB=$IMPACT_INSTALL_PATH/lib/libSITCOM.so .. 
 $ make -j
 $ make install
-$ export LD_LIBRARY_PATH=$ROCSTAR_INSTALL_PATH/lib:$LD_LIBRARY_PATH
 ```
+
 Executing the commands above will build all libraries and executables.
 
 ## Testing RocstarMP ##
