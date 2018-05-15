@@ -31,9 +31,9 @@ Make sure to compile and install following packages before you start compiling R
 * METIS 4.0.3 (available http://glaros.dtc.umn.edu/gkhome/fsroot/sw/metis/OLD)
 
 ## Build RocstarMP ##
-For the following steps we assume $ROCSTAR_PROJECT_PATH is the path to RocstarMP, $ROCSTAR_INSTALL_PATH is 
-the desired installation location, $IMPACT_INSTALL_PATH is the path to the locatin IMPACT project is installed, 
-$METIS_LIB_PATH and $METIS_INC_PATH are the paths to the location of library and headers of metis.
+For the following steps we assume `$ROCSTAR_PROJECT_PATH` is the path to RocstarMP, `$ROCSTAR_INSTALL_PATH` is 
+the desired installation location, `$IMPACT_INSTALL_PATH` is the path to the locatin IMPACT project is installed, 
+`$METIS_LIB_PATH` and `$METIS_INC_PATH` are the paths to the location of library and headers of metis.
 Star the build process by executing:
 
 ```
