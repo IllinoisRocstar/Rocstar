@@ -1,0 +1,105 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.10 2004/12/01 21:10:55 haselbac Exp $
+#
+# Purpose: Filelist for Rocsmoke module.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003 by the University of Illinois
+#
+################################################################################
+
+  SRCF90+=	PEUL_BuildVersionString.F90
+
+ifdef RFLO
+  SRCF90+=	PEUL_ModInterfaces.F90\
+		PEUL_ModParameters.F90\
+                PEUL_AllocateDataBuffers.F90\
+  		PEUL_AllocateMemory.F90\
+		PEUL_BcondInflow.F90\
+		PEUL_BcondInjection.F90\
+		PEUL_BcondOutflow.F90\
+		PEUL_BcondSlipWall.F90\
+		PEUL_BcondSymmetry.F90\
+                PEUL_BoundaryConditionsRecv.F90\
+                PEUL_BoundaryConditionsSend.F90\
+		PEUL_BoundaryConditionsSet.F90\
+		PEUL_CentralDissipation.F90\
+		PEUL_CentralFlux.F90\
+		PEUL_CentralFluxPatch.F90\
+                PEUL_ClearSendRequests.F90\
+		PEUL_ConvectiveFluxes.F90\
+		PEUL_CorrectCornerEdgeCells.F90\
+		PEUL_DerivedInputValues.F90\
+		PEUL_EnforcePositivity.F90\
+		PEUL_ExchangeCornerEdgeCells.F90\
+		PEUL_ExchangeDummyConf.F90\
+		PEUL_InitInputValues.F90\
+		PEUL_InitSolution.F90\
+		PEUL_PrintUserInput.F90\
+		PEUL_ReadBcFarfSection.F90\
+		PEUL_ReadBcInflowSection.F90\
+		PEUL_ReadBcInjectSection.F90\
+		PEUL_ReadBcInputFile.F90\
+		PEUL_ReadConPartPtypeSection.F90\
+		PEUL_ReadConPartSection.F90\
+		PEUL_ReadInputFile.F90\
+		PEUL_ReadSolution.F90\
+		PEUL_ReadSolutionRegion.F90\
+		PEUL_ReceiveCornerEdgeCells.F90\
+                PEUL_ReceiveDummyVals.F90\
+		PEUL_ResidualSmoothingCoeffs.F90\
+		PEUL_ResidualSmoothing.F90\
+		PEUL_SendCornerEdgeCells.F90\
+		PEUL_SetCornerEdgeCells.F90\
+		PEUL_SourceEqEul.F90\
+		PEUL_SourceTerms.F90\
+		PEUL_SpectralRadii.F90\
+                PEUL_SendDummyConf.F90\
+		PEUL_UserInput.F90\
+		PEUL_WriteSolution.F90
+endif
+
+ifdef RFLU
+  SRCF90+=
+endif
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Filelist.txt,v $
+# Revision 1.10  2004/12/01 21:10:55  haselbac
+# Changed to uppercase
+#
+# Revision 1.9  2004/12/01 00:02:07  wasistho
+# added BuildVersionString
+#
+# Revision 1.8  2004/05/03 15:09:42  jferry
+# added equilibrium Eulerian capability for smoke
+#
+# Revision 1.7  2004/03/02 21:42:47  jferry
+# Added clipping options and corner and edge cell updates
+#
+# Revision 1.6  2003/05/07 15:11:58  jferry
+# Added routine PEUL_ReadSolutionRegion
+#
+# Revision 1.5  2003/04/09 16:04:46  jferry
+# added line for PEUL_exchangeDummyConf.F90
+#
+# Revision 1.4  2003/04/09 15:09:56  jferry
+# added slip wall boundary conditions
+#
+# Revision 1.3  2003/04/09 14:25:14  fnajjar
+# Included multi-region and MPI routines
+#
+# Revision 1.2  2003/04/07 18:29:01  jferry
+# added inflow boundary condition and initialization to a constant
+#
+# Revision 1.1  2003/03/20 19:26:21  haselbac
+# Initial revision
+#
+################################################################################

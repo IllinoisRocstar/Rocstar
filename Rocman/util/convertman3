@@ -1,0 +1,99 @@
+#!/bin/sh
+
+
+if test $# -ne 1
+then
+ echo "$0 old_rocman_control_file"
+ exit 0 
+fi
+
+test ! -f "$1" && echo "Error: $1 not exists" && exit 1
+
+exec < $1
+
+output="RocmanControl.txt.new"
+echo "Generating $output ..."
+exec > $output
+
+read_line() {
+  read line
+  line=`echo $line | sed -e 's/#.*$//'`
+  test -z "`echo $line | sed -e 's/ //'`" && exit 0
+}
+
+test_delim() {
+  if echo $line | grep ',' > /dev/null 2>/dev/null
+  then
+    delim=','
+  else
+    delim=' '
+  fi
+}
+
+echo "Verbose = 0"
+echo "Separate_out = 0"
+echo
+
+#line 1
+read_line
+test_delim
+echo $line | awk '{ 
+    print "InterpolationOrder = " $1;  } '
+
+echo
+
+#line 2
+read_line
+test_delim
+echo $line | awk -F"$delim" '{
+    print "TractionMode = " $1;
+    if ( NF > 1 ) print "P_ambient = " $2; 
+    } '
+
+echo
+
+#line 3
+read_line
+test_delim
+echo $line | awk -F"$delim" '{
+    print "Rhoc = " $1;
+    if ( NF > 1 ) print "Pressure = " $2; 
+    if ( NF > 2 ) print "BurnRate = " $3; 
+    } '
+
+echo
+
+#line 4
+read_line
+test_delim
+echo $line | awk -F"$delim" '{
+    print "RFC_verb = " $1;
+    if ( NF > 1 ) print "RFC_order = " $2;
+    if ( NF > 2 ) print "RFC_iteration = " $3;
+    if ( NF > 3 ) print "RFC_tolerance = " $4;
+    } '
+
+echo
+
+#line 5
+read_line
+test_delim
+echo $line | awk -F"$delim" '{
+    print "Face-offsetting = " $1;
+    if ( NF > 1 ) print "PROP_rediter = " $2;
+    if ( NF > 2 ) print "PROP_fangle = " $3;
+    } '
+
+echo
+
+#line 6
+read_line
+test_delim
+echo $line | awk -F"$delim" '{
+    print "AsyncInput = " $1;
+    if ( NF > 1 ) print "AsyncOutput = " $2;
+    } '
+
+echo
+
+

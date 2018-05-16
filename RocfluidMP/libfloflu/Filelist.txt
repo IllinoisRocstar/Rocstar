@@ -1,0 +1,319 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.41 2007/04/14 14:22:58 mtcampbe Exp $
+#
+# Purpose: Filelist for libfloflu.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003-2006 by the University of Illinois
+#
+################################################################################
+
+ifdef RFLO
+  SRCF90+= 	AfterUpdateMP.F90\
+		AllocateMemoryWork.F90\
+		AverageVecVar.F90\
+		BcondFarfieldPerf.F90\
+		BcondInflowPerf.F90\
+                BcondInjectionPerf.F90\
+                BcondOutflowPerf.F90\
+                BuildPatchIdentifier.F90\
+                CellCentroid.F90\
+		CellGradientsMP.F90\
+                ControlVolume.F90\
+                ConvectiveFluxes.F90\
+                ConvectiveFluxesMP.F90\
+                DescaleGridSpeeds.F90\
+                ExplicitMultistage.F90\
+                FaceCentroid.F90\
+                FaceVector.F90\
+                GlobalCommunicationMP.F90\
+                InitCommunicationMP.F90\
+		IntegrateSourceTermsMP.F90\
+                MakeNumberedKeys.F90\
+                MixtPerf_C.F90\
+                MixtPerf_D.F90\
+                MixtPerf_E.F90\
+                MixtPerf_G.F90\
+                MixtPerf_H.F90\
+                MixtPerf_M.F90\
+                MixtPerf_P.F90\
+                MixtPerf_R.F90\
+                MixtPerf_T.F90\
+                MixtPerf_Vm.F90\
+                MixtureProperties.F90\
+                NumericalDissipation.F90\
+                NumericalDissipationMP.F90\
+                PerfgasDependentVars.F90\
+                PerfgasGasVars.F90\
+                PerfgasTransportVars.F90\
+                ReadAccelerationSection.F90\
+                ReadFlowSection.F90\
+                ReadForcesSection.F90\
+                ReadFormatsSection.F90\
+                ReadGridMotionSection.F90\
+                ReadInitFlowSection.F90\
+                ReadInputFile.F90\
+                ReadInputUtil.F90\
+                ReadMultigridSection.F90\
+                ReadNumericsSection.F90\
+		ReadPostSection.F90\
+                ReadProbeSection.F90\
+                ReadRandomSection.F90\
+                ReadReferenceSection.F90\
+                ReadThrustSection.F90\
+                ReadTimestepSection.F90\
+                ReadTransformSection.F90\
+                ReadViscositySection.F90\
+		RkInitGeneric.F90\
+		RkInitMP.F90\
+		RkInitPointScalar.F90\
+		RkUpdateGeneric.F90\
+                RkUpdateMP.F90\
+                RkUpdatePointScalar.F90\
+                RungeKuttaMP.F90\
+                ScaleGridSpeeds.F90\
+                ScaleRotateVector.F90\
+                SourceTerms.F90\
+                SourceTermsMP.F90\
+                SplitQuadFace.F90\
+                UpdateBoundaryConditionsMP.F90\
+                UpdateDependentVarsMP.F90\
+                UpdateTbc.F90\
+                UpdateTbcPiecewise.F90\
+                UpdateTbcSinusoidal.F90\
+                UpdateTbcStochastic.F90\
+                UpdateTbcWhitenoise.F90\
+                ViscousFluxes.F90\
+                ViscousFluxesMP.F90\
+                WriteConvergence.F90\
+                WriteProbe.F90\
+                WriteThrust.F90\
+                WriteTotalMass.F90\
+                ZeroDummyCellsMP.F90\
+		ZeroResidualsMP.F90
+endif                
+
+ifdef RFLU
+  SRCF90+= 	AfterUpdateMP.F90\
+		BcondFarfieldPerf.F90\
+		BcondInflowPerf.F90\
+                BcondInflowPerf_GL.F90\
+                BcondInjectionPerf.F90\
+                BcondOutflowPerf.F90\
+                BcondOutflowPerf_GL.F90\
+                BuildPatchIdentifier.F90\
+                CellCentroid.F90\
+		CellGradientsMP.F90\
+                ControlVolume.F90\
+                ConvectiveFluxes.F90\
+                ConvectiveFluxesMP.F90\
+		DescaleGridSpeeds.F90\
+                FaceCentroid.F90\
+                FaceVector.F90\
+		IntegrateSourceTermsMP.F90\
+                InitCommunicationMP.F90\
+		MakeNumberedKeys.F90\
+                MixtGasLiq_C.F90\
+                MixtGasLiq_E.F90\
+                MixtGasLiq_P.F90\
+                MixtLiq_C.F90\
+                MixtLiq_D.F90\
+                MixtPerf_C.F90\
+                MixtPerf_Cv.F90\
+                MixtPerf_D.F90\
+                MixtPerf_E.F90\
+                MixtPerf_G.F90\
+                MixtPerf_H.F90\
+                MixtPerf_M.F90\
+                MixtPerf_P.F90\
+                MixtPerf_R.F90\
+                MixtPerf_T.F90\
+                MixtPerf_Vm.F90\
+                MixtureProperties.F90\
+                NumericalDissipation.F90\
+                NumericalDissipationMP.F90\
+                PerfgasDependentVars.F90\
+                PerfgasGasVars.F90\
+                PerfgasTransportVars.F90\
+		ReadAccelerationSection.F90\
+                ReadFlowSection.F90\
+                ReadForcesSection.F90\
+                ReadFormatsSection.F90\
+                ReadGridMotionSection.F90\
+                ReadInitFlowSection.F90\
+                ReadInputFile.F90\
+                ReadInputUtil.F90\
+		ReadMixtureSection.F90\
+                ReadMultigridSection.F90\
+                ReadNumericsSection.F90\
+		ReadPostSection.F90\
+		ReadPrepSection.F90\
+                ReadProbeSection.F90\
+                ReadRandomSection.F90\
+                ReadReferenceSection.F90\
+                ReadRocketSection.F90\
+                ReadThrustSection.F90\
+                ReadTimestepSection.F90\
+		ReadTimeZoomingSection.F90\
+                ReadTransformSection.F90\
+                ReadViscositySection.F90\
+		ReflectPosition.F90\
+		ReflectVector.F90\
+		RkInitGeneric.F90\
+		RkInitMP.F90\
+		RkInitSD.F90\
+		RkUpdateGeneric.F90\
+		RkUpdateMP.F90\
+                RungeKuttaMP.F90\
+                ScaleGridSpeeds.F90\
+                ScaleRotateVector.F90\
+                SourceTerms.F90\
+                SourceTermsMP.F90\
+                SplitQuadFace.F90\
+                UpdateBoundaryConditionsMP.F90\
+                UpdateDependentVarsMP.F90\
+                UpdateTbc.F90\
+                UpdateTbcPiecewise.F90\
+		UpdateTbcSinusoidal.F90\
+		UpdateTbcStochastic.F90\
+		UpdateTbcWhitenoise.F90\
+		ViscousFluxes.F90\
+		ViscousFluxesMP.F90\
+		WriteConvergence.F90\
+		WriteProbe.F90\
+		WriteTotalMass.F90\
+		ZeroDummyCellsMP.F90\
+		ZeroResidualsMP.F90
+endif                
+                
+ifdef STATS                
+  SRCF90+= 	ReadStatisticSection.F90
+endif               
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Filelist.txt,v $
+# Revision 1.41  2007/04/14 14:22:58  mtcampbe
+# Updated for TZ and Rocket case constraints
+#
+# Revision 1.40  2006/08/19 15:37:24  mparmar
+# Added RkUpdatePointScalar.F90 and RkInitPointScalar.F90
+#
+# Revision 1.39  2006/03/26 20:21:15  haselbac
+# Added entries for GL routines, cosmetics
+#                                                 
+# Revision 1.38  2006/01/06 22:04:02  haselbac                           
+# Removed entry for ExplicitMultistage.F90                               
+#
+# Revision 1.37  2005/10/31 19:24:12  haselbac                           
+# Added entry for ReadMixtureSection                                     
+#
+# Revision 1.36  2004/12/29 23:29:34  wasistho                           
+# moved ModStatisticsRoutines from libfloflu to modfloflu                
+#
+# Revision 1.35  2004/12/28 20:29:04  wasistho                           
+# moved statistics routines into module ModStatsRoutines                 
+#
+# Revision 1.34  2004/12/01 17:15:23  haselbac                           
+# Changed to uppercase                                                   
+#
+# Revision 1.33  2004/12/01 00:05:32  wasistho                           
+# added StatBuildVersionString                                           
+#
+# Revision 1.32  2004/08/02 23:13:21  wasistho                           
+# mv libfloflu/viscousFluxEddy(Patch) to rocflo/RFLO_viscousFlux(Patch)  
+#
+# Revision 1.31  2004/07/30 22:47:33  jferry                             
+# Implemented Equilibrium Eulerian method for Rocflu                     
+#
+# Revision 1.30  2004/07/24 03:42:51  wasistho                           
+# add readPostSection in Rocflo                                          
+#
+# Revision 1.29  2004/06/16 20:00:11  haselbac                           
+# Removed buildFileNameXXX routines                                      
+#
+# Revision 1.28  2004/05/05 20:34:18  fnajjar                            
+# Added entry for ReflectPosition                                        
+#
+# Revision 1.27  2004/04/08 01:34:08  haselbac                           
+# Added entry for ReflectVector                                          
+#
+# Revision 1.26  2004/04/01 21:24:30  haselbac                           
+# Added entry for integrateSourceTermsMP                                 
+#
+# Revision 1.25  2004/03/02 21:47:28  jferry                             
+# Added After Update interactions                                        
+#
+# Revision 1.24  2004/02/26 21:12:09  wasistho                           
+# added globalCommunication                                              
+#
+# Revision 1.23  2004/01/31 03:55:59  haselbac                           
+# Removed rungeKutta.F90 for RFLU                                        
+#
+# Revision 1.22  2004/01/29 22:52:35  haselbac                           
+# Added updateDependentVarsMP.F90                                        
+#
+# Revision 1.21  2003/12/04 03:22:55  haselbac                           
+# Removed viscousFluxEddy and viscousFluxEddyPatch                       
+#
+# Revision 1.20  2003/11/25 21:01:37  haselbac                           
+# Added routines                                                         
+#
+# Revision 1.19  2003/11/21 22:33:10  fnajjar                            
+# Updated Random Number Generator                                        
+#
+# Revision 1.18  2003/11/20 16:40:35  mdbrandy                           
+# Backing out RocfluidMP changes from 11-17-03                           
+#
+# Revision 1.15  2003/10/03 20:39:47  haselbac                           
+# Added MP routines                                                      
+#
+# Revision 1.14  2003/10/01 23:52:09  jblazek                            
+# Corrected bug in moving noslip wall BC and grid speeds.                
+#
+# Revision 1.13  2003/08/29 22:59:31  haselbac                           
+# Fixed bug introduced by last checkin...                                
+#
+# Revision 1.12  2003/08/28 20:05:38  jblazek                            
+# Added acceleration terms.                                              
+#
+# Revision 1.11  2003/06/10 22:54:42  jferry                             
+# Added Piecewise TBC                                                    
+#
+# Revision 1.10  2003/06/02 17:12:00  jblazek                            
+# Added computation of thrust.                                           
+#
+# Revision 1.9  2003/04/28 22:38:54  haselbac                            
+# Added readPostSection and readPrepSection for RFLU                     
+#
+# Revision 1.8  2003/04/10 23:25:06  fnajjar                             
+# Added readViscositySection                                             
+#
+# Revision 1.7  2003/04/10 01:22:41  jblazek                             
+# Got rid of pRegion in ViscousFluxesMP.                                 
+#
+# Revision 1.6  2003/03/31 16:24:11  fnajjar                             
+# Removed MP subroutines for RFLU                                        
+#
+# Revision 1.5  2003/03/28 19:44:52  fnajjar                             
+# removed CheckPositivityMP call                                         
+#
+# Revision 1.4  2003/03/28 19:41:49  fnajjar                             
+# Included routines pertinent to RocfluidMP                              
+#
+# Revision 1.3  2003/03/25 14:55:18  haselbac                            
+# Deleted material routines from Filelist for RFLU                       
+#
+# Revision 1.2  2003/03/24 23:25:48  jferry                              
+# moved some routines from libfloflu to rocinteract                      
+#
+# Revision 1.1  2003/03/20 19:26:21  haselbac                            
+# Initial revision                                                       
+#
+################################################################################

@@ -1,0 +1,26 @@
+CouplingScheme = SolidFluidSPC
+FluidModule = Rocflo
+SolidModule = Rocfrac
+BurnModule = RocburnAPN
+OutputModule = Rocout
+
+InitialTime = 0.
+MaximumTime =  1.0E-04
+
+MaxNumPredCorrCycles = 1
+MaxNumTimeSteps =  100000
+
+TolerTract = 0.001
+TolerMass =  0.001
+TolerVelo =  0.001
+TolerDisp =  0.001
+
+CurrentTimeStep = 1.0e-05
+ZoomFactor = 1.0
+
+OutputIntervalTime = 1.0e-5
+
+MaxWallTime = 43000
+
+ProfileDir = Rocman/Profiles
+

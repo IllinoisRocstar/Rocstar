@@ -1,0 +1,29 @@
+2          Combustion model (1= ZN_WSB, 2=ZN_empirical, 3=a*P^n), Model_combustion
+0.07696    a in rb=a*P^n,  rb in cm/sec and P in atm, a_p (cm/sec)
+0.461      n in rb=a*P^n,  rb in cm/sec and P in atm, n_p
+8.00e10    Condensed_phase_prefactor,_Ac_(1/s)
+1.66e-3    Gas_phase_prefactor,_Bg_(cal^2/cm^3-atm^2-g-s-K^2)
+29000.0    Condensed_phase_activation_energy,_Ec_(cal/mol)
+0.00       Condensed_phase_chemical_release,_Qc_(cal/g)
+700.0      Gas_phase_chemical_heat_release,_Qg_(cal/g)
+1.00e-3    Condensed_phase_thermal_diffusivity,_alfac_(cm^2/s)
+0.350      Specific_heat_(gas_and_condensed_phases),_C_(cal/g-K)
+1.7026     Condensed_phase_density,_rhoc_(g/cm^3)
+2.00e-4    Gas_phase_thermal_conductivity,_lamg_(cal/cm-s-K)
+25.49      Gas_phase_molecular_weight,_MW_(g/mol)
+100.0      Condensed_phase_absorption_coefficient,_Ka_(1/cm)
+101        Maximum_number_of_spatial_nodes,_nxmax
+101        Number_of_spatial_nodes,_nx
+1.0e-6     Time_step,_delt_(s);_WATCH_STABILITY
+2          Grid_control_distribution,_igrid;_1=exponential;_2=boundary_layer
+-0.200     Maximum_x_location,_xmax_(cm);_MUST_BE_NEGATIVE
+1.010      Grid_stretching_parameter,_beta
+1.0e-4     Surface_temperature_tolerance_for_convergence,_tol_Ts(K)
+200        Maximum_#_of_iterations,_itermax
+2855.0     adiabatic flame temperature, Tf_adiabatic (K)
+298.00     initial temperature        , To_read      (K)
+0          ignition simulation flag, ign_flag (0= NO, 1= YES)
+380.00     cold boundary temperature  , To_cold      (K)
+Rocburn_ZN_Out/  
+
+Solid Propellant Properties for NAWC Motor #13 ONLY

@@ -1,0 +1,202 @@
+#!/bin/csh
+#
+# Check out charm, tar up the clean source, and build it
+# on known systems.  You get the opportunity to choose
+# a name other than ./charm for the charm directory.
+#
+# Written by Robert Fiedler, revised 8/26/08. 
+#.............................................................
+
+# Set current directory
+if ($?PWD) then
+  set CURDIR = $PWD
+else
+  set CURDIR = `pwd`
+endif
+
+echo -n "Enter desired name of charm directory (default charm): "
+set CHARMDIR = "$<"
+if ("$CHARMDIR" == "") then
+  set CHARMDIR = charm
+endif
+  
+if (-d $CHARMDIR) then
+  echo 'Directory $CHARMDIR exists.  Should I delete, rename, or use it?'
+  echo -n "(d, r, or u; default is r): "
+  set ACTION = "$<"
+  if ("$ACTION" == "d") then
+    set DOWNLOAD = "y"
+    rm -fr $CHARMDIR
+  else if ("$ACTION" == "u") then
+    set DOWNLOAD = "n"
+  else
+    set DOWNLOAD = "y"
+    echo -n "Enter new name for existing directory ${CHARMDIR}: "
+    set NEW = "$<"
+    mv $CHARMDIR $NEW
+  endif
+else
+  set DOWNLOAD = "y"
+endif
+
+if ("$DOWNLOAD" == "y") then
+
+# Check out charm from CVS.  Deal with passwords first.
+
+  setenv CVSROOT ":pserver:checkout@charm.cs.uiuc.edu:/cvsroot"
+  if (! -e $HOME/.cvspass) then
+    cd
+    touch .cvspass
+    echo ""
+    echo "Enter an empty password if prompted by cvs below"
+    echo "cvs login"
+    cvs login << STP
+
+STP
+    cd $CURDIR
+  else
+    set PASS = (`grep 'checkout@charm' $HOME/.cvspass`)
+    if ("$PASS" == "") then
+      cd
+      echo ""
+      echo "Enter an empty password if prompted by cvs below"
+      echo "cvs login"
+      cvs login << STP
+
+STP
+      cd $CURDIR
+    endif
+  endif
+
+  cvs -d $CVSROOT co -P charm
+
+# Rename charm directory to the desired name
+  if ("$CHARMDIR" != "charm") then
+    mv charm $CHARMDIR
+  endif
+
+# Save charm source in tar file
+  set DATE = `date +"%D" | sed -e 's/\///g'`
+  echo ""
+  echo "Saving clean source as Charm_${DATE}.tgz"
+  tar cfz Charm_${DATE}.tgz $CHARMDIR
+  echo ""
+
+endif
+
+# Build the appropriate target
+cd $CHARMDIR
+if ($#argv == 0) then
+  echo -n "Enter target (AMPI, ParFUM): "
+  set TARGET = "$<"
+else
+  set TARGET = "$1"
+endif
+
+# The compiler, options, etc., are host dependent. 
+
+# Detername name of host computer
+
+set Has_hostname = (`which hostname`)
+set Has_hostname = (`echo $Has_hostname | grep "not found"`)
+if ($#Has_hostname > 0) then
+  if (! $?HOSTNAME) then
+    echo "WARNING: Cannot find the hostname command; please check"
+    echo "your PATH or set the HOSTNAME environment variable"
+    set Host_name = ""
+  else
+    set Host_name = "$HOSTNAME"
+  endif
+else
+  set Host_name = "`hostname`"
+endif
+
+switch ($Host_name)
+  case tun*:
+#   tungsten (Intel Xeon [IA-32] cluster at NCSA)
+    set VERSION = "mpi-linux"
+    set OPTIONS = "cmpi"
+    set COPTIONS = "-j2 -O"
+    breaksw
+  case turing.*:
+  case tur0*:
+#   old turing (IA-32 cluster at CSE)
+    set VERSION = "net-linux"
+    set OPTIONS = "smp turing"
+    set COPTIONS = "-j4 -O"
+    breaksw
+  case turing-*:
+  case tur?-*:
+#   new turing (Macintosh G5 cluster at CSE)
+    set VERSION = "net-ppc-darwin"
+    set OPTIONS = "gm"
+    set COPTIONS = "-j2 -O"
+    breaksw
+  case ds0*:
+#   datastar (IBM-SP at SDSC [64-bit])
+    setenv MAKE gmake
+    set VERSION = "mpi-sp"
+    set OPTIONS = "mpcc64"
+    set COPTIONS = "-O"
+    setenv OBJECT_MODE 64
+    breaksw
+  case up*:
+#   uP (IBM-SP at LLNL [64-bit])
+    setenv MAKE gmake
+    set VERSION = "mpi-sp"
+    set OPTIONS = "mpcc64 uP"
+    set COPTIONS = "-O"
+    setenv OBJECT_MODE 64
+    breaksw
+  case co-login*:
+#   cobalt (Intel itanium-2 [IA-64] cluster at NCSA)
+    set VERSION = "mpi-linux-ia64"
+    set OPTIONS = "ifort mpt icc"
+    set COPTIONS = "-j4 -O"
+    breaksw
+  case alc*:
+  case mcr*:
+#   alc or mcr (Intel Xeon [IA-32] cluster at LLNL)
+    set VERSION = "mpi-linux"
+    set OPTIONS = "elan ifort"
+    set COPTIONS = "-j2 -O"
+    breaksw
+  case zeus*:
+#   zeus (AMD Opteron [64-bit] Linux cluster at LLNL)
+#    set VERSION = "mpi-linux-amd64"
+    set VERSION = "net-linux-amd64"
+    set OPTIONS = "ifort icc"
+    set COPTIONS = "-O"
+    breaksw
+  case iam*:
+#   lemieux (Alpha cluster TCS at PSC)
+    set VERSION = "elan-axp"
+    set OPTIONS = "cxx"
+    set COPTIONS = "-O"
+    breaksw
+  default:
+#   Unsupported
+    echo "Host $Host_name is not recognized."
+	    echo "This script supports alc, frost, co-login1 (cobalt), ds0 (datastar), copper, turing, turing2, and tungsten."
+	    echo "You will have to enter the build command line options by hand."
+    echo ""
+    echo "see http://www.csar.uiuc.edu/~jiao/Roccom link to Supported Platforms"
+    echo ""
+     echo -n "Enter the host name: "
+     set HOST = "$<"
+    echo -n "Enter the VERSION (mpi-linux, ...): "
+    set VERSION = "$<"
+    echo -n "Enter the OPTIONS (icc, ...): "
+    set OPTIONS = "$<"
+    echo -n "Enter the compiler options (-O, ...): "
+    set COPTIONS  = "$<"
+    breaksw
+endsw
+
+echo ""
+echo ""
+echo "./build $TARGET $VERSION $OPTIONS $COPTIONS"
+./build $TARGET $VERSION $OPTIONS $COPTIONS
+
+echo ""
+exit

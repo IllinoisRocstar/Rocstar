@@ -1,0 +1,38 @@
+///
+/// @page creationIO Dataset Creation
+/// 
+/// @section dataset Data Set Creation
+///
+/// @subsection rocprep Rocprep
+/// <b>Rocstar input data preparation tool : Rocstar/utilities/Rocprep</b> \n
+/// Rocprep is Rocstar's dataset preparation tool. 
+/// It takes an initial dataset and preprocesses it accordingly for a given problem.\n Datasets that have not yet 
+/// been preprocessed are referred to as Native Data Archives. These can contain: \n
+///
+/// Native Data Archives 
+/// - Output from Gridgen, Patran, etc.
+/// - Various grids (Grid1, Grid2, …)
+/// - Various module input/BC/control files (Data1, Data2, …)
+/// - README files
+/// .
+/// Tasks performed with a single command:
+/// - Extract relevant files from archive
+/// - Preprocess and partition for each module
+/// - Construct overlay mesh for Rocface
+/// .
+/// Example: Rocflo/Rocfrac Lab Scale Rocket
+/// - % Rocprep –A –o 1 2 –f 1 3 –d /csar/NDAs/labscale –n 16
+///
+/// @subsection nda Anatomy of the Native Data Archive (NDA)
+/// \image html native_data_archive.png
+/// @subsection rocflo_nda Rocflo NDA
+/// \image html rocflo_nda.png
+/// @subsection rocflu_nda Rocflu NDA
+/// \image html rocflu_nda.png
+/// @subsection rocfrac_nda Rocfrac NDA
+/// \image html rocfrac_nda.png
+/// @subsection rocprep_usage Rocprep Usage
+/// \image html rocprep_usage.png
+///
+/// These page is adapted from the <a href="Section_09_DatasetCreation.pdf" target="_blank"><b>Dataset Creation</b></a> powerpoint.
+

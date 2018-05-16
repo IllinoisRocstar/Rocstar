@@ -1,0 +1,77 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.12 2005/05/02 18:05:54 wasistho Exp $
+#
+# Purpose: Filelist for rfloprep utility.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003 by the University of Illinois
+#
+################################################################################
+
+SRCF90+=	PREP_ModInterfaces.F90\
+		PREP_ModParameters.F90\
+		PREP_ModBcDistribution.F90\
+		PREP_BuildVersionString.F90\
+		PREP_CheckBcValidity.F90\
+		PREP_GetGrid.F90\
+		PREP_InitializeFlowField.F90\
+		PREP_InitInputValues.F90\
+		PREP_Main.F90\
+		PREP_PrintPrepInput.F90\
+		PREP_ReadInitflowSection.F90\
+		PREP_ReadInputFile.F90\
+		PREP_ReadBcInputFile.F90
+
+ifdef GENX
+  SRCF90+= 	PREP_GenxInitSolution.F90\
+		PREP_GenxWriteRocinout.F90\
+		PREP_GenxWriteSolution.F90\
+		PREP_InitGenxInterface.F90
+endif               
+
+################################################################################
+#
+# RCS Revision history:
+#
+#   $Log: Filelist.txt,v $
+#   Revision 1.12  2005/05/02 18:05:54  wasistho
+#   added PREP_GetGrid
+#
+#   Revision 1.11  2005/04/29 03:30:41  wasistho
+#   added distribution bc file generator
+#
+#   Revision 1.10  2004/12/03 02:27:02  wasistho
+#   added prefix
+#
+#   Revision 1.9  2004/12/03 02:20:08  wasistho
+#   added prefix
+#
+#   Revision 1.8  2004/12/03 00:35:07  wasistho
+#   lower to upper case
+#
+#   Revision 1.7  2004/07/27 20:27:02  wasistho
+#   added readBcInputFile and checkBcValidity
+#
+#   Revision 1.6  2004/07/27 03:32:28  wasistho
+#   add printPrepInput
+#
+#   Revision 1.5  2004/07/23 04:30:51  wasistho
+#   Genx: readin from Rocin, standalone: read .inp file i.o. command line input
+#
+#   Revision 1.4  2004/06/30 00:00:26  wasistho
+#   migrated to Roccom-3
+#
+#   Revision 1.3  2003/03/20 22:27:56  haselbac
+#   Renamed ModInterfaces
+#
+#   Revision 1.2  2003/03/20 19:44:22  haselbac
+#   Corrected mistake in phased check-in
+#
+#   Revision 1.1  2003/03/20 19:26:22  haselbac
+#   Initial revision
+#
+################################################################################

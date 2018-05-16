@@ -1,0 +1,41 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.5 2004/12/03 02:45:58 wasistho Exp $
+#
+# Purpose: Filelist for rflosurf utility.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003 by the University of Illinois
+#
+################################################################################
+
+SRCF90+=	SURF_ModInterfaces.F90\
+		SURF_BuildVersionString.F90\
+		SURF_CountInteractingPatches.F90\
+		SURF_Main.F90\
+		SURF_WriteSurfaceGrid.F90
+
+################################################################################
+#
+# RCS Revision history:
+#
+#   $Log: Filelist.txt,v $
+#   Revision 1.5  2004/12/03 02:45:58  wasistho
+#   added prefix
+#
+#   Revision 1.4  2004/12/03 00:48:58  wasistho
+#   lower to upper case
+#
+#   Revision 1.3  2003/03/20 22:35:02  haselbac
+#   Renamed ModInterfaces
+#
+#   Revision 1.2  2003/03/20 19:48:09  haselbac
+#   Corrected mistake in phased check-in
+#
+#   Revision 1.1  2003/03/20 19:26:22  haselbac
+#   Initial revision
+#
+################################################################################

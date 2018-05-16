@@ -1,0 +1,50 @@
+##################################################
+  Boundary Condition Specification File for:
+  Gridgen grid exported : Wed Feb 27 14:06:19 2008
+##################################################
+11
+Gridgen bc region: 11
+SlideInXHeadEnd
+Methods: User Created BC
+User data supplied here - see COBALT doc!
+##################################################
+10
+Gridgen bc region: 10
+HeadEndSolidSurface
+Methods: User Created BC
+User data supplied here - see COBALT doc!
+##################################################
+3
+Gridgen bc region: 3
+Source
+Riemann-Invariants
+P-stat   T-stat   Turb    Mach   Axis End Points   Swirl (A,B,C)
+User data supplied here - see COBALT doc!
+Yes
+##################################################
+9
+Gridgen bc region: 9
+SlideInXAftEnd
+Methods: User Created BC
+User data supplied here - see COBALT doc!
+##################################################
+12
+Gridgen bc region: 12
+NozzleSurface
+Methods: User Created BC
+User data supplied here - see COBALT doc!
+##################################################
+13
+Gridgen bc region: 13
+ErodingNozzle
+Methods: User Created BC
+User data supplied here - see COBALT doc!
+##################################################
+2
+Gridgen bc region: 2
+Sink
+Methods: Static Pressure, Mass Flow, Corrected Mass Flow, Bleed Plenum Pressure, Area Ratio
+Value      Porosity
+User data supplied here - see COBALT doc!
+No
+##################################################

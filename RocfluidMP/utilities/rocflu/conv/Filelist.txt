@@ -1,0 +1,54 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.8 2005/07/07 03:50:31 haselbac Exp $
+#
+# Purpose: Filelist for rfluconv utility.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003-2005 by the University of Illinois
+#
+################################################################################
+
+SRCCXX+=        main.C
+
+SRCF90+=	RFLU_ModSTL.F90\
+		BuildVersionString.F90\
+		RFLU_AllocMemSolWrapper.F90\
+		RFLU_DeallocMemSolWrapper.F90\
+		RFLU_PrintHeader.F90\
+		RFLU_WriteVersionString.F90\
+		rfluconv.F90
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Filelist.txt,v $
+# Revision 1.8  2005/07/07 03:50:31  haselbac
+# Added entry for RFLU_ModSTL.F90
+#
+# Revision 1.7  2005/05/03 03:08:12  haselbac
+# Added compilation of main.C, removed main.F90
+#
+# Revision 1.6  2005/04/18 14:59:37  haselbac
+# Added entry for rfluconv
+#
+# Revision 1.5  2004/07/06 15:15:00  haselbac
+# Removed TETMESH routines bcos moved into module, cosmetics
+#
+# Revision 1.4  2004/03/19 21:22:48  haselbac
+# Added entry for BuildVersionString
+#
+# Revision 1.3  2004/02/26 21:02:26  haselbac
+# Added/deleted alloc/dealloc routines
+#
+# Revision 1.2  2003/03/31 16:19:25  haselbac
+# Added RFLU_WriteVersionString
+#
+# Revision 1.1  2003/03/20 19:26:22  haselbac
+# Initial revision
+#
+################################################################################

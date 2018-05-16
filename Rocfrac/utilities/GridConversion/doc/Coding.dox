@@ -1,0 +1,49 @@
+///
+/// @page ir_coding_guide IR Coding Guide
+///
+/// @section General Coding Style
+/// Illinois Rocstar loosely follows the 
+/// [Linux Kernel Coding Style Guide](https://www.kernel.org/doc/Documentation/CodingStyle)
+/// with some additions for C++ and some exceptions in general.
+/// * Braces - use function-like brace guidelines for the following C++ constructs:
+///          * Classes
+///          * Namespaces
+/// * Use of namespaces 
+///          * Project-specific namespaces - All project development should have its own namespace
+///          * The standard namespace, std, should be explicitly resolved on each construct from the standard namespace (as opposed to doing "using namespace std". It is also acceptable to use specific functions from the standard namespace, e.g. "using std::cout".
+/// * Variable naming conventions 
+///          * IR is not as strict on variable naming conventions as the Linux Kernel Style Guide. Just create readable, maintainable code.
+///          * When using references, use the same rule as for pointers where the reference qualifier rides with the variable name, not the type.\n
+/// Like this:\n
+/// @code
+/// int *pointerVar; (good)
+/// int &referenceVar; (good)
+/// @endcode
+/// **Not** like this:\n
+/// @code
+/// int* pointerVar; (other than good)
+/// int& referenceVar; (other than good)
+/// @endcode
+///
+/// * Use spaces between stream operators and their arguments:\n
+/// @code
+/// std::cout << "Hello world!" << std::endl; (good)
+/// std::cout<<"Hardertoread"<<std::endl; (other than good)
+/// @endcode
+/// * File Names
+///          * C-style headers = ".h"
+///          * C source code = ".c"
+///          * C++ headers = ".H,.hpp"
+///          * C++ source code = ".C,.cpp"
+/// * Indentation and line lengths
+///          * An indent is 4 spaces
+///          * All code must be consistently "block indented" in multiples of 4 space indentations
+///          * We strongly prefer to not have "tab" characters in our sources
+///          * We strongly prefer to not have lines greater than 80 characters in length.
+///
+/// All of this said, IR doesn't go crazy enforcing any of this.  You can be certain that
+/// if you follow the above style guide, that nobody will complain about your code formatting,
+/// but as long as your code is readable, understandable, and maintainable then that is the 
+/// main overarching concern.
+///
+

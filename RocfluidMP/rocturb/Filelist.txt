@@ -1,0 +1,260 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.29 2006/01/12 09:43:34 wasistho Exp $
+#
+# Purpose: Filelist for Rocturb module.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003 by the University of Illinois
+#
+################################################################################
+
+  SRCF90+=	TURB_ModInterfaces.F90\
+		TURB_ModParameters.F90\
+		TURB_AllocateMemory.F90\
+		TURB_BuildVersionString.F90\
+		TURB_CalcMetrics.F90\
+		TURB_CalcStrainRate.F90\
+		TURB_CalcVortic.F90\
+		TURB_CheckParamInput.F90\
+		TURB_DerivedInputValues.F90\
+                TURB_EmsInit.F90\
+		TURB_GetModelStressCell.F90\
+		TURB_GetTvCell.F90\
+		TURB_InitInputValues.F90\
+		TURB_InitSolution.F90\
+		TURB_LesCalcEddyVis.F90\
+		TURB_LesCoefDynMixd.F90\
+		TURB_LesCoefDynSmag.F90\
+		TURB_LesCommunication.F90\
+		TURB_LesContract.F90\
+		TURB_LesEsgModel4.F90\
+		TURB_LesFluxFixSmag.F90\
+		TURB_LesFluxScalSim.F90\
+		TURB_LesGetEddyVis.F90\
+		TURB_LesHij.F90\
+		TURB_LesLij.F90\
+		TURB_LesMij.F90\
+                TURB_LesRkInit.F90\
+		TURB_LesTestRhoV.F90\
+		TURB_PrintUserInput.F90\
+		TURB_RansConvectiveFluxes.F90\
+		TURB_RansEmsInit.F90\
+		TURB_RansEmsUpdate.F90\
+		TURB_RansNumericalDissipation.F90\
+		TURB_RansRkInit.F90\
+		TURB_RansSAGetEddyVis.F90\
+		TURB_RansSASourceTerms.F90\
+		TURB_RansSAVisFlux.F90\
+		TURB_RansSAVisFluxPatch.F90\
+		TURB_RansSourceTerms.F90\
+		TURB_RansTotalTv.F90\
+		TURB_RansWallDistOVPatch.F90\
+		TURB_RansZeroDummyCells.F90\
+		TURB_ReadBcInputFile.F90\
+		TURB_ReadInputFile.F90\
+		TURB_ReadTurbSection.F90\
+                TURB_RkInit.F90\
+		TURB_SolutionUpdate.F90\
+		TURB_UserInput.F90\
+		TURB_VFluxHybrid.F90\
+		TURB_VFluxHybridPatch.F90\
+		TURB_VisFluxEddy.F90\
+		TURB_VisFluxEddyPatch.F90\
+		TURB_WlmFluxPatch.F90\
+		TURB_WlmInitia.F90\
+		TURB_WlmReyAnalogy.F90\
+		TURB_WlmTauWallMapping.F90\
+		TURB_WlmUpdate.F90\
+		TURB_WlmUpdateBndlay.F90
+
+ifdef RFLO
+  SRCF90+=	TURB_coRansWallDistOVFlo.F90\
+		TURB_coViscousFluxesFlo.F90\
+		TURB_coWlmReadBcSectionFlo.F90\
+		TURB_floExtrapIntCellScal.F90\
+		TURB_floExtrapIntCellVec.F90\
+		TURB_floExtrapolCellVec.F90\
+		TURB_floExtrapolFaceVec.F90\
+		TURB_floFaceVolume.F90\
+		TURB_floFaceWidthDummyConn.F90\
+		TURB_floFaceWidthDummy.F90\
+		TURB_floFaceWidthDummyPhys.F90\
+		TURB_floFaceWidth.F90\
+		TURB_floLesAverageFace.F90\
+		TURB_floLesGenC2F.F90\
+		TURB_floLesGenCoCC.F90\
+		TURB_floLesGenCoCCUtil.F90\
+		TURB_floLesGenCoFCUtil.F90\
+		TURB_floLesGenCoFF.F90\
+		TURB_floLesGenCoFFUtil.F90\
+		TURB_floLesGenFiltCC.F90\
+		TURB_floLesGenFiltCCI.F90\
+		TURB_floLesGenFiltCCJ.F90\
+		TURB_floLesGenFiltCCK.F90\
+		TURB_floLesGenFiltFF.F90\
+		TURB_floLesGenFiltFFI.F90\
+		TURB_floLesGenFiltFFJ.F90\
+		TURB_floLesGenFiltFFK.F90\
+		TURB_floLesUniFiltCC.F90\
+		TURB_floLesUniFiltCCI.F90\
+		TURB_floLesUniFiltCCJ.F90\
+		TURB_floLesUniFiltCCK.F90\
+		TURB_floLesUniFiltFF.F90\
+		TURB_floLesUniFiltFFI.F90\
+		TURB_floLesUniFiltFFJ.F90\
+		TURB_floLesUniFiltFFK.F90\
+		TURB_floRansBcondInflow.F90\
+		TURB_floRansBcondInjection.F90\
+		TURB_floRansBcondNoslipWall.F90\
+		TURB_floRansBcondSymmetry.F90\
+		TURB_floRansBcondZeroGrad.F90\
+		TURB_floRansCentralDissipation.F90\
+		TURB_floRansCorrCornEdgeCells.F90\
+		TURB_floRansExchangeDummyConf.F90\
+		TURB_floRansExchCornEdgeCells.F90\
+		TURB_floRansRecvDummyVals.F90\
+		TURB_floRansRecvCornEdgeCells.F90\
+		TURB_floRansSACentFlux.F90\
+		TURB_floRansSACentFluxPatch.F90\
+		TURB_floRansSARoe1stFlux.F90\
+		TURB_floRansSARoe2ndFlux.F90\
+		TURB_floRansSARoeFluxPatch.F90\
+		TURB_floRansSendDummyConf.F90\
+		TURB_floRansSendCornEdgeCells.F90\
+		TURB_floRansSetCornEdgeCells.F90\
+		TURB_floWlmMetric.F90\
+		TURB_floWlmUpdateLoglay.F90\
+		TURB_rFLO_RansAllocDataBuffers.F90\
+		TURB_rFLO_RansBndConditionsRecv.F90\
+		TURB_rFLO_RansBndConditionsSend.F90\
+		TURB_rFLO_RansBndConditionsSet.F90\
+		TURB_rFLO_RansClearSendRequests.F90\
+		TURB_rFLO_RansResSmoothing.F90\
+		TURB_rFLO_RansResSmoothingCoeff.F90\
+		TURB_rFLO_RansSpectralRadii.F90\
+		TURB_rFLO_ReadSolution.F90\
+		TURB_rFLO_ReadSolutionRegion.F90\
+		TURB_rFLO_WriteSolution.F90
+endif
+
+ifdef RFLU
+  SRCF90+=	TURB_ModPostFlu.F90\
+		TURB_coRansWallDistOVFlu.F90\
+		TURB_coViscousFluxesFlu.F90\
+		TURB_coWlmReadBcSectionFlu.F90\
+		TURB_fluCv2Cons.F90\
+		TURB_fluCv2Prim.F90\
+		TURB_fluFaceVolume.F90\
+		TURB_fluLesBLij.F90\
+		TURB_fluLesBMij.F90\
+		TURB_fluLesC2F.F90\
+		TURB_rFLU_DeallocateMemory.F90\
+		TURB_rFLU_ReadSolutionASCII.F90\
+		TURB_rFLU_ReadSolutionBinary.F90\
+		TURB_rFLU_WriteSolutionASCII.F90\
+		TURB_rFLU_WriteSolutionBinary.F90
+endif
+                
+ifdef STATS
+  SRCF90+=	TURB_StatCCollector.F90\
+		TURB_StatFCollector.F90\
+		TURB_StatMapping.F90
+endif                
+
+################################################################################
+#
+# RCS Revision history:
+#
+#   $Log: Filelist.txt,v $
+#   Revision 1.29  2006/01/12 09:43:34  wasistho
+#   added TURB_ModPostFlu
+#
+#   Revision 1.28  2004/11/30 23:58:01  wasistho
+#   added BuildVersionString
+#
+#   Revision 1.27  2004/11/17 23:45:08  wasistho
+#   delete TURB_RansRkUpdate
+#
+#   Revision 1.26  2004/10/22 23:22:18  wasistho
+#   added statistics collector based on cell centered variables
+#
+#   Revision 1.25  2004/08/04 02:45:26  wasistho
+#   removed turb%avgCoI,J,K as it is defined as grid%c2fCoI,J,K
+#
+#   Revision 1.24  2004/07/30 22:33:43  wasistho
+#   replaced floLesUniC2F by floLesGenC2F
+#
+#   Revision 1.23  2004/05/28 01:56:50  wasistho
+#   update unstructured grid LES
+#
+#   Revision 1.22  2004/03/29 21:09:21  wasistho
+#   add flu routines
+#
+#   Revision 1.21  2004/03/27 02:16:42  wasistho
+#   compiled with Rocflu
+#
+#   Revision 1.20  2004/03/20 00:28:05  wasistho
+#   set turb_rflo_ransNumericalDiss to turb_ransNumerical..
+#
+#   Revision 1.19  2004/03/19 22:32:48  wasistho
+#   split common, rflo and rflu
+#
+#   Revision 1.18  2004/03/19 02:44:31  wasistho
+#   renamed TURB_RFLO_RansZeroDummyCells to TURB_RansZeroDummyCells
+#
+#   Revision 1.17  2004/03/11 03:26:33  wasistho
+#   changed rocturb nomenclature
+#
+#   Revision 1.16  2004/03/08 23:29:16  wasistho
+#   changed turb nomenclature
+#
+#   Revision 1.15  2004/03/05 04:25:24  wasistho
+#   changed nomenclature
+#
+#   Revision 1.14  2004/02/26 21:21:14  wasistho
+#   added TURB_rkInit, TURB_lesRkInit, TURB_emsInit, TURB_lesComm
+#
+#   Revision 1.13  2004/02/12 03:45:58  wasistho
+#   filled in RaNS lengthscale in dummy cells
+#
+#   Revision 1.12  2004/02/07 01:14:10  wasistho
+#   added TURB_readSolutionRegion
+#
+#   Revision 1.11  2004/01/23 00:34:56  wasistho
+#   added new RaNS edge/corners routines
+#
+#   Revision 1.10  2003/10/27 04:53:40  wasistho
+#   added RaNS upwind schemes
+#
+#   Revision 1.9  2003/10/16 20:16:11  wasistho
+#   installed RaNS in steady state flow (Exp.Mult.Stg)
+#
+#   Revision 1.8  2003/10/09 23:06:19  wasistho
+#   renamed CalcEddyVis to LesCalcEddyVis
+#
+#   Revision 1.7  2003/10/07 02:04:01  wasistho
+#   initial installation of RaNS-SA and DES
+#
+#   Revision 1.6  2003/08/06 15:56:57  wasistho
+#   added CalcVortic and SolutionUpdate for vorticities
+#
+#   Revision 1.5  2003/07/22 02:58:45  wasistho
+#   prepare more accurate rocturb restart
+#
+#   Revision 1.4  2003/06/05 19:16:11  wasistho
+#   implemented heat transfer model
+#
+#   Revision 1.3  2003/05/31 01:45:17  wasistho
+#   installed turb. wall layer model
+#
+#   Revision 1.2  2003/05/24 02:07:17  wasistho
+#   turbulence statistics expanded
+#
+#   Revision 1.1  2003/03/20 19:26:22  haselbac
+#   Initial revision
+#
+################################################################################

@@ -1,0 +1,338 @@
+#!/bin/csh
+#
+# Batch job file creation script for GEN2 V1.1 on modi4
+#
+# Assumptions:
+#
+# 1) You have compiled the GEN2 code to create the gen2.x
+#    executable in directory GEN2_SRC defined below.
+#
+# 2) You have a GEN2 data directory (GEN2_DAT defined
+#    below) with either a tar file <n>procs.tar or a 
+#    subdirectory called <n>procs that contains the input
+#    data set.  This subdirectory is the GEN2 run directory
+#    GEN2_RUN defined below.
+#
+# NOTE: Let the prep_data script untar the <n>procs.tar
+#       file for you -- it will create some subdirectories
+#       that are not in the tar file, and will check to make
+#       sure you have everything you need top make a run.
+#
+# NOTE: Another GEN2 utility script called timing_script
+#       can be used to extract performance data (timing)
+#       for each major module in GEN2.  To use it, compile
+#       the genx/Utilities and use the timing data directory
+#       GEN2_TIMING_DATA defined below.
+#
+# Usage:
+#
+# % pjr_sgi
+#
+#   Enter your chioces at the prompts.  Default values are 
+#   given in ( ) by this script in its prompts.
+#
+# Written by Robert Fiedler, revised 3/26/02.
+ 
+# If necessary, read in batch job parameters.
+# Begin with the number of threads (CPUs).
+#
+if ("$#argv" == "0") then
+  echo -n "Enter total number of CPUs (1): "
+  set CPUS = "$<"
+  if ("$CPUS" == "") then
+    set CPUS = 1
+  endif
+else
+  set CPUS = "$1"
+  shift
+endif
+
+# Rocpanda uses additional CPUs to perform parallel I/O and combine 
+# HDF output from many compute CPUs into fewer files.  If you set
+# the number of Rocpanda servers to 0, each compute CPU will write
+# its own files directly to disk.
+#
+if ("$#argv" == "0") then
+  echo -n "Enter number of Rocpanda servers (0): "
+  set PCPUS = "$<"
+  if ("$PCPUS" == "") then
+    set PCPUS = 0
+  endif
+else
+  set PCPUS = "$1"
+  shift
+endif
+if ("$PCPUS" > 0) then
+  set PANDA = "-panda"
+else
+  set PANDA = ""
+endif
+@ CCPUS = $CPUS - $PCPUS
+
+# Get expected wall clock time and add some extra for final output.
+if ("$#argv" == "0") then
+  echo -n "Enter wall clock time in minutes (5): "
+  set TIME = "$<"
+  if ("$TIME" == "") then
+    set TIME = 5
+  endif
+else
+  set TIME = "$1"
+  shift
+endif
+
+# You can turn off the solids calculation.  
+if ("$#argv" == "0") then
+  echo -n "Is this run fluids only? (n): "
+  set FLO_ONLY = "$<"
+  if ("$FLO_ONLY" == "") then
+    set FLO_ONLY = "n"
+  endif
+else
+  set FLO_ONLY = "$1"
+  shift
+endif
+if ("$FLO_ONLY" == "y" || "$FLO_ONLY" == "Y") then
+  set DUMMYFRAC = "-dummyfrac"
+else
+  set DUMMYFRAC = ""
+endif
+
+# Ask which problem to do.
+if ("$#argv" == "0") then
+  echo -n "Enter problem name (Scalability): "
+  set Problem = "$<"
+  if ("$Problem" == "") then
+    set Problem = "Scalability"
+  endif
+else
+  set Problem = "$1"
+  shift
+endif
+
+# Ask which executable to use
+if ("$#argv" == "0") then
+  echo -n "Enter program name (gen2.x): "
+  set Program = "$<"
+  if ("$Program" == "") then
+    set Program = "gen2.x"
+  endif
+else
+  set Program = "$1"
+  shift
+endif
+
+# Ask how much memory is needed per CPU.
+if ("$#argv" == "0") then
+  echo -n "Enter required memory per CPU (100MB): "
+  set MEM = "$<"
+  if ("$MEM" == "") then
+    set MEM = 100
+  endif
+else
+  set MEM = "$1"
+  shift
+endif
+@ MEM = $MEM * $CPUS
+
+# Ask whether this run continues a previous run.
+if ("$#argv" == "0") then
+  echo -n "Enter 1 for restart, 0 for new run (0): "
+  set JID = "$<"
+  if ("$JID" == "") then
+    set JID = 0
+  endif
+else
+  set JID = "$1"
+  shift
+endif
+
+# Identify the job with this name.
+set JOBNAME = "sca"
+
+set HOST = modi4 
+set FILE = "pjob_${CPUS}p"  # Batch file name
+
+# Set code wall time, add reserve for final output and overhead
+set DAYS = 0
+set HOURS = 0
+set MINUTES = $TIME
+set RESERVE = 5
+set MAXMINUTES = `expr $DAYS \* 1440 + $HOURS \* 60 + $MINUTES`
+set MAXSECONDS = `expr $MAXMINUTES \* 60`
+set MAXMINUTES = `expr $MAXMINUTES + $RESERVE`
+#
+# Write stuff from here down to the "END" near the bottom into
+# the batch job script file.
+#
+# Check the definitions of directories carefully below.  You
+# can view the script before it is submitted, so you will
+# have a chance to try again.
+#
+cat <<END > $FILE
+#!/bin/csh 
+#BSUB -J ${JOBNAME}${CPUS}    # Job name 
+#BSUB -n $CPUS          # Number of CPUs
+#BSUB -M ${MEM}M        # This much memory (MB)
+#BSUB -W ${MAXMINUTES}  # Wall time limit HH:MM
+#BSUB -o ${JOBNAME}${CPUS}.j  # Combine stderr and stdout in this file
+
+echo "Beginning at"
+set echo
+date
+echo ""
+
+set PROGRAM = "$Program"
+set PROBLEM = "$Problem"
+
+# Sensible parameters for a fairly short Scalability test problem.
+# You can shorten it even more by setting STEPS_MAX to 3.
+set END_TIME = 0.1
+set MAX_PC_ITERS = 1
+set STEPS_MAX = 10
+set SOLIDS_TO_FLUIDS = 1
+set TOLS = "0.001, 0.001, 0.001, 0.001"
+
+if ("$DUMMYFRAC" == "-dummyfrac") then
+# No solids computation
+  set TIME_STEP = 0.0001
+  set OUTPUT_INTERVAL = 0.002
+else
+# Coupled fluid-structure interaction
+  set TIME_STEP = 0.000001
+  set OUTPUT_INTERVAL = 0.005
+endif
+ 
+# Add zeros to CPUS, if needed, to make nicer names
+set NCPUS = "$CCPUS"
+if ($CCPUS < 100) then
+  set NCPUS = "0\${NCPUS}"
+endif
+if ($CCPUS < 10) then
+  set NCPUS = "0\${NCPUS}"
+endif
+
+# Define directories
+set GEN2_SRC = \${HOME}/genx/Solver
+set GEN2_DAT = /scratch-modi4/\${LOGNAME}/genx-data/\${PROBLEM}
+set GEN2_RUN = \${GEN2_DAT}/\${NCPUS}procs
+set GEN2_TIMING_DATA = \${GEN2_RUN}_timing_${HOST}
+
+# Create directories, if needed
+if (! -d \$GEN2_RUN) then
+  if (-e \${GEN2_DAT}/\${NCPUS}procs.tar) then
+    if (-e \${HOME}/genx/Utilities/prep_data) then
+      cd \${GEN2_DAT}
+      \${HOME}/genx/Utilities/prep_data \${NCPUS}procs
+    else
+      echo "I need the genx/Utilities/prep_data script"
+      exit
+    endif
+  else
+    echo "I do not see \$GEN2_RUN or \${NCPUS}procs.tar"
+    exit
+  endif
+endif
+if (! -d \$GEN2_TIMING_DATA) then
+  mkdir -p \$GEN2_TIMING_DATA
+endif
+
+# Go to the run directory
+cd \${GEN2_RUN}
+
+# Get the last output dump time from the info file
+if (-e GENX.restart.info && $JID != 0) then
+  set DUMP = (\`cat GENX.restart.info\`)
+  if ("\$#DUMP" != 2) then
+    set RESTART_TIME = "0."
+  else
+    set RESTART_TIME = "\$DUMP[2]"
+  endif
+else
+  set RESTART_TIME = "0."
+endif
+
+# Copy the program to the run directory
+cp \${GEN2_SRC}/\${PROGRAM} \${PROGRAM}
+
+# Edit the (original) input files to specify output directories, etc.
+#
+# Put the correct number of steps to take, output time interval,
+# run time limit, timing data directory, etc. into GEN2Control.txt
+#
+ex GENXControl.txt << STP
+1,8d
+0a
+\${RESTART_TIME}, \${END_TIME}
+\${SOLIDS_TO_FLUIDS}
+\${MAX_PC_ITERS}, \${STEPS_MAX}
+\${TOLS}
+\${TIME_STEP}
+\${OUTPUT_INTERVAL}
+$MAXSECONDS
+\${GEN2_TIMING_DATA}/
+.
+wq
+STP
+echo ""
+echo "Task 0: cat GENXControl.txt"
+cat GENXControl.txt
+echo ""
+
+if ("$PCPUS" > 0) then
+# Rocpanda is to be used.  Edit the control file, making sure
+# that it has all 5 lines that it needs.
+  set LINES = (\`cat RocpandaControl.txt | wc -l\`)
+  if (\$LINES[1] < 5) then
+    echo "B 230" >> RocpandaControl.txt
+  endif
+  ex RocpandaControl.txt << STP
+1,5d
+0a
+C ${CCPUS}
+S ${PCPUS}
+M 1
+D . d
+B 230
+.
+wq
+STP
+  echo ""
+  echo "Task 0: cat RocpandaControl.txt"
+  cat RocpandaControl.txt
+  echo ""
+endif
+
+# Run the code
+mpirun -np \$BSUB_NUMTHREADS \${PROGRAM} ${DUMMYFRAC} ${PANDA}
+
+exit
+END
+
+# View the job file.
+echo ""
+echo -n "Do you wish to view the job script? (n): "
+set RESPONSE = "$<"
+if ("$RESPONSE" == "") then
+  set RESPONSE = "n"
+endif
+if ("$RESPONSE" == "y" || "$RESPONSE" == "Y") then
+  echo ""
+  echo "Here is the batch file for $CPUS processors:"
+  echo ""
+  cat $FILE
+endif
+
+# Submit the job.
+echo ""
+echo -n "Do you wish to submit the job? (y/n): "
+set RESPONSE = "$<"
+if ("$RESPONSE" == "") then
+  set RESPONSE = "n"
+endif
+if ("$RESPONSE" == "y" || "$RESPONSE" == "Y") then
+  bsub < $FILE
+else
+  echo "$FILE not submitted"
+endif
+exit

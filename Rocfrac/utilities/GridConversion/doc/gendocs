@@ -1,0 +1,3 @@
+./cleandocs
+doxygen GridConversion.cfg
+tar zcvf gridconversion_html_docs.tgz html

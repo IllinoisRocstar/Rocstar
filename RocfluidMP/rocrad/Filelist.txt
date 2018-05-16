@@ -1,0 +1,109 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.7 2004/12/01 00:00:54 wasistho Exp $
+#
+# Purpose: Filelist for Rocrad module.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003 by the University of Illinois
+#
+################################################################################
+
+  SRCF90+= 	RADI_ModInterfaces.F90\
+		RADI_ModParameters.F90\
+		RADI_AllocateMemory.F90\
+		RADI_BuildVersionString.F90\
+		RADI_CalcEffTemp.F90\
+		RADI_CheckParamInput.F90\
+		RADI_DerivedInputValues.F90\
+		RADI_DiffRadFlux.F90\
+		RADI_DiffRadFluxPatch.F90\
+		RADI_DiffRadIntens.F90\
+		RADI_EmsInit.F90\
+		RADI_ExtinctionCoef.F90\
+		RADI_FlimConvectiveFluxes.F90\
+		RADI_FlimDiffFlux.F90\
+		RADI_FlimDiffFluxPatch.F90\
+		RADI_FlimEmsInit.F90\
+		RADI_FlimEmsUpdate.F90\
+		RADI_FlimNumericalDissipation.F90\
+		RADI_FlimRkInit.F90\
+		RADI_FlimRkUpdate.F90\
+		RADI_FlimSourceTerms.F90\
+		RADI_FlimZeroDummyCells.F90\
+		RADI_FluxLimiter.F90\
+		RADI_InitInputValues.F90\
+		RADI_InitSolution.F90\
+		RADI_MixtSourceTermsFlim.F90\
+		RADI_PeulSourceTermsFlim.F90\
+		RADI_PlagSourceTermsFlim.F90\
+		RADI_PrintUserInput.F90\
+		RADI_ReadInputFile.F90\
+		RADI_ReadRadiSection.F90\
+		RADI_RkInit.F90\
+		RADI_SolutionUpdate.F90\
+		RADI_SourceTerms.F90\
+		RADI_UserInput.F90
+
+ifdef RFLO
+  SRCF90+=	RADI_floFlimBcondDiffuse.F90\
+		RADI_floFlimBcondInjection.F90\
+		RADI_floFlimBcondSymmetry.F90\
+		RADI_floFlimBcondZeroGrad.F90\
+		RADI_floFlimCentFlux.F90\
+		RADI_floFlimCentFluxPatch.F90\
+		RADI_floFlimCentralDissipation.F90\
+		RADI_floFlimCorrCornEdgeCells.F90\
+		RADI_floFlimExchangeDummyConf.F90\
+		RADI_floFlimExchCornEdgeCells.F90\
+		RADI_floFlimRecvCornEdgeCells.F90\
+		RADI_floFlimRecvDummyVals.F90\
+		RADI_floFlimSendCornEdgeCells.F90\
+		RADI_floFlimSendDummyConf.F90\
+		RADI_floFlimSetCornEdgeCells.F90\
+		RADI_rFLO_FlimAllocDataBuffers.F90\
+		RADI_rFLO_FlimBndConditionsRecv.F90\
+		RADI_rFLO_FlimBndConditionsSend.F90\
+		RADI_rFLO_FlimBndConditionsSet.F90\
+		RADI_rFLO_FlimClearSendRequests.F90\
+		RADI_rFLO_FlimResSmoothingCoeff.F90\
+		RADI_rFLO_FlimResSmoothing.F90\
+		RADI_rFLO_FlimSpectralRadii.F90\
+		RADI_rFLO_ReadSolution.F90\
+		RADI_rFLO_WriteSolution.F90
+endif
+
+ifdef RFLU
+  SRCF90+= 
+endif
+
+################################################################################
+#
+# RCS Revision history:
+#
+#   $Log: Filelist.txt,v $
+#   Revision 1.7  2004/12/01 00:00:54  wasistho
+#   added BuildVersionString
+#
+#   Revision 1.6  2004/09/30 17:09:50  wasistho
+#   prepared for full FLD radiation model
+#
+#   Revision 1.5  2004/09/23 03:48:10  wasistho
+#   changed RADI_WriteSol.. to RADI_RFLO_WriteSol..
+#
+#   Revision 1.4  2004/09/22 02:32:14  wasistho
+#   changed file nomenclature from lower to upper case
+#
+#   Revision 1.3  2004/09/18 17:40:19  wasistho
+#   install Limited Flux Diffusion radiation
+#
+#   Revision 1.2  2003/07/17 01:11:56  wasistho
+#   initial activation rocrad
+#
+#   Revision 1.1  2003/03/20 19:26:21  haselbac
+#   Initial revision
+#
+################################################################################

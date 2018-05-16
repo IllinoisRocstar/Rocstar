@@ -1,0 +1,190 @@
+Overview
+
+   Rocburn_2D is a upper level interface code that communicates
+   with Rocman for all available individual burning models.   Rocman 
+   will call corresponding subroutines for the combustion model 
+   to be used.
+
+   Current avaiable models are:
+
+      in subdirecotry Rocburn_APN
+                        use quasi-steay rb=a*P^n
+
+      in subdirectory Rocbrun_PY 
+                        use model implemented by Luca Massa
+
+      in subdirectory Rocbrun_ZN
+                        use model implemented by Tang and 
+                        Brewster with Zeldovich-Novozhilov
+                        approach
+
+
+Interface data (communcations with Rocman)
+    
+   MODULE M_Rocburn_Interface_Data (see file 01.burn_interface_data.f90) 
+   delcares the interface data needed by ALL combustion models.  Code 
+   developer should contact InCoDe team if additional data are needed.
+   However, individual burning rate model should NOT use this module.
+
+
+Subroutines required from individual burning rate model
+
+   For each individual burning rate model, the following subroutines 
+   are needed in order to communicate with Rocburn_2D with ALL units
+   in MKS:
+
+
+   Initialize_Rocburn_0d_???(nxmax, To_read)
+      To initialize the variables local to individual burning
+      rate model.  
+
+      The arguments for this subruoutine needs to include ALL of the
+      fllowing:
+
+        INTERFACE
+           SUBROUTINE Initialize_Rocburn_0d_???(nxmax, To_read)
+           INTEGER, INTENT(OUT) :: nxmax
+           REAL(DBL), INTENT (OUT) :: To_read
+           END SUBROUTINE Initialize_Rocburn_0d_???
+        END INTERFACE
+
+
+
+
+
+
+   Initialize_Rocburn_1d_???((bflag, P, To, rhoc, &
+                              rb, Toa, fr, Tn, Tflame)
+      To provide the initial conditions for individual burning
+      rate model.  
+
+      The arguments for this subruoutine needs to include ALL of the
+      fllowing:
+
+
+        INTERFACE
+           SUBROUTINE Initialize_Rocburn_1d_???(bflag, P, To, rhoc, &
+                                            rb, Toa, fr, Tn, Tflame)
+           INTEGER, INTENT(IN)    :: bflag
+           REAL(DBL), INTENT (IN) :: P, To, rhoc
+           REAL(DBL), INTENT (OUT)     :: rb, Toa, fr
+           REAL(DBL), INTENT (OUT)     :: Tn(:)
+           REAL(DBL), INTENT (OUT)     :: Tflame
+           END SUBROUTINE Initialize_Rocburn_1d_???
+        END INTERFACE
+
+
+
+
+
+
+   burn_calcdist_2d_???(xyz_2d, dist_2d)                
+      To calculate distance from the burning surface to the flame
+      front.
+
+      The arguments for this subruoutine needs to include ALL of the
+      fllowing:
+ 
+        INTERFACE
+           SUBROUTINE burn_calcdist_2d_???(xyz_2d, dist_2d)
+           REAL(DBL), INTENT (IN)  :: xyz_2d(:,:)
+           REAL(DBL), INTENT (OUT) :: dist_2d(:,:)
+           END SUBROUTINE burn_calcdist_2d_???
+        END INTERFACE
+
+
+
+
+   burn_get_film_coeff_1d_???(dist_0d, Ts, T_euler, P, qc)
+      To calculate convective heat flux when the thermal boundary
+      layer is not resolved by the fluid code. TBL_flag = .false.
+
+      The arguments for this subruoutine needs to include ALL of the
+      fllowing:
+ 
+        INTERFACE
+           SUBROUTINE burn_get_film_coeff_1d_???(dist_0d, Ts, T_euler, P, qc)
+           REAL(DBL), INTENT (IN)  :: dist_0d, Ts, T_euler, P
+           REAL(DBL), INTENT (OUT) :: qc
+           END SUBROUTINE burn_get_film_coeff_1d_???
+        END INTERFACE
+
+
+
+
+
+   burn_get_burning_rate_1d_???(delt, P, To, Tn,   &
+                 qc, qc_old, qr, qr_old, rhoc, &
+                 Tn, Tnp1, bflag, Toa, fr)
+
+      To calculate the value of dependant variables (e.g. outgoing
+      data) for a given set of independat varibales (e.g. incoming
+      data).  
+
+      The arguments for this subruoutine needs to include ALL of the
+      fllowing:
+
+        INTERFACE
+            SUBROUTINE burn_get_burning_rate_1d_???(delt, P, To, Tn,   &
+                                     qc, qc_old, qr, qr_old, rhoc, &
+                                     Toa, rb, fr, bflag, Tnp1, Tflame)
+            REAL(DBL), INTENT (IN)      :: delt, P, To
+            REAL(DBL), INTENT (IN)      :: Tn(:)
+            REAL(DBL), INTENT (IN)      :: qc, qc_old, qr, qr_old
+            REAL(DBL), INTENT (IN)      :: rhoc
+            REAL(DBL), INTENT (INOUT)   :: Toa, rb, fr
+            LOGICAL,   INTENT (INOUT)   :: bflag
+            REAL(DBL), INTENT (OUT)     :: Tnp1(:)
+            REAL(DBL), INTENT (OUT)     :: Tflame
+            END SUBROUTINE burn_get_burning_rate_1d_???
+        END INTERFACE
+
+   
+
+
+
+
+   burn_get_time_step_1d_???(rb, Toa, dt_max)
+      To calculate the maximum time step 
+
+      The arguments for this subruoutine needs to include ALL of the
+      fllowing:
+
+        INTERFACE
+           SUBROUTINE burn_get_time_step_1d_???(rb, Toa, dt_max)
+           REAL(DBL), INTENT (IN)  :: rb, Toa
+           REAL(DBL), INTENT (OUT) :: dt_max
+           END SUBROUTINE burn_get_time_step_1d_???
+        END INTERFACE
+
+
+
+
+
+
+   Finalize_Rocburn_???(finaltime)
+      To close the Rocburn_2D module
+
+      The arguments for this subruoutine needs to include ALL of the
+      fllowing:
+
+
+         INTERFACE
+           SUBROUTINE Finalize_Rocburn_???(finaltime)
+           REAL(DBL) :: finaltime
+           END SUBROUTINE Finalize_Rocburn_???
+         END INTERFACE
+
+
+
+
+
+
+Subcycling
+  
+    Inside burn_update, "burn_get_time_step_1d" is called to calculate 
+    the maximum time step for each burning cells.  Linear interpolation 
+    for independant variables at individual burning surfaces will be used
+    for 0D level subcycling.
+
+   

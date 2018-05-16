@@ -1,0 +1,56 @@
+/* tutorials.dox */
+div.image img[src="rsrm_propellant.png"]{
+  width:350px;
+}
+div.image img[src="joint_slot_sim.png"]{
+  width:350px;
+}
+div.image img[src="agard_wing.png"]{
+  width:350px;
+}
+div.image img[src="bates_efficiency.png"]{
+  width:350px;
+}
+div.image img[src="nozzle_erosion_particles.png"]{
+  width:500px;
+}
+div.image img[src="nozzle_lagrangian.png"]{
+  width:350px;
+}
+div.image img[src="las_sim.png"]{
+  width:350px;
+}
+div.image img[src="rocstar_vs_atk.png"]{
+  width:500px;
+}
+
+/*Physics.dox*/
+div.image img[src="multiphysics_interface.png"]{
+  width:550px;
+}
+
+div.image img[src="multiphysics_interface.png"]{
+  width:350px;
+}
+div.image img[src="multiphysics_domains.png"]{
+  width:550px;
+}
+div.image img[src="multiphysics_processing.png"]{
+  width:550px;
+}
+div.image img[src="multiphysics_mesh.png"]{
+  width:550px;
+}
+div.image img[src="multiphysics_process.png"]{
+  width:550px;
+}
+
+/*Physics Modules */
+div.image img[src="physics_sim_modules.png"]{
+  width:550px;
+}
+
+/*Visualization */
+div.image img[src="tecplot.png"]{
+  width:1050px;
+}

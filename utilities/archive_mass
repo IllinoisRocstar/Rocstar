@@ -1,0 +1,341 @@
+#!/bin/csh
+#
+# archive_mass <suffix>
+#
+# This version moves Rocstar 3 snapshot archives to mass storage.
+# The archives are created using archive_hdf.
+#
+# Run this script in the Rocstar 3 archive top-level directory,
+# e.g., .../016procs.
+#
+# NOTE: If a directory on mass storage already
+# exists, the script will have to be killed using ^C.
+#
+# Written by Robert Fiedler, revised 5/9/06.
+#
+#.......................................................................
+
+# Set the name of the mass storage system and the home directory
+# for saving Rocstar 3 dumps there based on the local system name.
+
+if (! $?HOST) then
+  set HOST = `hostname`
+endif
+switch ($HOST)
+case alc*:
+  set REMOTE_SYS = storage
+  set REMOTE_SCR = /users/u43/rfiedler
+  breaksw
+case thunder*:
+case mcr*:
+case frost*:
+case up*:
+  set REMOTE_SYS = storage
+  set REMOTE_SCR = /users/u43/rfiedler
+  breaksw
+case copper:
+case Cu*:
+case tun*:
+  set REMOTE_SYS = mss
+  set REMOTE_SCR = /u/ac/rfiedler/CSAR
+  breaksw
+case dslogin*:
+  set REMOTE_SYS = storage
+  set REMOTE_SCR = /users/u43/rfiedler
+  breaksw
+case tur*:
+  set REMOTE_SYS = mss
+  set REMOTE_SCR = /u/ac/rfiedler/CSAR
+  breaksw
+default:
+  echo -n "Enter name of remote storage system: "
+  set REMOTE_SYS = "$<"
+  echo -n "Enter home directory on remote storage system: "
+  set REMOTE_SCR = "$<"
+  breaksw
+endsw
+
+set DIR = `pwd`
+
+if ($#argv == 1) then
+  set SUFFIX = "_$1"
+else
+  echo -n "Enter suffix (no underscore; default is none): "
+  set SUFFIX = "$<"
+  if ("$SUFFIX" != "") then
+    set SUFFIX = "_$SUFFIX"
+  endif
+endif
+
+if (-d Rocflo) then
+  set FLUIDS = Rocflo
+else if (-d Rocflu) then
+  set FLUIDS = Rocflu
+else
+  echo "I cannot find a fluids directory"
+  goto EXIT
+endif
+set FDIR = "$FLUIDS/Rocout${SUFFIX}"
+if (! -d $FDIR) then
+  echo ""
+  echo "Cannot find $FLUIDS/Rocout${SUFFIX} directory"
+  echo ""
+  goto EXIT
+else
+  echo ""
+  echo "Fluids directory is $FDIR"
+endif
+
+if (-d Rocfrac) then
+  set SOLIDS = Rocfrac
+else if (-d Rocsolid) then
+  set SOLIDS = Rocsolid
+else
+  echo "Cannot find a solids directory"
+  set SOLIDS = ""
+endif
+set SDIR = "$SOLIDS/Rocout${SUFFIX}"
+if ("$SOLIDS" != "") then
+  if (! -d $SDIR) then
+    echo ""
+    echo "Cannot find $SOLIDS/Rocout${SUFFIX} directory"
+    echo ""
+  else
+    echo ""
+    echo "Solids directory is $SDIR"
+  endif
+endif
+
+if (-d RocburnAPN) then
+  set BURN = RocburnAPN
+else if (-d RocburnPY) then
+  set BURN = RocburnPY
+else
+  echo "Cannot find a Rocburn directory"
+  set BURN = ""
+endif
+set BDIR = "$BURN/Rocout${SUFFIX}"
+if (! -d $BDIR) then
+  echo ""
+  echo "Cannot find $BURN/Rocout${SUFFIX} directory"
+  echo ""
+else
+  echo ""
+  echo "Burn directory is $BDIR"
+endif
+echo ""
+
+# Pick a reasonable default directory name on mass storage.  DIR
+# is the genx run directory, blah/PROBLEM/NNNPROCS.
+
+set NNNPROCS = $DIR:t
+set PROBLEM = $DIR:h
+set PROBLEM = $PROBLEM:t
+set REMOTE_DIR = "${REMOTE_SCR}/GEN3/$PROBLEM/$NNNPROCS"
+
+# Create a script that does the work.  Try to open a connection just once.
+
+set SCRIPT = $HOME/transfer${SUFFIX}.$$
+echo "#\!/bin/csh" > $SCRIPT
+echo "cd $DIR" >> $SCRIPT
+if ("$REMOTE_SYS" == "mss") then
+  echo "mssftp -v << STP" >> $SCRIPT
+else
+  echo "ftp -iv $REMOTE_SYS << STP" >> $SCRIPT
+  switch ($HOST) 
+  case alc*:
+  case mcr*:
+    # Add a "return" to get to the password prompt.  
+    # It will be entered interactively when the transfer script is run.
+    echo "" >> $SCRIPT
+    breaksw
+  default:
+    breaksw
+  endsw
+endif
+
+# We want to enter the password only once (alc, perhaps others).  We
+# assume here that trying to create existing directories does
+# not stop the script from continuing; we may get warnings.
+
+# Assume the REMOTE_SCR directory exists on mass storage
+
+echo "cd $REMOTE_SCR" >> $SCRIPT
+echo "mkdir GEN3" >> $SCRIPT
+echo "cd GEN3" >> $SCRIPT
+echo "mkdir $PROBLEM" >> $SCRIPT
+echo "cd $PROBLEM" >> $SCRIPT
+echo "mkdir $NNNPROCS" >> $SCRIPT
+echo "cd $REMOTE_DIR" >> $SCRIPT
+
+# Create the Solver Rocout directories
+
+echo "mkdir $FLUIDS" >> $SCRIPT
+echo "mkdir $FLUIDS/Rocout${SUFFIX}" >> $SCRIPT
+
+if ("$BURN" != "") then
+  echo "mkdir $BURN" >> $SCRIPT
+  echo "mkdir $BURN/Rocout${SUFFIX}" >> $SCRIPT
+endif
+
+if ("$SOLIDS" != "") then
+  echo "mkdir $SOLIDS" >> $SCRIPT
+  echo "mkdir $SOLIDS/Rocout${SUFFIX}" >> $SCRIPT
+endif
+
+#-------------------------------------------------------------------------------
+
+# Assume from this point that the directories into which we will place
+# any files on mass storage already exist.
+
+# Save the top-level output files and control files
+
+if (! -e Control${SUFFIX}.tar) then
+  if (! -d Control${SUFFIX}) then
+#   Create Control file directory and copy control files to it
+    mkdir Control${SUFFIX}
+    cp *.txt Rocman/Roc*Control.txt $FLUIDS/${FLUIDS}Control.txt $SOLIDS/${SOLIDS}Control.txt $BURN/${BURN}Control.txt Control${SUFFIX}
+    if (-e Rocmop/RocmopControl.txt) then
+      cp Rocmop/RocmopControl.txt Control${SUFFIX}
+    endif
+  endif
+  echo "tar cvf Control${SUFFIX}.tar Control${SUFFIX}"
+  tar cvf Control${SUFFIX}.tar Control${SUFFIX}
+endif
+echo "put Control${SUFFIX}.tar" >> $SCRIPT
+
+# Save the fluids probe data and con data
+
+cd $FLUIDS
+if (! -e Modout${SUFFIX}.tar) then
+  echo "tar cvf Modout${SUFFIX}.tar Modout${SUFFIX}"
+  tar cvf Modout${SUFFIX}.tar Modout${SUFFIX}
+endif
+cd $DIR
+echo "cd $REMOTE_DIR/$FLUIDS" >> $SCRIPT
+echo "lcd $FLUIDS" >> $SCRIPT
+echo "put Modout${SUFFIX}.tar" >> $SCRIPT
+
+echo ""
+echo "Getting output dump times ... "
+#
+cd $FDIR
+set optimes = (`ls fluid_??\.??????\.hdf.tgz | sed -e 's/fluid_//' | sed -e 's/.hdf..*//'`)
+if ($#optimes == 0) then
+  set optimes = (`ls fluid_??\.??????\.hdf.tar | sed -e 's/fluid_//' | sed -e 's/.hdf..*//'`)
+  if ($#optimes == 0) then
+    echo "I cannot find any $FLUIDS hdf dump archives"
+    goto EXIT
+  else
+    set TSUF = "tar"
+  endif
+else
+  set TSUF = "tgz"
+endif
+
+cd $DIR
+echo ""
+
+echo "Output times are:"
+echo ""
+set i = 1
+LOOP:
+  echo "$i   $optimes[$i]"
+  if ($i < $#optimes) then
+    @ i++
+    goto LOOP
+  endif
+#
+echo ""
+echo -n "Enter index of first time to transfer (1): "
+set ifirst = "$<"
+if ("$ifirst" == "") then
+  set ifirst = 1
+endif
+echo -n "Enter index of last time to transfer ($#optimes): "
+set ilast = "$<"
+if ("$ilast" == "") then
+  set ilast = $#optimes
+endif
+echo -n "Should I ask for verification to transfer each dump (y/n default = n): "
+set VERIFY = "$<"
+if ("$VERIFY" == "") then
+  set VERIFY = "n"
+endif
+echo ""
+echo "VERIFY is $VERIFY"
+
+set i = $ifirst
+LOOP2:
+  echo ""
+  set optime = $optimes[$i]
+  if ("$VERIFY" == "n") then
+    set TRANSFER = "y"
+    echo "Transferring $optime"
+  else
+    echo -n "Should I transfer dump $optime ? (y/n default = n): "
+    set TRANSFER = "$<"
+    if ("$TRANSFER" == "") then
+      set TRANSFER = "n"
+    endif
+  endif
+
+  if ("$TRANSFER" == "y") then
+
+    echo "cd ${REMOTE_DIR}/${FDIR}" >> $SCRIPT
+    echo "lcd $DIR/${FDIR}" >> $SCRIPT
+    echo "mput *_${optime}.hdf.${TSUF}" >> $SCRIPT
+
+    if ("$SOLIDS" != "") then
+      echo "cd ${REMOTE_DIR}/${SDIR}" >> $SCRIPT
+      echo "lcd $DIR/${SDIR}" >> $SCRIPT
+      echo "mput *_${optime}.hdf.${TSUF}" >> $SCRIPT
+    endif
+
+    if ("$BURN" != "") then
+      echo "cd ${REMOTE_DIR}/${BDIR}" >> $SCRIPT
+      echo "lcd $DIR/${BDIR}" >> $SCRIPT
+      echo "mput *_${optime}.hdf.${TSUF}" >> $SCRIPT
+    endif
+
+  endif
+
+  if ($i < $ilast) then
+    @ i++
+    goto LOOP2
+  endif
+
+  echo "bye" >> $SCRIPT
+  echo "STP" >> $SCRIPT
+  echo "exit" >> $SCRIPT
+
+  echo ""
+  echo -n "Should I execute the script $SCRIPT ? (y/n default = y): "
+  set RESPONSE = "$<"
+  if ("$RESPONSE" == "") then
+    set RESPONSE = "y"
+  endif
+  if ("$RESPONSE" == "y") then
+
+# Invoke the script
+
+    echo ""
+    echo "Starting the script to transfer the files"
+    echo ""
+    chmod u+x $SCRIPT
+    $SCRIPT
+
+  endif
+
+  echo ""
+  echo -n "Should I remove the script $SCRIPT ? (y/n default = y): "
+  set RESPONSE = "$<"
+  if ("$RESPONSE" == "") then
+    set RESPONSE = "y"
+  endif
+  if ("$RESPONSE" == "y") then
+    \rm -f $SCRIPT
+  endif
+
+EXIT:
+exit

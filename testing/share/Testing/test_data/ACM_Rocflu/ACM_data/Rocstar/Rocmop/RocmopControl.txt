@@ -1,0 +1,26 @@
+# Begin RocmopControl.txt
+#
+# Verbosity
+1
+
+# Smoothing Method:
+# 0 = Smooth Volume using Mesquite with ghosts
+# 1 = Smooth Volume using Mesquite without ghosts
+# 2 = Smooth Surface Medial
+0
+
+# Lazy option, if 1, then only smooth when max dihedral angle
+# exceeds the tolerance parameter below
+0
+
+# Tolerance threshold for lazy option above
+165.0
+
+# Maximum displacement allowed for Mesquite
+# 0.0 = no limit
+0.0
+
+# N is the smoothing frequency paramter.  This forces Rocmop
+# to smooth every Nth call.
+2
+# End RocmopControl.txt

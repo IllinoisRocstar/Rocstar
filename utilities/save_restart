@@ -1,0 +1,702 @@
+#!/bin/csh
+#
+# save_restart
+#
+# Save the last restart data to a tar file.
+#
+# Handles Rocflo/Rocflu, Rocfrac/Rocsolid, RocburnAPN/RocburnPY, 
+# and Rocpanda/Rocout
+#
+# Usage:
+#
+# % cd <parent_dir_of_480procs>
+# % save_restart
+#
+# Written by Robert Fiedler, revised 10/5/06.
+
+# Get CPU count
+
+set Cpus = 480
+echo -n "Enter number of compute processors (${Cpus}): "
+set CPUS = "$<"
+if ("$CPUS" == "") then
+  set CPUS = $Cpus
+endif
+
+set NCPUS = $CPUS
+if ($CPUS < 100) then
+  set NCPUS = "0${NCPUS}"
+endif
+if ($CPUS < 10) then
+  set NCPUS = "0${NCPUS}"
+endif
+
+# You can save a labeled data set to the current
+# location, or you can save the current run to the
+# current location.  You can even save a data set to
+# one with a new suffix.
+
+echo -n "Enter the current suffix (default is none): "
+set SUF_OLD = "$<"
+if ("$SUF_OLD" != "") then
+  set SUF_OLD = "_$SUF_OLD"
+endif
+
+echo ""
+echo -n "Enter the new suffix (default is none): "
+set SUF_NEW = "$<"
+if ("$SUF_NEW" != "") then
+  set SUF_NEW = "_$SUF_NEW"
+endif
+
+# Assume we are in the parent of the genx run directory.
+
+set DIR = `pwd`
+set RUN_DIR = ${NCPUS}procs
+set TAR_FILE = ${NCPUS}procs_restart.tar
+
+# Save the top-level stuff
+
+cd $RUN_DIR
+echo ""
+if ("$SUF_OLD" == "") then
+  echo "Creating new save set with suffix ${SUF_NEW}"
+  echo "mkdir -p Control${SUF_NEW}"
+  mkdir -p Control${SUF_NEW}
+  echo "cp *.txt Rocman/*.txt Control${SUF_NEW}"
+  cp *.txt Rocman/*.txt Control${SUF_NEW}
+else
+  if (-e Control${SUF_OLD} && ! -e Control${SUF_NEW}) then
+    echo "cp -r Control${SUF_OLD} Control${SUF_NEW}"
+    cp -r Control${SUF_OLD} Control${SUF_NEW}
+  else
+    if (-e Control${SUF_NEW}) then
+      echo "Control${SUF_NEW} already exists"
+    else
+      echo "Control${SUF_OLD} does not exist"
+    endif
+    exit
+  endif
+endif
+cd $DIR
+
+echo ""
+echo "tar -cvf $TAR_FILE $RUN_DIR/Control${SUF_NEW}"
+tar -cvf $TAR_FILE $RUN_DIR/Control${SUF_NEW}
+
+# Save the distance and integrals in Rocman
+
+cd $RUN_DIR/Rocman
+
+if (! -e Modout${SUF_OLD}) then
+  echo ""
+  echo "mkdir Modout${SUF_OLD}"
+  mkdir Modout${SUF_OLD}
+  echo "cp Modout/* Modout${SUF_OLD}"
+  cp Modout/* Modout${SUF_OLD}
+endif
+
+if ("$SUF_OLD" != "$SUF_NEW") then
+  echo ""
+  echo "cp -r Modout${SUF_OLD} Modout${SUF_NEW}"
+  cp -r Modout${SUF_OLD} Modout${SUF_NEW}
+endif
+
+cd $DIR
+
+# Save the Rocmop control file, if present
+
+if (-d $RUN_DIR/Rocmop) then
+
+  echo ""
+  echo "tar -rvf $TAR_FILE $RUN_DIR/Rocmop/RocmopControl.txt"
+  tar -rvf $TAR_FILE $RUN_DIR/Rocmop/RocmopControl.txt
+
+endif
+
+if (-e $RUN_DIR/Rocflo) then
+
+  # Save the Rocflo Modout data
+
+  echo ""
+  echo "Working on Rocflo"
+  cd $RUN_DIR/Rocflo
+
+  if (! -e Modout${SUF_OLD}) then
+    echo ""
+    echo "mkdir Modout${SUF_OLD}"
+    mkdir Modout${SUF_OLD}
+    echo "cp Modout/* Modout${SUF_OLD}"
+    cp Modout/* Modout${SUF_OLD}
+  endif
+
+  if ("$SUF_OLD" != "$SUF_NEW") then
+    echo ""
+    echo "cp -r Modout${SUF_OLD} Modout${SUF_NEW}"
+    cp -r Modout${SUF_OLD} Modout${SUF_NEW}
+  endif
+  cd $DIR
+
+  echo ""
+  echo "tar -rvf $TAR_FILE $RUN_DIR/Rocflo/Modout${SUF_NEW}"
+  tar -rvf $TAR_FILE $RUN_DIR/Rocflo/Modout${SUF_NEW}
+
+  # Save the last dump in the Rocflo Rocout directory
+
+  cd $RUN_DIR/Rocflo
+  echo ""
+  echo "mv Rocout${SUF_OLD} Rocout_TEMP"
+  mv Rocout${SUF_OLD} Rocout_TEMP
+  mkdir -p Rocout${SUF_NEW}
+
+  cd Rocout_TEMP
+  set TIMES = (`ls fluid_??.??????_000.hdf`)
+  if ("$TIMES" != "") then
+    set PANDA = "yes"
+    set LAST_TIME = $TIMES[$#TIMES]
+    set LAST_TIME = "`echo $LAST_TIME | sed -e 's/fluid_//' | sed -e 's/_000\.hdf//'`"
+    echo -n "Enter restart time (default = ${LAST_TIME}): "
+    set Last_time = "$<"
+    if ("$Last_time" != "") then
+      set LAST_TIME = "$Last_time"
+    endif
+    cd ${DIR}/${RUN_DIR}/Rocflo
+    echo "cp Rocout_TEMP/fluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+    cp Rocout_TEMP/fluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/ifluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+    cp Rocout_TEMP/ifluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/fluid_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/fluid_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/ifluid_b_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/ifluid_b_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/ifluid_nb_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/ifluid_nb_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/ifluid_ni_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/ifluid_ni_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+  else
+    set PANDA = "no"
+    set TIMES = (`ls fluid_??.??????_0000.hdf`)
+    set LAST_TIME = $TIMES[$#TIMES]
+    set LAST_TIME = "`echo $LAST_TIME | sed -e 's/fluid_//' | sed -e 's/_0000\.hdf//'`"
+    echo -n "Enter restart time (default = ${LAST_TIME}): "
+    set Last_time = "$<"
+    if ("$Last_time" != "") then
+      set LAST_TIME = "$Last_time"
+    endif
+    cd ${DIR}/${RUN_DIR}/Rocflo
+    echo "cp Rocout_TEMP/fluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+    cp Rocout_TEMP/fluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/ifluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+    cp Rocout_TEMP/ifluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+
+    set i = 0
+    while ($i < $CPUS)
+
+      set j = $i
+      if ($i < 1000) then
+        set j = "0$j"
+      endif
+      if ($i < 100) then
+        set j = "0$j"
+      endif
+      if ($i < 10) then
+        set j = "0$j"
+      endif
+
+      if (-e Rocout_TEMP/fluid_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/fluid_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/fluid_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/ifluid_b_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/ifluid_b_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/ifluid_b_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/ifluid_nb_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/ifluid_nb_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/ifluid_nb_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/ifluid_ni_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/ifluid_ni_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/ifluid_ni_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+
+      @ i++
+    end
+  endif
+
+  cd $DIR
+
+  echo ""
+  echo "tar -rvf $TAR_FILE $RUN_DIR/Rocflo/Rocout${SUF_NEW}"
+  tar -rvf $TAR_FILE $RUN_DIR/Rocflo/Rocout${SUF_NEW}
+
+  cd $RUN_DIR/Rocflo
+  echo ""
+  echo "Cleaning up"
+  echo ""
+  if (-e Rocout${SUF_OLD}) then
+    echo "rm -r Rocout${SUF_OLD}"
+    rm -r Rocout${SUF_OLD}
+  endif
+  echo "mv Rocout_TEMP Rocout${SUF_OLD}"
+  mv Rocout_TEMP Rocout${SUF_OLD}
+  cd $DIR
+endif
+
+# Save the Rocflu Probe data; include con and vrs files
+
+if (-e $RUN_DIR/Rocflu) then
+  echo ""
+  echo "Working on Rocflu"
+  cd $RUN_DIR/Rocflu
+
+  if (! -e Modout${SUF_OLD}) then
+    echo ""
+    echo "mkdir Modout${SUF_OLD}"
+    mkdir Modout${SUF_OLD}
+    echo "cp Modout/* Modout${SUF_OLD}"
+    cp Modout/* Modout${SUF_OLD}
+  endif
+
+  if ("$SUF_OLD" != "$SUF_NEW") then
+    echo ""
+    echo "cp -r Modout${SUF_OLD} Modout${SUF_NEW}"
+    cp -r Modout${SUF_OLD} Modout${SUF_NEW}
+  endif
+  cd $DIR
+
+  echo ""
+  echo "tar -rvf $TAR_FILE $RUN_DIR/Rocflu/Modout${SUF_NEW}"
+  tar -rvf $TAR_FILE $RUN_DIR/Rocflu/Modout${SUF_NEW}
+
+  # Save the last dump in the Rocflu Rocout directory
+
+  cd $RUN_DIR/Rocflu
+  echo ""
+  echo "mv Rocout${SUF_OLD} Rocout_TEMP"
+  mv Rocout${SUF_OLD} Rocout_TEMP
+  mkdir -p Rocout${SUF_NEW}
+  cd Rocout_TEMP
+  set TIMES = (`ls fluid_??.??????_000.hdf`)
+
+  if ("$TIMES" != "") then
+
+# This section will work if Rocpanda was used
+
+    set PANDA = "yes"
+    set LAST_TIME = $TIMES[$#TIMES]
+    set LAST_TIME = "`echo $LAST_TIME | sed -e 's/fluid_//' | sed -e 's/_000\.hdf//'`"
+    echo -n "Enter restart time (default = ${LAST_TIME}): "
+    set Last_time = "$<"
+    if ("$Last_time" != "") then
+      set LAST_TIME = "$Last_time"
+    endif
+    cd ${DIR}/${RUN_DIR}/Rocflu
+    echo "cp Rocout_TEMP/fluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+    cp Rocout_TEMP/fluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/ifluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+    cp Rocout_TEMP/ifluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/fluid_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/fluid_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/fluid_gs_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/fluid_gs_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/ifluid_b_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/ifluid_b_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/ifluid_nb_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/ifluid_nb_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/ifluid_ni_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/ifluid_ni_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+
+  else
+
+# This section is for runs without Rocpanda (sigh)
+
+    set PANDA = "no"
+    set TIMES = (`ls fluid_??.??????_0000.hdf`)
+    set LAST_TIME = $TIMES[$#TIMES]
+    set LAST_TIME = "`echo $LAST_TIME | sed -e 's/fluid_//' | sed -e 's/_0000\.hdf//'`"
+    echo -n "Enter restart time (default = ${LAST_TIME}): "
+    set Last_time = "$<"
+    if ("$Last_time" != "") then
+      set LAST_TIME = "$Last_time"
+    endif
+    cd ${DIR}/${RUN_DIR}/Rocflu
+    echo "cp Rocout_TEMP/fluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+    cp Rocout_TEMP/fluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/ifluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+    cp Rocout_TEMP/ifluid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+
+    set i = 0
+    while ($i < $CPUS)
+
+      set j = $i
+      if ($i < 1000) then
+        set j = "0$j"
+      endif
+      if ($i < 100) then
+        set j = "0$j"
+      endif
+      if ($i < 10) then
+        set j = "0$j"
+      endif
+
+      if (-e Rocout_TEMP/fluid_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/fluid_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/fluid_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/fluid_gs_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/fluid_gs_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/fluid_gs_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/ifluid_b_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/ifluid_b_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/ifluid_b_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/ifluid_nb_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/ifluid_nb_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/ifluid_nb_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/ifluid_ni_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/ifluid_ni_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/ifluid_ni_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+
+      @ i++
+    end
+  endif
+  cd $DIR
+
+  echo ""
+  echo "tar -rvf $TAR_FILE $RUN_DIR/Rocflu/Rocout${SUF_NEW}"
+  tar -rvf $TAR_FILE $RUN_DIR/Rocflu/Rocout${SUF_NEW}
+
+  cd $RUN_DIR/Rocflu
+  echo ""
+  echo "Cleaning up"
+  echo ""
+  if (-e Rocout${SUF_OLD}) then
+    echo "rm -r Rocout${SUF_OLD}"
+    rm -r Rocout${SUF_OLD}
+  endif
+  echo "mv Rocout_TEMP Rocout${SUF_OLD}"
+  mv Rocout_TEMP Rocout${SUF_OLD}
+  cd $DIR
+endif
+
+# Save the Rocfrac Rocout directory
+
+if (-e $RUN_DIR/Rocfrac/Rocout${SUF_OLD}) then
+  echo ""
+  echo "Working on Rocfrac"
+  cd $RUN_DIR/Rocfrac
+
+  echo ""
+  echo "mv Rocout${SUF_OLD} Rocout_TEMP"
+  mv Rocout${SUF_OLD} Rocout_TEMP
+  mkdir -p Rocout${SUF_NEW}
+
+  cd ${DIR}/${RUN_DIR}/Rocfrac
+  echo "cp Rocout_TEMP/solid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+  cp Rocout_TEMP/solid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+  echo "cp Rocout_TEMP/isolid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+  cp Rocout_TEMP/isolid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+
+  if ("$PANDA" == "yes") then
+    echo "cp Rocout_TEMP/solid_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/solid_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/isolid_b*_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/isolid_b*_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/isolid_nb_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/isolid_nb_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/isolid_ni_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/isolid_ni_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+  else
+    set i = 0
+    while ($i < $CPUS)
+
+      set j = $i
+      if ($i < 1000) then
+        set j = "0$j"
+      endif
+      if ($i < 100) then
+        set j = "0$j"
+      endif
+      if ($i < 10) then
+        set j = "0$j"
+      endif
+
+      if (-e Rocout_TEMP/solid_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/solid_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/solid_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/isolid_b*_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/isolid_b*_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/isolid_b*_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/isolid_nb_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/isolid_nb_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/isolid_nb_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/isolid_ni_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/isolid_ni_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/isolid_ni_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+
+      @ i++
+    end
+  endif
+
+  cd $DIR
+
+  echo ""
+  echo "tar -rvf $TAR_FILE $RUN_DIR/Rocfrac/Rocout${SUF_NEW}"
+  tar -rvf $TAR_FILE $RUN_DIR/Rocfrac/Rocout${SUF_NEW}
+
+  cd $RUN_DIR/Rocfrac
+  echo ""
+  echo "Cleaning up"
+  echo ""
+  if (-e Rocout${SUF_OLD}) then
+    echo "rm -r Rocout${SUF_OLD}"
+    rm -r Rocout${SUF_OLD}
+  endif
+  echo "mv Rocout_TEMP Rocout${SUF_OLD}"
+  mv Rocout_TEMP Rocout${SUF_OLD}
+  cd $DIR
+endif
+
+# Save the Rocsolid Rocout directory
+
+if (-e $RUN_DIR/Rocsolid/Rocout${SUF_OLD}) then
+  echo ""
+  echo "Working on Rocsolid"
+  cd $RUN_DIR/Rocsolid
+
+  echo ""
+  echo "mv Rocout${SUF_OLD} Rocout_TEMP"
+  mv Rocout${SUF_OLD} Rocout_TEMP
+  mkdir -p Rocout${SUF_NEW}
+
+  cd ${DIR}/${RUN_DIR}/Rocsolid
+  echo "cp Rocout_TEMP/solid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+  cp Rocout_TEMP/solid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+  echo "cp Rocout_TEMP/isolid_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+  cp Rocout_TEMP/isolid_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+
+  if ("$PANDA" == "yes") then
+    echo "cp Rocout_TEMP/solid_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/solid_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/isolid_b*_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/isolid_b*_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/isolid_nb_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/isolid_nb_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/isolid_ni_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/isolid_ni_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+  else
+    set i = 0
+    while ($i < $CPUS)
+
+      set j = $i
+      if ($i < 1000) then
+        set j = "0$j"
+      endif
+      if ($i < 100) then
+        set j = "0$j"
+      endif
+      if ($i < 10) then
+        set j = "0$j"
+      endif
+
+      if (-e Rocout_TEMP/solid_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/solid_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/solid_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/isolid_b*_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/isolid_b*_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/isolid_b*_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/isolid_nb_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/isolid_nb_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/isolid_nb_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/isolid_ni_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/isolid_ni_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/isolid_ni_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+
+      @ i++
+    end
+  endif
+
+  cd $DIR
+
+  echo ""
+  echo "tar -rvf $TAR_FILE $RUN_DIR/Rocsolid/Rocout${SUF_NEW}"
+  tar -rvf $TAR_FILE $RUN_DIR/Rocsolid/Rocout${SUF_NEW}
+
+  cd $RUN_DIR/Rocsolid
+  echo ""
+  echo "Cleaning up"
+  echo ""
+  if (-e Rocout${SUF_OLD}) then
+    echo "rm -r Rocout${SUF_OLD}"
+    rm -r Rocout${SUF_OLD}
+  endif
+  echo "mv Rocout_TEMP Rocout${SUF_OLD}"
+  mv Rocout_TEMP Rocout${SUF_OLD}
+  cd $DIR
+endif
+
+# Save the RocburnAPN Rocout directory
+
+if (-e $RUN_DIR/RocburnAPN/Rocout${SUF_OLD}) then
+  echo ""
+  echo "Working on RocburnAPN"
+  cd $RUN_DIR/RocburnAPN
+
+  echo ""
+  echo "mv Rocout${SUF_OLD} Rocout_TEMP"
+  mv Rocout${SUF_OLD} Rocout_TEMP
+  mkdir -p Rocout${SUF_NEW}
+
+  cd ${DIR}/${RUN_DIR}/RocburnAPN
+  echo "cp Rocout_TEMP/burn_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+  cp Rocout_TEMP/burn_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+  echo "cp Rocout_TEMP/iburn_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+  cp Rocout_TEMP/iburn_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+
+  if ("$PANDA" == "yes") then
+    echo "cp Rocout_TEMP/burn_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/burn_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/iburn*_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/iburn*_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+  else
+    set i = 0
+    while ($i < $CPUS)
+
+      set j = $i
+      if ($i < 1000) then
+        set j = "0$j"
+      endif
+      if ($i < 100) then
+        set j = "0$j"
+      endif
+      if ($i < 10) then
+        set j = "0$j"
+      endif
+
+      if (-e Rocout_TEMP/burn_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/burn_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/burn_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/iburn_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/iburn*_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/iburn*_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      else
+        if (-e Rocout_TEMP/iburn_all_${LAST_TIME}_${j}.hdf) then
+          echo "cp Rocout_TEMP/iburn_all_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+          cp Rocout_TEMP/iburn_all_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+        endif
+      endif
+
+      @ i++
+    end
+  endif
+
+  cd $DIR
+
+  echo ""
+  echo "tar -rvf $TAR_FILE $RUN_DIR/RocburnAPN/Rocout${SUF_NEW}"
+  tar -rvf $TAR_FILE $RUN_DIR/RocburnAPN/Rocout${SUF_NEW}
+
+  cd $RUN_DIR/RocburnAPN
+  echo ""
+  echo "Cleaning up"
+  echo ""
+  if (-e Rocout${SUF_OLD}) then
+    echo "rm -r Rocout${SUF_OLD}"
+    rm -r Rocout${SUF_OLD}
+  endif
+  echo "mv Rocout_TEMP Rocout${SUF_OLD}"
+  mv Rocout_TEMP Rocout${SUF_OLD}
+  cd $DIR
+endif
+
+# Save the RocburnPY Rocout directory
+
+if (-e $RUN_DIR/RocburnPY/Rocout${SUF_OLD}) then
+  echo ""
+  echo "Working on RocburnPY"
+  cd $RUN_DIR/RocburnPY
+
+  echo ""
+  echo "mv Rocout${SUF_OLD} Rocout_TEMP"
+  mv Rocout${SUF_OLD} Rocout_TEMP
+  mkdir -p Rocout${SUF_NEW}
+
+  cd ${DIR}/${RUN_DIR}/RocburnPY
+  echo "cp Rocout_TEMP/burn_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+  cp Rocout_TEMP/burn_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+  echo "cp Rocout_TEMP/iburn_in_${LAST_TIME}.txt Rocout${SUF_NEW}"
+  cp Rocout_TEMP/iburn_in_${LAST_TIME}.txt Rocout${SUF_NEW}
+
+  if ("$PANDA" == "yes") then
+    echo "cp Rocout_TEMP/burn_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/burn_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+    echo "cp Rocout_TEMP/iburn*_${LAST_TIME}_???.hdf Rocout${SUF_NEW}"
+    cp Rocout_TEMP/iburn*_${LAST_TIME}_???.hdf Rocout${SUF_NEW}
+  else
+    set i = 0
+    while ($i < $CPUS)
+
+      set j = $i
+      if ($i < 1000) then
+        set j = "0$j"
+      endif
+      if ($i < 100) then
+        set j = "0$j"
+      endif
+      if ($i < 10) then
+        set j = "0$j"
+      endif
+
+      if (-e Rocout_TEMP/burn_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/burn_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/burn_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      endif
+      if (-e Rocout_TEMP/iburn_${LAST_TIME}_${j}.hdf) then
+        echo "cp Rocout_TEMP/iburn_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+        cp Rocout_TEMP/iburn_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+      else 
+        if (-e Rocout_TEMP/iburn_all_${LAST_TIME}_${j}.hdf) then
+          echo "cp Rocout_TEMP/iburn_all_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}"
+          cp Rocout_TEMP/iburn_all_${LAST_TIME}_${j}.hdf Rocout${SUF_NEW}
+        endif
+      endif
+
+      @ i++
+    end
+  endif
+
+  cd $DIR
+
+  echo ""
+  echo "tar -rvf $TAR_FILE $RUN_DIR/RocburnPY/Rocout${SUF_NEW}"
+  tar -rvf $TAR_FILE $RUN_DIR/RocburnPY/Rocout${SUF_NEW}
+
+  cd $RUN_DIR/RocburnPY
+  echo ""
+  echo "Cleaning up"
+  echo ""
+  if (-e Rocout${SUF_OLD}) then
+    echo "rm -r Rocout${SUF_OLD}"
+    rm -r Rocout${SUF_OLD}
+  endif
+  echo "mv Rocout_TEMP Rocout${SUF_OLD}"
+  mv Rocout_TEMP Rocout${SUF_OLD}
+  cd $DIR
+endif
+
+echo ""
+echo "Done"
+exit

@@ -1,0 +1,50 @@
+** Structure of Control File
+** ---------------------------
+**
+** Lines with '**' in the 1st two columns indicate comments
+** Lines with '*' in the 1st column indicates keyword
+**
+** PREFIX:
+** Directory name containing Mesh input files
+**
+*PREFIX
+ep
+**
+** SCALE FACTOR: set this parameter equal to the factor that is used
+**   to scale the time increment computed by Rocfrac. Default setting
+**   is 1.0.
+**
+*DYNAMIC, SCALE FACTOR = 0.2
+**
+** Select the 10-node tetrahedral
+**
+*ELEMENT,TYPE=V3D10
+**
+**
+** ELASTIC
+** Young's Modulus, Poisson's Ratio, Density, Expansion Coeffs
+**
+*ELASTIC, NLGEOM = NO
+1
+70.0e9  0.29  2800.0  0.0
+
+**
+** Boundary Conditions
+**
+*BOUNDARY
+4
+1 1 1 0 0. 0. 0.
+2 1 0 1 0. 0. 0.
+3 1 0 0 0. 0. 0.
+4 0 0 0 0. 0. 0.
+*BOUNDARYMM
+4
+1 1 1 0 0. 0. 0.
+2 1 0 1 0. 0. 0.
+3 1 0 0 0. 0. 0.
+4 0 0 0 0. 0. 0.
+*END
+*MESHSOFT (Choices: TetMesh, Patran, Ansys)
+Patran
+*END
+

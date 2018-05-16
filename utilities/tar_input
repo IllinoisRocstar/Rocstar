@@ -1,0 +1,381 @@
+#! /bin/csh
+#
+# Extract from a GEN3 run directory a tar file containing all the 
+# required files and directories (except output directories; these 
+# can be created by the prep_data script) for any GEN3 problem.
+#
+# Arguments are GEN3 run directory names.  If no
+# arguments, ask for a name.  The current directory must
+# be the parent of the GEN3 run directory.  The tar files
+# that this script creates are called <dir name(s)>_input.tar.
+#
+# This version handles Rocflo, Rocflu, Rocfrac, Rocsolid,
+# RocburnAPN, and RocburnPY.
+#
+# Revised by Robert Fiedler, 8/30/07.
+
+unset noclobber
+if (-e /bin/ex) then
+  set EX = /bin/ex
+else if (-e /usr/sbin/ex) then
+  set EX = /usr/sbin/ex
+else if (-e /usr/bin/ex) then
+  set EX = /usr/bin/ex
+else
+  echo "ERROR: Cannot find the unix text editor ex"
+  exit
+endif
+
+if ( "$*" == "" ) then
+  echo -n "Enter list of GEN3 run directories to examine: "
+  set dirs = "$<"
+else
+  set dirs = "$*"
+endif
+
+set curdir = `pwd`
+foreach dir ( $dirs)
+  echo ""
+  if (! -d $dir) then
+    echo "Directory $dir does not exist.  Quitting."
+    echo ""
+    exit
+  endif
+  echo Working on directory $dir ...
+  echo ""
+
+# Deal with any existing <dir>_input.tar file and create a new one
+# with the top level control files.
+
+  if (-e ${dir}_input.tar) then
+    echo ""
+    echo "WARNING: ${dir}_input.tar exists."
+    echo -n 'Should I delete it, rename it, or quit? (d/r/q): '
+    set RESPONSE = "$<"
+    if ("$RESPONSE" == "r") then
+      echo -n "Enter new name for existing file ${dir}_input.tar : "
+      set NEW_NAME = "$<"
+      echo "mv ${dir}_input.tar $NEW_NAME"
+      mv ${dir}_input.tar $NEW_NAME
+    else 
+      if ("$RESPONSE" == "d") then
+        echo "rm -f ${dir}_input.tar"
+        \rm -f ${dir}_input.tar
+      else
+        exit
+      endif
+    endif
+  endif
+
+  echo ""
+  echo "Editing a copy of RocstarControl.txt to begin at t = 0, etc."
+  echo ""
+  cp ${dir}/RocstarControl.txt ${dir}/RocstarControl.txt.$$
+
+# Determine whether Rocman or Rocman3 was used
+
+  set ROCMAN3 = (`cat ${dir}/RocstarControl.txt | grep '^CouplingScheme'`)
+
+  if ($#ROCMAN3 == 0) then
+
+#   Old Rocman
+
+    $EX ${dir}/RocstarControl.txt << STP
+2d
+i
+0., 120.0
+.
+8d
+i
+Rocman/Profiles/
+.
+wq
+STP
+
+  else
+
+#   Rocman3
+
+    $EX ${dir}/RocstarControl.txt << STP
+/^InitialTime
+d
+i
+InitialTime      =  0.
+.
+/^GENXTimingDataDir
+d
+i
+GENXTimingDataDir = "Rocman/Profiles/"
+.
+wq
+STP
+  endif
+  echo ""
+  echo "Here is the edited version of RocstarControl.txt"
+  echo ""
+  cat ${dir}/RocstarControl.txt
+
+  echo ""
+  echo "Creating ${dir}_input.tar"
+  echo ""
+  tar chvf ${dir}_input.tar ${dir}/RocstarControl.txt
+  mv ${dir}/RocstarControl.txt.$$ ${dir}/RocstarControl.txt
+
+# Check Rocman
+
+  echo ""
+  echo "Working on Rocman"
+  echo ""
+
+  if (-e ${dir}/Rocman/RocmanControl.txt) then
+    tar rhvf ${dir}_input.tar ${dir}/Rocman/RocmanControl.txt
+  endif
+  if (-e ${dir}/Rocman/RocpandaControl.txt) then
+    tar rhvf ${dir}_input.tar ${dir}/Rocman/RocpandaControl.txt
+  endif
+#
+  if (-d ${dir}/Rocman/Modout) then
+    mv ${dir}/Rocman/Modout ${dir}/Rocman/Modout.$$
+  endif
+  mkdir ${dir}/Rocman/Modout
+  if (-d ${dir}/Rocman/Profiles) then
+    mv ${dir}/Rocman/Profiles ${dir}/Rocman/Profiles.$$
+  endif
+  mkdir ${dir}/Rocman/Profiles
+#
+  tar rhvf ${dir}_input.tar ${dir}/Rocman/Modout ${dir}/Rocman/Profiles
+#
+  if (-d ${dir}/Rocman/Modout.$$) then
+    rmdir ${dir}/Rocman/Modout
+    mv ${dir}/Rocman/Modout.$$ ${dir}/Rocman/Modout
+  endif
+  if (-d ${dir}/Rocman/Profiles.$$) then
+    rmdir ${dir}/Rocman/Profiles
+    mv ${dir}/Rocman/Profiles.$$ ${dir}/Rocman/Profiles
+  endif
+#
+  echo ""
+  echo "Rocman is done, except for the Rocface files"
+
+# Rocmop
+
+  if (-e ${dir}/Rocmop/RocmopControl.txt) then
+    echo ""
+    echo "Saving Rocmop control file"
+    echo ""
+    tar rhvf ${dir}_input.tar ${dir}/Rocmop/RocmopControl.txt
+  endif
+
+# Check Rocburn
+
+  if (-e ${dir}/RocburnAPN) then
+    echo ""
+    echo "Working on RocburnAPN"
+    echo ""
+#
+    mv ${dir}/RocburnAPN/Modout ${dir}/RocburnAPN/Modout.$$
+    mkdir ${dir}/RocburnAPN/Modout
+    mv ${dir}/RocburnAPN/Rocout ${dir}/RocburnAPN/Rocout.$$
+    mkdir ${dir}/RocburnAPN/Rocout
+#
+    tar rhvf ${dir}_input.tar ${dir}/RocburnAPN/RocburnAPNControl.txt \
+                              ${dir}/RocburnAPN/Modin \
+                              ${dir}/RocburnAPN/Rocin \
+                              ${dir}/RocburnAPN/Modout \
+                              ${dir}/RocburnAPN/Rocout
+#
+    rmdir ${dir}/RocburnAPN/Modout ${dir}/RocburnAPN/Rocout
+    mv ${dir}/RocburnAPN/Modout.$$ ${dir}/RocburnAPN/Modout
+    mv ${dir}/RocburnAPN/Rocout.$$ ${dir}/RocburnAPN/Rocout
+#
+    echo ""
+    echo "RocburnAPN is done"
+  endif
+
+  if (-e ${dir}/RocburnPY) then
+    echo ""
+    echo "Working on RocburnPY"
+    echo ""
+#
+    mv ${dir}/RocburnPY/Modout ${dir}/RocburnPY/Modout.$$
+    mkdir ${dir}/RocburnPY/Modout
+    mv ${dir}/RocburnPY/Rocout ${dir}/RocburnPY/Rocout.$$
+    mkdir ${dir}/RocburnPY/Rocout
+#
+    tar rhvf ${dir}_input.tar ${dir}/RocburnPY/RocburnPYControl.txt \
+                              ${dir}/RocburnPY/Modin \
+                              ${dir}/RocburnPY/Rocin \
+                              ${dir}/RocburnPY/Modout \
+                              ${dir}/RocburnPY/Rocout
+#
+    rmdir ${dir}/RocburnPY/Modout ${dir}/RocburnPY/Rocout
+    mv ${dir}/RocburnPY/Modout.$$ ${dir}/RocburnPY/Modout
+    mv ${dir}/RocburnPY/Rocout.$$ ${dir}/RocburnPY/Rocout
+#
+    echo ""
+    echo "RocburnPY is done"
+  endif
+
+# Check fluids
+
+  if (-e ${dir}/Rocflo) then
+    echo ""
+    echo "Working on Rocflo"
+    echo ""
+#
+    mv ${dir}/Rocflo/Modout ${dir}/Rocflo/Modout.$$
+    mkdir ${dir}/Rocflo/Modout
+    mv ${dir}/Rocflo/Rocout ${dir}/Rocflo/Rocout.$$
+    mkdir ${dir}/Rocflo/Rocout
+#
+    tar rhvf ${dir}_input.tar ${dir}/Rocflo/RocfloControl.txt \
+                              ${dir}/Rocflo/Modin \
+                              ${dir}/Rocflo/Rocin \
+                              ${dir}/Rocflo/Modout \
+                              ${dir}/Rocflo/Rocout
+#
+    rmdir ${dir}/Rocflo/Modout ${dir}/Rocflo/Rocout
+    mv ${dir}/Rocflo/Modout.$$ ${dir}/Rocflo/Modout
+    mv ${dir}/Rocflo/Rocout.$$ ${dir}/Rocflo/Rocout
+#
+    echo ""
+    echo "Rocflo is done"
+  endif
+
+  if (-e ${dir}/Rocflu) then
+    echo ""
+    echo "Working on Rocflu"
+    echo ""
+#
+    mv ${dir}/Rocflu/Modout ${dir}/Rocflu/Modout.$$
+    mkdir ${dir}/Rocflu/Modout
+    mv ${dir}/Rocflu/Rocout ${dir}/Rocflu/Rocout.$$
+    mkdir ${dir}/Rocflu/Rocout
+#
+    tar rhvf ${dir}_input.tar ${dir}/Rocflu/RocfluControl.txt \
+                              ${dir}/Rocflu/Rocin \
+                              ${dir}/Rocflu/Modout \
+                              ${dir}/Rocflu/Rocout
+
+# Determine which Modin directory to include in the archive
+
+    if (-e ${dir}/Rocflu/Modin.remesh_00.000000) then
+      cd ${dir}/Rocflu
+      set MODIN = (`ls -l Modin`)
+      set modin = $MODIN[$#MODIN]
+      cd $curdir
+      echo "Found Rocflu directory Modin.remesh_00.000000"
+      echo "Should I include it instead of $modin in the archvie"'? (y/n default n): '
+      set ANS = "$<"
+      if ("$ANS" == "") then
+        set ANS = "n"
+      endif
+      if ("$ANS" == "y") then
+        cd ${dir}/Rocflu
+        rm Modin
+        ln -s Modin.remesh_00.000000 Modin
+        cd $curdir
+        tar rhvf ${dir}_input.tar ${dir}/Rocflu/Modin
+        cd ${dir}/Rocflu
+        rm Modin
+        ln -s $modin Modin
+        cd $curdir
+      else
+        tar rhvf ${dir}_input.tar ${dir}/Rocflu/Modin
+      endif
+    else
+      tar rhvf ${dir}_input.tar ${dir}/Rocflu/Modin
+    endif
+#
+    rmdir ${dir}/Rocflu/Modout ${dir}/Rocflu/Rocout
+    mv ${dir}/Rocflu/Modout.$$ ${dir}/Rocflu/Modout
+    mv ${dir}/Rocflu/Rocout.$$ ${dir}/Rocflu/Rocout
+#
+    echo ""
+    echo "Rocflu is done"
+    echo ""
+  endif
+
+# Check Rocfrac
+  
+  if (-e ${dir}/Rocfrac) then
+    echo ""
+    echo "Working on Rocfrac"
+    echo ""
+#
+    mv ${dir}/Rocfrac/Modout ${dir}/Rocfrac/Modout.$$
+    mkdir ${dir}/Rocfrac/Modout
+    mv ${dir}/Rocfrac/Rocout ${dir}/Rocfrac/Rocout.$$
+    mkdir ${dir}/Rocfrac/Rocout
+#
+    tar rhvf ${dir}_input.tar ${dir}/Rocfrac/RocfracControl.txt \
+                              ${dir}/Rocfrac/Modin \
+                              ${dir}/Rocfrac/Rocin \
+                              ${dir}/Rocfrac/Modout \
+                              ${dir}/Rocfrac/Rocout
+#
+    rmdir ${dir}/Rocfrac/Modout ${dir}/Rocfrac/Rocout
+    mv ${dir}/Rocfrac/Modout.$$ ${dir}/Rocfrac/Modout
+    mv ${dir}/Rocfrac/Rocout.$$ ${dir}/Rocfrac/Rocout
+#
+    echo ""
+    echo "Rocfrac is done"
+    echo ""
+  endif
+
+# Check Rocsolid
+
+  if (-e ${dir}/Rocsolid) then
+    echo ""
+    echo "Working on Rocsolid"
+    echo ""
+#
+    mv ${dir}/Rocsolid/Modout ${dir}/Rocsolid/Modout.$$
+    mkdir ${dir}/Rocsolid/Modout
+    mv ${dir}/Rocsolid/Rocout ${dir}/Rocsolid/Rocout.$$
+    mkdir ${dir}/Rocsolid/Rocout
+#
+    tar rhvf ${dir}_input.tar ${dir}/Rocsolid/RocsolidControl.txt \
+                              ${dir}/Rocsolid/Modin \
+                              ${dir}/Rocsolid/Rocin \
+                              ${dir}/Rocsolid/Modout \
+                              ${dir}/Rocsolid/Rocout
+#
+    rmdir ${dir}/Rocsolid/Modout ${dir}/Rocsolid/Rocout
+    mv ${dir}/Rocsolid/Modout.$$ ${dir}/Rocsolid/Modout
+    mv ${dir}/Rocsolid/Rocout.$$ ${dir}/Rocsolid/Rocout
+#
+    echo ""
+    echo "Rocsolid is done"
+    echo ""
+  endif
+
+# Check Rocface
+
+  echo "Working on Rocface"
+  echo ""
+
+# Note that we will pick up any extra stuff stored in these
+# subdirectories, including the *.fc tweak files.
+
+  if (-e ${dir}/Rocman/RocfloRocfrac) then
+    tar rhvf ${dir}_input.tar ${dir}/Rocman/RocfloRocfrac
+  endif
+
+  if (-e ${dir}/Rocman/RocfluRocfrac) then
+    tar rhvf ${dir}_input.tar ${dir}/Rocman/RocfluRocfrac
+  endif
+
+  if (-e ${dir}/Rocman/RocfloRocsolid) then
+    tar rhvf ${dir}_input.tar ${dir}/Rocman/RocfloRocsolid
+  endif
+
+  if (-e ${dir}/Rocman/RocfluRocsolid) then
+    tar rhvf ${dir}_input.tar ${dir}/Rocman/RocfluRocsolid
+  endif
+
+  echo ""
+  echo "Rocface is done"
+  echo ""
+
+end

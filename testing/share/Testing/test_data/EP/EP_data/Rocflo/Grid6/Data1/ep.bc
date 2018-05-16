@@ -1,0 +1,20 @@
+! File with boundary conditions
+
+# BC_INJECT
+BLOCK           0 0
+PATCH 		0 0 
+EXTRAPOL        0
+MAXCHANGE       0.1
+DISTRIB         0
+MFRATE          5.7429   ! mass flow rate [kg/(m^2*s)]
+TEMP            2855.0   ! injection temperature [K]
+#
+
+# BC_SLIPW   
+BLOCK   0 0
+PATCH 	0 0
+EXTRAPOL  0
+MAXCHANGE 0.1
+#
+
+# END

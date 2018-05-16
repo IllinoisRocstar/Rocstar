@@ -1,0 +1,38 @@
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\setcounter{equation}{0}
+
+\irsection{Review of Thermal Transient Theory Inside \Rocburn}{Theory}
+
+The equation that governs the unsteady heat conduction in a homogeneous medium with a surface regressing normal to itself is given by
+
+\begin{equation}
+\rho_c c_p \left( {\partial T \over \partial t} + r_b {\partial T \over \partial x} \right)
+ = \lambda_c {\partial^2 T \over \partial x^2}.
+\label{eq:sld}
+\end{equation}
+
+Here $x$ is the distance normal from the surface with range $-x_{\rm end} < x < 0$, $r_b$ is the speed of the regressing surface, $T$ is the temperature, and $t$ is the time. The material properties $\lambda_c$, $\rho_c$, and $c_p$ are the thermal conductivity, density, and specific heat of the solid, respectively.
+
+The appropriate boundary condition at $-x_{\rm end}$ then becomes
+
+\begin{equation}
+T(-x_{\rm end}) = T_\infty.
+\label{eq:bc1}
+\end{equation}
+
+where $T_\infty$ is the supply (or ambient) temperature. The boundary condition at $x = 0$ may depend on if the expression is evaluated from the solid phase side ($0^-$) or the gas phase side ($0^+$) of the surface. For the convective--diffusion zone at the surface,
+
+\begin{equation}
+T(0^-)=T(0^+)\equiv T_s.
+\label{eq:bc2}
+\end{equation}
+
+where $T_s$ is the surface temperature. The derivative with respect to $x$, evaluated from the solid phase side ($0^-$), is given by
+
+\begin{equation}
+{\partial T \over \partial x}(0^-) = g(T_s,T_g)
+\label{eq:bc3}
+\end{equation}
+
+The flux function $g(T_s,T_g)$ is the heat flux from the gas phase to the solid phase surface where $T_g$ is the gas phase temperature. As might be implied, the heat flux depends on the surface temperature of the solid as well as the gas phase ``fluid'' lying above the surface. The actual form of the flux $g$ depends on whether the solid is a propellant, a no-slip wall, or an ablating wall. If the solid is a propellant, the form of $g$ also differs for times before and after ignition.

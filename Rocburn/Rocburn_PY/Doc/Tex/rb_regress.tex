@@ -1,0 +1,17 @@
+\irssection{Regression Speed}{rb}
+
+For a moving surface the regression speed $r_b$ can be specified by one of two forms, as given in \ireq{eqs}{eq:pyro1} and \textcolor{teal}{(\ref{eq:pyro2})}, respectively. Trivially $r_b$ is zero if the surface is not regressing. A simple expression for $r_b$ can be defined by an experimentally determined power law for burning, 
+
+\begin{equation}
+r_b = A_p \left( \frac{P}{P_{\rm ref}} \right)^{n_p} 
+\label{eq:pyro1}
+\end{equation}
+
+where $A_p$ is the steady state regression speed at reference pressure $P_{\rm ref}$, $n_p$ is the pressure exponent, and $P$ is the input pressure from the chamber, and $A_p$ and $n_p$ are empirical fits to data. Alternatively $r_b$  can be defined by a one-step Arrhenius pyrolysis model,
+
+\begin{equation}
+r_b = A_c \exp\left[ -\frac{E_c}{R_u T_s} \right] 
+\label{eq:pyro2}
+\end{equation}
+
+where $A_c$ is the exponential prefactor, $E_c$ is the pyrolysis activation energy for the solid (condensed) phase, $R_u$ is the universal gas constant, and $T_s$ is the surface temperature.

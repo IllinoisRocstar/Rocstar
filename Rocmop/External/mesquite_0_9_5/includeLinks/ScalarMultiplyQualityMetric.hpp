@@ -1,0 +1,1 @@
+../src/QualityMetric/ScalarMultiplyQualityMetric.hpp

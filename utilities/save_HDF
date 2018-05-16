@@ -1,0 +1,1167 @@
+#!/bin/csh
+#
+# save_HDF
+#
+# Saves HDF files for visualization from a GENX run, avoiding most
+# "Arguments too long" errors due to the large numbers of files.
+#
+# Can transfer all or some output dumps -- lets you select a range
+# of dumps to transfer.  It uses the same range for fluids, solids,
+# and optionally the restart data (Rocburn, Bfrac).
+#
+# At LLNL, mass storage system is "storage".  Script uses ftp to put 
+# files there.  If transferring to remote machines, script uses scp.
+# You must have ssh set up to allow connections without passwords 
+# (see ssh-keygen).
+#
+# Valid for up to 9999 processors, 9999 fluids blocks.
+#
+# Can handle up to 999 Rocpanda servers.
+#
+# USAGE:
+#
+# Put save_HDF in your ~/bin directory and make sure ~/bin is
+# in your path.  Or you can just type the full path to save_HDF.
+#
+# You can be in the parent directory of a genx run directory,
+# e.g., LabScale, or you can be in Rocflo or Rocfrac, or you
+# can be in a directory full of HDF files, e.g., HDFout.  The
+# script is halfway intelligent about this.  You do not usually
+# have to give it a full path name.
+#
+# Invoke it by simply typing:
+#
+# % save_HDF
+#
+# Follow the prompts.  If you just hit return when prompted for
+# a remote HDF directory for solids or fluids, it will not try
+# to transfer any of those files.  It shows you the default
+# values in parentheses when asking for path names, etc.
+#
+# Written by Robert Fiedler, revised 5/11/02
+
+# Name the remote system
+echo -n "Enter name of machine to receive files (storage, turing, ...): "
+set MACHINE = "$<"
+
+# Set the true remote system name and method of file transfer
+
+switch ($MACHINE)
+case turing:
+  set MACHINE = turing.cs.uiuc.edu
+  set XFER = scp
+  breaksw
+case young:
+  set MACHINE = young.csar.uiuc.edu
+  set XFER = scp
+  breaksw
+case scott:
+  set MACHINE = scott.csar.uiuc.edu
+  set XFER = scp
+  breaksw
+case storage:
+  set MACHINE = storage
+  set XFER = ftp
+  breaksw
+default:
+  set XFER = scp
+  breaksw
+endsw
+
+echo "We will use $XFER to send files to $MACHINE"
+
+# Directory dir can be top level execute directory, e.g. 124procs,
+# or it can be the parent of an output directory, e.g., Rocflo.
+
+echo -n "Enter local GENX run directory name (e.g., 124procs): "
+set dir = "$<"
+if ("$dir" == "") then
+  echo -n "There is no default; please enter a directory name: "
+  set dir = "$<"
+endif
+if (! -d $dir) then
+  if (-d ../../${dir}) then
+    cd ../../${dir}
+    set dir = `pwd`
+    echo "Is the run directory $dir (y)? "
+    set ans = "$<"
+    if ("$ans" == "" || "$ans" == y || "$ans" == Y) then
+    else
+      echo -n "Plese enter the full path name for $dir : "
+      set dir = "$<"
+    endif
+  else if (-d ../../../${dir}) then
+    cd ../../../${dir}
+    set dir = `pwd`
+    echo "Is the run directory $dir (y)? "
+    set ans = "$<"
+    if ("$ans" == "" || "$ans" == y || "$ans" == Y) then
+    else
+      echo -n "Plese enter the full path name for $dir : "
+      set dir = "$<"
+    endif
+  else if (-d ../${dir}) then
+    cd ../${dir}
+    set dir = `pwd`
+    echo "Is the run directory $dir (y)? "
+    set ans = "$<"
+    if ("$ans" == "" || "$ans" == y || "$ans" == Y) then
+    else
+      echo -n "Plese enter the full path name for $dir : "
+      set dir = "$<"
+    endif
+  else
+    echo "Cannot find subdirectory $dir"
+    echo -n "Plese enter the full path name for $dir : "
+    set dir = "$<"
+    if (! -d $dir) then
+      echo "Cannot find $dir -- quitting"
+      exit
+    endif
+  endif
+else
+  cd $dir
+  set dir = `pwd`
+endif
+set curdir = $dir:h
+
+set HDF_FLO = ""
+set HDF_FRAC = ""
+set HDF_BURN = ""
+
+echo "Enter Rocflo HDF directory name on $MACHINE.  The default"
+echo -n "(hit Enter) is to transfer no Rocflo files: "
+set HDF_FLO = "$<"
+
+if ("$HDF_FLO" != "") then
+  echo -n "Enter local Rocflo HDF directory name (HDFout): "
+  set hdf_flo = "$<"
+  if ("$hdf_flo" == "") then
+    set hdf_flo = HDFout
+  endif
+  set HDF_FRAC = $HDF_FLO:h
+  set HDF_FRAC = $HDF_FRAC:h
+  set HDF_FRAC = ${HDF_FRAC}/Rocfrac/Output
+  set HDF_BURN = $HDF_FLO:h
+  set HDF_BURN = $HDF_BURN:h
+  set HDF_BURN = ${HDF_BURN}/Rocburn/Out
+endif
+
+echo ""
+echo "Enter Rocfrac HDF directory name on $MACHINE."
+if ("$HDF_FRAC" != "") then
+  echo "The default is "${HDF_FRAC}.   
+  echo -n "You may also enter n to transfer no Rocfrac files: "
+else
+  echo "The default (hit Enter) is to transfer no Rocfrac files: " 
+endif
+set HDF_Frac = "$<"
+if ("$HDF_Frac" != "") then
+  if ("$HDF_Frac" == "n") then
+    set HDF_FRAC = ""
+  else
+    set HDF_FRAC = $HDF_Frac
+  endif
+endif
+
+if ("$HDF_FRAC" != "") then
+  echo -n "Enter local Rocfrac HDF directory name (Output): "
+  set hdf_frac = "$<"
+  if ("$hdf_frac" == "") then
+    set hdf_frac = Output
+  endif
+  if ("$HDF_BURN" == "") then
+    set HDF_BURN = $HDF_FRAC:h
+    set HDF_BURN = $HDF_BURN:h
+    set HDF_BURN = ${HDF_BURN}/Rocburn/Out
+  endif
+endif
+
+echo ""
+echo -n "Should I transfer the fracmesh files (n)?: "
+set XFER_MESH = "$<"
+if ("$XFER_MESH" != "n" && "$XFER_MESH" != "") then
+  set XFER_MESH = "y"
+endif
+
+echo ""
+echo -n 'Should I transfer the restart data (n)?: '
+set RESTART = "$<"
+if ("$RESTART" != "n" && "$RESTART" != "") then
+  set RESTART = "y"
+  echo ""
+  echo -n "Enter Rocburn HDF directory name on $MACHINE (${HDF_BURN}): "
+  set HDF_Burn = "$<"
+  if ("$HDF_Burn" != "") then
+    set HDF_BURN = $HDF_Burn
+  endif
+  echo -n "Enter local Rocburn HDF directory name (Out): "
+  set hdf_burn = "$<"
+  if ("$hdf_burn" == "") then
+    set hdf_burn = Out
+  endif
+  if ("$HDF_FLO" != "") then
+    set TOP_LEVEL = $HDF_FLO:h
+    set TOP_LEVEL = $TOP_LEVEL:h
+  else if ("$HDF_FRAC" != "") then
+    set TOP_LEVEL = $HDF_FRAC:h
+    set TOP_LEVEL = $TOP_LEVEL:h
+  else if ("$HDF_BURN" != "") then
+    set TOP_LEVEL = $HDF_BURN:h
+    set TOP_LEVEL = $TOP_LEVEL:h
+  else
+    set TOP_LEVEL = ""
+  endif
+  echo ""
+  echo "Enter top level directory name (for GENX.restart.info) on"
+  echo -n "$MACHINE (${TOP_LEVEL}): "
+  set TOP = "$<"
+  if ("$TOP" != "") then
+    set TOP_LEVEL = "$TOP"
+  endif
+endif
+
+echo Working on directory $dir ...
+echo ""
+
+# Get case names
+
+if (-e "${dir}/RocfloControl.txt") then
+  set case = `head -1 ${dir}/RocfloControl.txt`
+  echo "The Rocflo case is $case"
+  echo ""
+else
+  echo -n "Cannot find RocfloControl.txt.  Enter the fluids case name: "
+  set case = "$<"
+endif
+
+if (-e "${dir}/RocfracControl.txt") then
+  set frac_case = (`head -2 ${dir}/RocfracControl.txt | sed -e 's/\*PREFIX//'`)
+  echo "The Rocfrac case is $frac_case"
+  echo ""
+else
+  echo -n "Cannot find RocfracControl.txt.  Enter the frac case name: "
+  set frac_case = "$<"
+endif
+
+# Get the number of fluid blocks
+
+if (-e "${dir}/Rocflo/${case}.flo") then
+  set blocks = (`head -1 ${dir}/Rocflo/${case}.flo`)
+  echo "Number of fluid blocks is $blocks[1]"
+  echo ""
+else
+  echo -n "Cannot find ${case}.flo.  Enter number of fluids AND solids blocks (2 numbers): "
+  set blocks = ($<)
+endif
+
+set ifirst = 0
+set ilast = 0
+
+if ("$RESTART" == "y") then
+
+  cd $dir
+  echo "Transferring GENX.restart.info and massConservation.txt"
+  echo ""
+
+  if ($XFER == ftp) then
+
+    ftp $MACHINE << END
+    cd $TOP_LEVEL
+    put GENX.restart.info
+    put massConservation.txt
+    bye
+END
+
+  else
+
+    scp GENX.restart.info massConservation.txt ${MACHINE}:${TOP_LEVEL}
+
+  endif
+
+endif
+
+# Check Rocflo
+
+if ("$HDF_FLO" != "") then
+
+echo "Working on Rocflo"
+echo ""
+
+if ("$RESTART" == "y") then
+
+  cd ${dir}/Rocflo
+  echo "Transferring AutoProcMap"
+  echo ""
+
+  if ($XFER == ftp) then
+
+    ftp $MACHINE << END
+    cd $TOP_LEVEL
+    put AutoProcMap
+    bye
+END
+
+  else
+
+    scp AutoProcMap ${MACHINE}:${TOP_LEVEL}
+
+  endif
+
+endif
+
+cd ${dir}/Rocflo/${hdf_flo}
+
+set prefix = "flo_"
+
+# Look for panda format at time t = 0.
+
+if (-e ${prefix}00.000000_000.hdf || -e ${prefix}000000000_000.hdf) then
+
+# Branch for Rocpanda
+
+  set suffix = "_000"
+  if (-e ${prefix}00.000000_000.hdf) then
+    set nservers = (`\ls ${prefix}00.000000_???.hdf | wc -l`)
+  else
+    set nservers = (`\ls ${prefix}000000000_???.hdf | wc -l`)
+  endif
+
+# Display a file from each dump to show output times
+
+  find . -name ${prefix}\*${suffix}.hdf -print | sed -e 's/..//' | sort >! LIST1.$$
+  set NFILES = (`cat LIST1.$$ | wc -l`)
+  if ($NFILES[1] == 0) then
+    goto ROCFRAC
+  endif 
+  echo "Here is a list of Rocflo HDF files for server/block ${suffix}"
+  echo ""
+  cat -n LIST1.$$
+
+# Select dumps to transfer
+
+  echo ""
+  echo -n "Enter number of first dump to transfer (1): "
+  set ifirst = "$<"
+  if ("$ifirst" == "") then
+    set ifirst = 1
+  endif
+  echo -n "Enter number of last dump to transfer ($NFILES[1]): "
+  set ilast = "$<"
+  if ("$ilast" == "") then
+    set ilast = $NFILES[1]
+  endif
+  echo ""
+
+  if ($ilast < $NFILES[1]) then
+#   Strip some files we will not transfer
+    head -${ilast} LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set nfiles = $ilast
+  @ nfiles = $nfiles - $ifirst
+  @ nfiles++
+  if ($ifirst > 1) then
+#   Strip some files we will not transfer
+    tail -n $nfiles LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set i = $ifirst
+  while ($i <= $ilast)
+    set file = `head -1 LIST1.$$`
+
+    set time1 = `echo $file | sed -e "s/${prefix}//"`
+    set otime = `echo $time1 | sed -e "s/${suffix}.hdf//"`
+
+# Loop over servers
+
+    set n = 0
+LOOP_SERV_FLO:
+
+    set nserv = $n
+    if ($n < 100) then
+      set nserv = "0${nserv}"
+    endif
+    if ($n < 10) then
+      set nserv = "0${nserv}"
+    endif
+
+# Put the files on a remote machine MACHINE in directory HDF_FLO
+# Note that a server may have no surface patches
+
+    if (-e I${prefix}${otime}_${nserv}.hdf) then
+      echo "Transferring ${prefix}${otime}_${nserv}.hdf and I${prefix}${otime}_${nserv}.hdf"
+
+      if ($XFER == ftp) then
+
+        ftp $MACHINE << END
+        cd $HDF_FLO
+        put ${prefix}${otime}_${nserv}.hdf
+        put I${prefix}${otime}_${nserv}.hdf
+        bye
+END
+
+      else
+
+        scp ${prefix}${otime}_${nserv}.hdf I${prefix}${otime}_${nserv}.hdf ${MACHINE}:${HDF_FLO}
+
+      endif
+
+    else
+      echo "Transferring ${prefix}${otime}_${nserv}.hdf"
+
+      if ($XFER == ftp) then
+
+        ftp $MACHINE << END
+        cd $HDF_FLO
+        put ${prefix}${otime}_${nserv}.hdf
+        bye
+END
+
+      else
+
+        scp ${prefix}${otime}_${nserv}.hdf ${MACHINE}:${HDF_FLO}
+
+      endif
+
+    endif
+
+    @ n++
+    if ($n < $nservers[1]) then
+       goto LOOP_SERV_FLO
+    endif
+  
+    @ i++
+    if ($i <= $ilast) then
+      ex -T builtin_dumb - LIST1.$$ << END
+1 d
+wq
+END
+    endif
+
+  end
+
+else if (-e ${prefix}00.000000_0000.hdf || -e ${prefix}000000000_0000.hdf) then
+
+# Branch for no Rocpanda
+
+  set suffix = "_0000"
+
+# Display a file from each dump to show output times
+
+  find . -name ${prefix}\*${suffix}.hdf -print | sed -e 's/..//' | sort >! LIST1.$$
+  set NFILES = (`cat LIST1.$$ | wc -l`)
+  if ($NFILES[1] == 0) then
+    goto ROCFRAC
+  endif 
+  echo "Here is a list of Rocflo HDF files for server/block ${suffix}"
+  echo ""
+  cat -n LIST1.$$
+
+# Select dumps to transfer
+
+  echo ""
+  echo -n "Enter number of first dump to transfer (1): "
+  set ifirst = "$<"
+  if ("$ifirst" == "") then
+    set ifirst = 1
+  endif
+  echo -n "Enter number of last dump to transfer ($NFILES[1]): "
+  set ilast = "$<"
+  if ("$ilast" == "") then
+    set ilast = $NFILES[1]
+  endif
+  echo ""
+
+  if ($ilast < $NFILES[1]) then
+#   Strip some files we will not transfer
+    head -${ilast} LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set nfiles = $ilast
+  @ nfiles = $nfiles - $ifirst
+  @ nfiles++
+  if ($ifirst > 1) then
+#   Strip some files we will not transfer
+    tail -n $nfiles LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set i = $ifirst
+  while ($i <= $ilast)
+    set file = `head -1 LIST1.$$`
+
+    set time1 = `echo $file | sed -e "s/${prefix}//"`
+    set otime = `echo $time1 | sed -e "s/${suffix}.hdf//"`
+
+# Loop over blocks
+
+    set n = 0
+LOOP_BLK_FLO:
+
+    set blk = $n
+    if ($n < 1000) then
+      set blk = "0${blk}"
+    endif
+    if ($n < 100) then
+      set blk = "0${blk}"
+    endif
+    if ($n < 10) then
+      set blk = "0${blk}"
+    endif
+
+# Put the files on a remote machine MACHINE in directory HDF_FLO
+
+    if (-e I${prefix}${otime}_${blk}.hdf) then
+      echo "Transferring ${prefix}${otime}_${blk}.hdf I${prefix}${otime}_${blk}.hdf"
+
+      if ($XFER == ftp) then
+
+        ftp $MACHINE << END
+        cd $HDF_FLO
+        put ${prefix}${otime}_${blk}.hdf
+        put I${prefix}${otime}_${blk}.hdf
+        bye
+END
+
+      else
+
+        scp ${prefix}${otime}_${blk}.hdf I${prefix}${otime}_${blk}.hdf ${MACHINE}:${HDF_FLO}
+
+      endif
+
+    else
+
+      echo "Transferring ${prefix}${otime}_${blk}.hdf"
+
+      if ($XFER == ftp) then
+
+        ftp $MACHINE << END
+        cd $HDF_FLO
+        put ${prefix}${otime}_${blk}.hdf
+        bye
+END
+
+      else
+
+        scp ${prefix}${otime}_${blk}.hdf ${MACHINE}:${HDF_FLO}
+
+      endif
+
+    endif
+
+    @ n++
+    if ($n < $blocks[1]) then
+       goto LOOP_BLK_FLO
+    endif
+
+    @ i++
+    if ($i <= $ilast) then
+      ex -T builtin_dumb - LIST1.$$ << END
+1 d
+wq
+END
+    endif 
+
+  end
+# loop over dumps
+
+endif
+# End branches for PANDA
+
+echo ""
+echo "Rocflo is done"
+echo ""
+
+endif
+# HDF_FLO != ""
+
+ROCFRAC:
+
+if ("$HDF_FRAC" != "") then
+# Check Rocfrac
+
+echo "Working on Rocfrac"
+echo ""
+
+echo "Number of solids blocks is $blocks[2]"
+echo ""
+
+cd ${dir}/Rocfrac/${hdf_frac}
+
+if ("$RESTART" == "y") then
+
+  echo "Transferring ${frac_case}.res"
+  echo ""
+
+  if ($XFER == ftp) then
+
+    ftp $MACHINE << END
+    cd $HDF_FRAC
+    put ${frac_case}.res
+    bye
+END
+
+  else
+
+    scp ${frac_case}.res ${MACHINE}:${HDF_FRAC}
+
+  endif
+
+endif
+
+set prefix = "frac_"
+
+# Look for panda format at t=0.
+
+if (-e ${prefix}00.000000_000.hdf || -e ${prefix}000000000_000.hdf) then
+
+# Branch for Rocpanda
+
+  set suffix = "_000"
+
+  if (-e ${prefix}00.000000_000.hdf) then
+    set nservers = (`\ls ${prefix}00.000000_???.hdf | wc -l`)
+    set time0 = "00.000000"
+  else
+    set nservers = (`\ls ${prefix}000000000_???.hdf | wc -l`)
+    set time0 = "000000000"
+  endif
+
+# Display a file from each dump to show output times
+
+  find . -name ${prefix}\*${suffix}.hdf -print | sed -e 's/..//' | sort >! LIST1.$$
+  set NFILES = (`cat LIST1.$$ | wc -l`)
+  if ($NFILES[1] == 0) then
+    goto ROCBURN
+  endif 
+
+  if ($ilast == 0) then
+    echo "Here is a list of Rocfrac HDF files for server/block ${suffix}"
+    echo ""
+    cat -n LIST1.$$
+
+# Select dumps to transfer only if we have not done it already
+
+    echo ""
+    echo -n "Enter number of first dump to transfer (1): "
+    set ifirst = "$<"
+    if ("$ifirst" == "") then
+      set ifirst = 1
+    endif
+    echo -n "Enter number of last dump to transfer ($NFILES[1]): "
+    set ilast = "$<"
+    if ("$ilast" == "") then
+      set ilast = $NFILES[1]
+    endif
+    echo ""
+  endif
+
+  if ($ilast < $NFILES[1]) then
+#   Strip some files we will not transfer
+    head -${ilast} LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set nfiles = $ilast
+  @ nfiles = $nfiles - $ifirst
+  @ nfiles++
+  if ($ifirst > 1) then
+#   Strip some files we will not transfer
+    tail -n $nfiles LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set i = $ifirst
+  while ($i <= $ilast)
+    set file = `head -1 LIST1.$$`
+
+    set time1 = `echo $file | sed -e "s/${prefix}//"`
+    set otime = `echo $time1 | sed -e "s/${suffix}.hdf//"`
+
+# Loop over servers
+
+    set n = 0
+LOOP_SERV_FRAC:
+
+    set nserv = $n
+    if ($n < 100) then
+      set nserv = "0${nserv}"
+    endif
+    if ($n < 10) then
+      set nserv = "0${nserv}"
+    endif
+
+    if ($i == $ifirst) then
+      if ("$XFER_MESH" == "y") then
+        echo "Transferring fracmesh_${time0}_${nserv}.hdf"
+        if ($XFER == ftp) then
+          ftp $MACHINE << END
+          cd $HDF_FRAC
+          put fracmesh_${time0}_${nserv}.hdf
+          bye
+END
+        else
+          scp fracmesh_${time0}_${nserv}.hdf ${MACHINE}:${HDF_FRAC}
+        endif
+      endif
+    endif
+
+# Put the files on a remote machine MACHINE in directory HDF_FRAC
+# Note that a server may have no surface patches
+
+#    if (-e I${prefix}${otime}_${nserv}.hdf) then
+    if ("$RESTART" == "y") then
+      echo "Transferring ${prefix}${otime}_${nserv}.hdf I${prefix}${otime}_${nserv}.hdf B${prefix}${otime}_${nserv}.hdf"
+
+      if ($XFER == ftp) then
+
+        ftp $MACHINE << END
+        cd $HDF_FRAC
+        put ${prefix}${otime}_${nserv}.hdf
+        put I${prefix}${otime}_${nserv}.hdf
+        put B${prefix}${otime}_${nserv}.hdf
+        bye
+END
+
+      else
+
+        scp ${prefix}${otime}_${nserv}.hdf I${prefix}${otime}_${nserv}.hdf B${prefix}${otime}_${nserv}.hdf ${MACHINE}:${HDF_FRAC}
+
+      endif
+
+    else
+      echo "Transferring ${prefix}${otime}_${nserv}.hdf I${prefix}${otime}_${nserv}.hdf"
+
+      if ($XFER == ftp) then
+
+        ftp $MACHINE << END
+        cd $HDF_FRAC
+        put ${prefix}${otime}_${nserv}.hdf
+        put I${prefix}${otime}_${nserv}.hdf
+        bye
+END
+
+      else
+
+        scp ${prefix}${otime}_${nserv}.hdf I${prefix}${otime}_${nserv}.hdf ${MACHINE}:${HDF_FRAC}
+
+      endif
+
+    endif
+
+    @ n++
+    if ($n < $nservers[1]) then
+       goto LOOP_SERV_FRAC
+    endif
+
+    @ i++
+    if ($i <= $ilast) then
+      ex -T builtin_dumb - LIST1.$$ << END
+1 d
+wq
+END
+    endif 
+
+  end
+
+else if (-e ${prefix}00.000000_0000.hdf || -e ${prefix}000000000_0000.hdf) then
+# Branch for no Rocpanda
+
+  if (-e ${prefix}00.000000_0000.hdf) then
+    set time0 = "00.000000"
+  else
+    set time0 = "000000000"
+  endif
+
+  set suffix = "_0000"
+
+# Display a file from each dump to show output times
+
+  find . -name ${prefix}\*${suffix}.hdf -print | sed -e 's/..//' | sort >! LIST1.$$
+  set NFILES = (`cat LIST1.$$ | wc -l`)
+  if ($NFILES[1] == 0) then
+    goto ROCBURN
+  endif 
+
+  if ($ilast == 0) then
+    echo "Here is a list of Rocfrac HDF files for server/block ${suffix}"
+    echo ""
+    cat -n LIST1.$$
+
+# Select dumps to transfer only if we have not done it already
+
+    echo ""
+    echo -n "Enter number of first dump to transfer (1): "
+    set ifirst = "$<"
+    if ("$ifirst" == "") then
+      set ifirst = 1
+    endif
+    echo -n "Enter number of last dump to transfer ($NFILES[1]): "
+    set ilast = "$<"
+    if ("$ilast" == "") then
+      set ilast = $NFILES[1]
+    endif
+    echo ""
+  endif
+
+  if ($ilast < $NFILES[1]) then
+#   Strip some files we will not transfer
+    head -${ilast} LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set nfiles = $ilast
+  @ nfiles = $nfiles - $ifirst
+  @ nfiles++
+  if ($ifirst > 1) then
+#   Strip some files we will not transfer
+    tail -n $nfiles LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set i = $ifirst
+  while ($i <= $ilast)
+    set file = `head -1 LIST1.$$`
+
+    set time1 = `echo $file | sed -e "s/${prefix}//"`
+    set otime = `echo $time1 | sed -e "s/${suffix}.hdf//"`
+
+# Loop over blocks
+
+    set n = 0
+LOOP_BLK_FRAC:
+
+    set blk = $n
+    if ($n < 1000) then
+      set blk = "0${blk}"
+    endif
+    if ($n < 100) then
+      set blk = "0${blk}"
+    endif
+    if ($n < 10) then
+      set blk = "0${blk}"
+    endif
+
+    if ($i == $ifirst) then
+      if ("$XFER_MESH" == "y") then
+        echo "Transferring fracmesh_${time0}_${blk}.hdf"
+        if ($XFER == ftp) then
+          ftp $MACHINE << END
+          cd $HDF_FRAC
+          put fracmesh_${time0}_${blk}.hdf
+          bye
+END
+        else
+          scp fracmesh_${time0}_${blk}.hdf ${MACHINE}:${HDF_FRAC}
+        endif
+      endif
+    endif
+
+# Put the files on a remote machine MACHINE in directory HDF_FRAC
+
+#    if (-e I${prefix}${otime}_${blk}.hdf) then
+    if ("$RESTART" == "y") then
+      echo "Transferring ${prefix}${otime}_${blk}.hdf I${prefix}${otime}_${blk}.hdf B${prefix}${otime}_${blk}.hdf"
+
+      if ($XFER == ftp) then
+
+        ftp $MACHINE << END
+        cd $HDF_FRAC
+        put ${prefix}${otime}_${blk}.hdf
+        put I${prefix}${otime}_${blk}.hdf
+        put B${prefix}${otime}_${blk}.hdf
+        bye
+END
+
+      else
+
+        scp ${prefix}${otime}_${blk}.hdf I${prefix}${otime}_${blk}.hdf B${prefix}${otime}_${blk}.hdf ${MACHINE}:${HDF_FRAC}
+
+      endif
+
+    else
+      echo "Transferring ${prefix}${otime}_${blk}.hdf I${prefix}${otime}_${blk}.hdf"
+
+      if ($XFER == ftp) then
+
+        ftp $MACHINE << END
+        cd $HDF_FRAC
+        put ${prefix}${otime}_${blk}.hdf
+        bye
+END
+
+      else
+
+        scp ${prefix}${otime}_${blk}.hdf I${prefix}${otime}_${blk}.hdf ${MACHINE}:${HDF_FRAC}
+
+      endif
+
+    endif
+
+    @ n++
+    if ($n < $blocks[2]) then
+       goto LOOP_BLK_FRAC
+    endif
+
+    @ i++
+    if ($i <= $ilast) then
+      ex -T builtin_dumb - LIST1.$$ << END
+1 d
+wq
+END
+    endif 
+
+  end
+
+endif
+# End branches for PANDA
+
+echo ""
+echo "Rocfrac is done"
+echo ""
+
+endif
+# HDF_FRAC != ""
+
+ROCBURN:
+
+if ("$RESTART" == "y" && "$HDF_BURN" != "") then
+# Check Rocburn
+
+echo "Working on Rocburn"
+echo ""
+
+cd ${dir}/Rocburn/${hdf_burn}
+
+set prefix = "burn_"
+
+# Look for panda format at t=0.
+
+if (-e ${prefix}00.000000_000.hdf) then
+
+# Branch for Rocpanda
+
+  set suffix = "_000"
+
+  set nservers = (`\ls ${prefix}00.000000_???.hdf | wc -l`)
+
+# Display a file from each dump to show output times
+
+  find . -name ${prefix}\*${suffix}.hdf -print | sed -e 's/..//' | sort >! LIST1.$$
+  set NFILES = (`cat LIST1.$$ | wc -l`)
+  if ($NFILES[1] == 0) then
+    goto EXIT
+  endif 
+
+  if ($ilast == 0) then
+    echo "Here is a list of Rocburn HDF files for server/block ${suffix}"
+    echo ""
+    cat -n LIST1.$$
+
+# Select dumps to transfer only if we have not done it already
+
+    echo ""
+    echo -n "Enter number of first dump to transfer (1): "
+    set ifirst = "$<"
+    if ("$ifirst" == "") then
+      set ifirst = 1
+    endif
+    echo -n "Enter number of last dump to transfer ($NFILES[1]): "
+    set ilast = "$<"
+    if ("$ilast" == "") then
+      set ilast = $NFILES[1]
+    endif
+    echo ""
+  endif
+
+  if ($ilast < $NFILES[1]) then
+#   Strip some files we will not transfer
+    head -${ilast} LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set nfiles = $ilast
+  @ nfiles = $nfiles - $ifirst
+  @ nfiles++
+  if ($ifirst > 1) then
+#   Strip some files we will not transfer
+    tail -n $nfiles LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set i = $ifirst
+  while ($i <= $ilast)
+    set file = `head -1 LIST1.$$`
+
+    set time1 = `echo $file | sed -e "s/${prefix}//"`
+    set otime = `echo $time1 | sed -e "s/${suffix}.hdf//"`
+
+# Loop over servers
+
+    set n = 0
+LOOP_SERV_BURN:
+
+    set nserv = $n
+    if ($n < 100) then
+      set nserv = "0${nserv}"
+    endif
+    if ($n < 10) then
+      set nserv = "0${nserv}"
+    endif
+
+# Put the files on a remote machine MACHINE in directory HDF_BURN
+
+    echo "Transferring ${prefix}${otime}_${nserv}.hdf"
+
+    if ($XFER == ftp) then
+
+      ftp $MACHINE << END
+      cd $HDF_BURN
+      put ${prefix}${otime}_${nserv}.hdf
+      bye
+END
+
+    else
+
+      scp ${prefix}${otime}_${nserv}.hdf ${MACHINE}:${HDF_BURN}
+
+    endif
+
+    @ n++
+    if ($n < $nservers[1]) then
+       goto LOOP_SERV_BURN
+    endif
+
+    @ i++
+    if ($i <= $ilast) then
+      ex -T builtin_dumb - LIST1.$$ << END
+1 d
+wq
+END
+    endif 
+
+  end
+
+else if (-e ${prefix}00.000000_0000.hdf) then
+
+# Branch for no Rocpanda
+
+  set suffix = "_0000"
+
+# Display a file from each dump to show output times
+
+  find . -name ${prefix}\*${suffix}.hdf -print | sed -e 's/..//' | sort >! LIST1.$$
+  set NFILES = (`cat LIST1.$$ | wc -l`)
+  if ($NFILES[1] == 0) then
+    goto EXIT
+  endif 
+
+  if ($ilast == 0) then
+    echo "Here is a list of Rocburn HDF files for server/block ${suffix}"
+    echo ""
+    cat -n LIST1.$$
+
+# Select dumps to transfer only if we have not done it already
+
+    echo ""
+    echo -n "Enter number of first dump to transfer (1): "
+    set ifirst = "$<"
+    if ("$ifirst" == "") then
+      set ifirst = 1
+    endif
+    echo -n "Enter number of last dump to transfer ($NFILES[1]): "
+    set ilast = "$<"
+    if ("$ilast" == "") then
+      set ilast = $NFILES[1]
+    endif
+    echo ""
+  endif
+
+  if ($ilast < $NFILES[1]) then
+#   Strip some files we will not transfer
+    head -${ilast} LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set nfiles = $ilast
+  @ nfiles = $nfiles - $ifirst
+  @ nfiles++
+  if ($ifirst > 1) then
+#   Strip some files we will not transfer
+    tail -n $nfiles LIST1.$$ >! LIST2.$$
+    mv LIST2.$$ LIST1.$$
+  endif
+
+  set i = $ifirst
+  while ($i <= $ilast)
+    set file = `head -1 LIST1.$$`
+
+    set time1 = `echo $file | sed -e "s/${prefix}//"`
+    set otime = `echo $time1 | sed -e "s/${suffix}.hdf//"`
+
+# Loop over blocks
+
+    set n = 0
+LOOP_BLK_BURN:
+
+    set blk = $n
+    if ($n < 1000) then
+      set blk = "0${blk}"
+    endif
+    if ($n < 100) then
+      set blk = "0${blk}"
+    endif
+    if ($n < 10) then
+      set blk = "0${blk}"
+    endif
+
+# Put the files on a remote machine MACHINE in directory HDF_BURN
+
+    echo "Transferring ${prefix}${otime}_${blk}.hdf"
+
+    if ($XFER == ftp) then
+
+      ftp $MACHINE << END
+      cd $HDF_BURN
+      put ${prefix}${otime}_${blk}.hdf
+      bye
+END
+
+    else
+
+      scp ${prefix}${otime}_${blk}.hdf
+
+    endif
+
+    @ n++
+    if ($n < $blocks[1]) then
+       goto LOOP_BLK_BURN
+    endif
+
+    @ i++
+    if ($i <= $ilast) then
+      ex -T builtin_dumb - LIST1.$$ << END
+1 d
+wq
+END
+    endif 
+
+  end
+
+endif
+# End branches for PANDA
+
+echo ""
+echo "Rocburn is done"
+echo ""
+
+endif
+# HDF_BURN != ""
+
+EXIT:
+rm -f LIST1.$$ LIST2.$$
+exit

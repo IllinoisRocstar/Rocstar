@@ -1,0 +1,316 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.41 2006/08/19 15:37:32 mparmar Exp $
+#
+# Purpose: Filelist for libflu.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003-2005 by the University of Illinois
+#
+################################################################################
+
+SRCCXX+=	clop.C
+
+ifndef LAPACK_NATIVE
+SRCF77+=	daxpy.f\
+		dbdsdc.f\
+		dbdsqr.f\
+		dcopy.f\
+		dcuhre.f\
+                ddot.f\
+                dgebak.f\
+                dgebal.f\
+                dgebd2.f\
+                dgebrd.f\
+                dgeev.f\
+                dgehd2.f\
+                dgehrd.f\
+                dgelq2.f\
+                dgelqf.f\
+                dgemm.f\
+                dgemv.f\
+                dgeqr2.f\
+                dgeqrf.f\
+                dger.f\
+		dgerq2.f\
+		dgerqf.f\
+		dgglse.f\
+		dggrqf.f\
+                dgesdd.f\
+                dhseqr.f\
+                dlabad.f\
+                dlabrd.f\
+                dlacpy.f\
+                dladiv.f\
+                dlaed6.f\
+                dlahqr.f\
+                dlahrd.f\
+                dlaln2.f\
+                dlamch.f\
+                dlamrg.f\
+                dlange.f\
+                dlanhs.f\
+                dlanst.f\
+                dlanv2.f\
+                dlapy2.f\
+                dlarfb.f\
+                dlarf.f\
+                dlarfg.f\
+                dlarft.f\
+                dlarfx.f\
+                dlartg.f\
+                dlas2.f\
+                dlascl.f\
+                dlasd0.f\
+                dlasd1.f\
+                dlasd2.f\
+                dlasd3.f\
+                dlasd4.f\
+                dlasd5.f\
+                dlasd6.f\
+                dlasd7.f\
+                dlasd8.f\
+                dlasda.f\
+                dlasdq.f\
+                dlasdt.f\
+                dlaset.f\
+                dlasq1.f\
+                dlasq2.f\
+                dlasq3.f\
+                dlasq4.f\
+                dlasq5.f\
+                dlasq6.f\
+                dlasr.f\
+                dlasrt.f\
+                dlassq.f\
+                dlasv2.f\
+                dnrm2.f\
+                dorghr.f\
+                dorg2r.f\
+                dorgbr.f\
+                dorgl2.f\
+                dorglq.f\
+                dorgqr.f\
+                dorm2r.f\
+                dormbr.f\
+                dorml2.f\
+                dormlq.f\
+                dormqr.f\
+		dormr2.f\
+		dormrq.f\
+                drot.f\
+                dscal.f\
+                dswap.f\
+                dtrevc.f\
+                dtrmm.f\
+                dtrmv.f\
+		dtrsv.f\
+                idamax.f\
+                ieeeck.f\
+                ilaenv.f\
+                lsame.f\
+                xerbla.f
+endif
+                
+SRCF90+=        RFLU_AllocateMemoryTbc.F90\
+                RFLU_BuildDataStruct.F90\
+                RFLU_CheckDerivedUserInput.F90\
+                RFLU_CheckPositivity.F90\
+                RFLU_CheckPositivity_GL.F90\
+                RFLU_CheckPositivityWrapper.F90\
+                RFLU_CheckUserInput.F90\
+                RFLU_CheckValidity.F90\
+                RFLU_CheckValidity_GL.F90\
+                RFLU_CheckValidityWrapper.F90\
+		RFLU_ClosePostInfo.F90\
+		RFLU_CloseRestartInfo.F90\
+                RFLU_ComputeDCUHREInfo.F90\
+                RFLU_CreateGrid.F90\
+		RFLU_CreateRegions.F90\
+                RFLU_DecideNeedBGradFace.F90\
+		RFLU_DecidePrint.F90\
+		RFLU_DecideWrite.F90\
+                RFLU_DerivedInputValues.F90\
+                RFLU_DestroyGrid.F90\
+		RFLU_EnforceBoundsWrapper.F90\
+		RFLU_EquilibriumEulerian.F90\
+		RFLU_FinishSD.F90\
+		RFLU_GetCvLoc.F90\
+                RFLU_GetUserInput.F90\
+                RFLU_InitGlobal.F90\
+                RFLU_InitInputValues.F90\
+                RFLU_InvertMatrixSVD.F90\
+		RFLU_OpenPostInfo.F90\
+		RFLU_OpenRestartInfo.F90\
+                RFLU_PrintFlowInfo.F90\
+                RFLU_PrintFlowInfoWrapper.F90\
+                RFLU_PrintGridInfo.F90\
+                RFLU_PrintLocInfo.F90\
+                RFLU_PrintUserInput.F90\
+		RFLU_PrintWarnInfo.F90\
+		RFLU_RandomInit.F90\
+		RFLU_ReadRestartInfo.F90\
+                RFLU_ReadTbcInputFile.F90\
+                RFLU_ReadTbcSection.F90\
+		RFLU_ScalarFirst.F90\
+		RFLU_ScalarFirstPatch.F90\
+		RFLU_ScalarSecond.F90\
+		RFLU_ScalarSecondPatch.F90\
+		RFLU_ScalarCheckPositivity.F90\
+		RFLU_ScalarInitRhs.F90\
+		RFLU_ScalarViscousFluxes.F90\
+		RFLU_SetDependentVars.F90\
+		RFLU_SetGasVars.F90\
+		RFLU_SetDerivedUserInput.F90\
+		RFLU_SetModuleType.F90\
+		RFLU_SetRestartTimeFlag.F90\
+		RFLU_SetTransportVars.F90\
+		RFLU_SetVarInfo.F90\
+		RFLU_SetVarInfoWrapper.F90\
+		RFLU_SetVars.F90\
+		RFLU_SetVarsContWrapper.F90\
+		RFLU_SetVarsDiscWrapper.F90\
+		RFLU_SetVarsWrapper.F90\
+		RFLU_TestIsFirstRegion.F90\
+                RFLU_UserInput.F90\
+		RFLU_WriteRestartInfo.F90\
+                RFLU_ZeroVirtualCellVars.F90
+
+ifdef STATS
+  SRCF90+=	RFLU_ReadStat.F90\
+                RFLU_WriteStat.F90
+endif
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Filelist.txt,v $
+# Revision 1.41  2006/08/19 15:37:32  mparmar
+# Added RFLU_DecideNeedBGradFace.F90
+#
+# Revision 1.40  2006/08/04 03:01:05  haselbac
+# Removed entry for RFLU_TestIsBoundaryCell.F90
+#
+# Revision 1.39  2006/03/26 20:21:23  haselbac
+# Added entries for GL routines and RFLU_CheckValidityWrapper
+#
+# Revision 1.38  2005/12/24 21:18:22  haselbac
+# Removed entries for routines moved into modules
+#
+# Revision 1.37  2005/11/10 22:21:35  fnajjar
+# ACH: Added entries for new  SetVars routines
+#
+# Revision 1.36  2005/08/10 00:29:58  haselbac
+# Added entries for new LAPACK routines
+#
+# Revision 1.35  2005/07/08 14:50:21  haselbac
+# Enclosed LAPACK routines in ifdef
+#
+# Revision 1.34  2005/06/09 20:17:28  haselbac
+# Removed entry for RFLU_CheckMoveGridInput
+#
+# Revision 1.33  2005/05/16 20:41:01  haselbac
+# Deleted/added entries
+#
+# Revision 1.32  2005/05/03 03:04:29  haselbac
+# Added entry for clop.C
+#
+# Revision 1.31  2005/04/29 12:46:02  haselbac
+# Removed entry for RFLU_DecideWriteProbe
+#
+# Revision 1.30  2005/04/15 15:06:16  haselbac
+# Removed Charm/FEM routines and RFLU_InitFlowScratch
+#
+# Revision 1.29  2005/03/11 02:17:45  haselbac
+# Removed and added a couple of routines
+#
+# Revision 1.28  2004/11/14 19:37:49  haselbac
+# Added entries for new routines
+#
+# Revision 1.27  2004/11/06 03:17:11  haselbac
+# Added entry for RFLU_GetCvLoc
+#
+# Revision 1.26  2004/11/05 21:47:19  fnajjar
+# Added entry for RFLU_TestInCellFancy
+#
+# Revision 1.25  2004/11/05 20:24:02  haselbac
+# Removed RFLU_ComputeLineCellXSectDist
+#
+# Revision 1.24  2004/11/02 02:27:30  haselbac
+# Added RFLU_SetVarInfo and RFLU_SetVarInfoWrapper
+#
+# Revision 1.23  2004/10/19 19:24:01  haselbac
+# Removed region mapping routines, added various new routines
+#
+# Revision 1.22  2004/07/30 22:47:35  jferry
+# Implemented Equilibrium Eulerian method for Rocflu
+#
+# Revision 1.21  2004/07/06 15:14:11  haselbac
+# Removed many files, moved into modules
+#
+# Revision 1.20  2004/06/25 20:04:19  haselbac                    
+# Added entry for RFLU_SetRestartTimeFlag                         
+#
+# Revision 1.19  2004/03/19 21:18:05  haselbac                    
+# Added entry for RFLU_InitFlowScratch                            
+#
+# Revision 1.18  2004/03/01 23:41:33  haselbac                    
+# Added entries for  RFLU_ComputeLineCellXSect* routines          
+#
+# Revision 1.17  2004/02/26 21:01:51  haselbac                    
+# Added entries for read/write dimensions wrapper routines        
+#
+# Revision 1.16  2004/02/23 23:02:12  haselbac                    
+# Added entry for RFLU_ComputeExactFlowProudman.F90               
+#
+# Revision 1.15  2004/02/13 02:56:49  haselbac                    
+# Added entry for RFLU_TestIsBoundaryCell                         
+#
+# Revision 1.14  2004/01/29 22:56:25  haselbac                    
+# Added and deleted various files                                 
+#
+# Revision 1.13  2003/12/04 03:23:48  haselbac                    
+# Added LAPACK and RFLU routines, deleted RFLU_CalcGrad routines  
+#
+# Revision 1.12  2003/11/25 21:02:42  haselbac                    
+# Added routines related to initial version of rocspecies         
+#
+# Revision 1.11  2003/10/29 21:37:41  haselbac                    
+# Added RFLU_DecideXXX routines                                   
+#
+# Revision 1.10  2003/09/08 23:30:02  olawlor                     
+# Minor changes for FEM_ALONE mode, which links in a              
+# version of the FEM framework that does not use Charm.           
+#
+# Revision 1.9  2003/08/07 15:29:44  haselbac                     
+# Added RFLU_PrintWarnInfo                                        
+#
+# Revision 1.8  2003/06/20 22:33:10  haselbac                     
+# Added files for restart info file handling                      
+#
+# Revision 1.7  2003/06/09 14:02:07  haselbac                     
+# Added RFLU_CreateRegions                                        
+#
+# Revision 1.6  2003/06/04 21:57:44  haselbac                     
+# Added and removed several files                                 
+#
+# Revision 1.5  2003/06/04 20:05:54  jferry                       
+# re-worked implementation of TBCs in unstructured code           
+#
+# Revision 1.4  2003/04/11 15:15:18  jiao                         
+# Changed RFLU_CHARM back to CHARM.                               
+#
+# Revision 1.3  2003/04/07 14:20:04  haselbac                     
+# Added two new routines                                          
+#
+# Revision 1.2  2003/04/01 16:35:44  haselbac                     
+# Added routines for special cells                                
+#
+# Revision 1.1  2003/03/20 19:26:21  haselbac                     
+# Initial revision                                                
+#
+################################################################################

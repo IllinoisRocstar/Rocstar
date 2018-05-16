@@ -1,0 +1,59 @@
+#!/bin/tcsh
+# Usage:
+#
+# run_automated_tests <project file> <mode> <rundir>
+#
+# where <project file> indicates the project file.
+# The project file is processed line-by-line.  Each
+# line is expected to have the following information
+# and format:
+#
+# ProjectName:BranchName:BranchPath
+#
+# The "ProjectName" is the name of the project to
+# be built/tested.  The "BranchName" is an arbitrary
+# name to describe the branch, and "BranchPath" is the 
+# actual path to the branch in the project base repository.
+# 
+# The utility automatically assumes the branch will 
+# be checked out from:
+# file:///Projects/IR/SourceRepository/<BranchPath>
+#
+
+# ===== Initialization and setup =========
+set mode="$2"
+set project_file="$1"
+set rundir="$3"
+set mydir=${rundir}
+set HOSTNAME=`hostname -s`
+cd ${mydir}
+# Use a different shell or shell config if you want
+source ${HOME}/.tcshrc
+# ========================================
+
+# === Build/Test Environment Settings ====
+setenv SVNCOMMAND `which svn`
+setenv CTESTCOMMAND `which ctest`
+setenv CMAKECOMMAND `which cmake`
+# The following two lines are optional.  Rocpack requires this
+# setting for CMAKE_PREFIX_PATH. Your project may require
+# different paths, or a whole set of options - which can be
+# set as the PROJECT_CONFIGURATION_OPTIONS environment variable.
+setenv CMAKE_PREFIX_PATH /Projects/Tomography_code/Support/ILROCSTAR2
+setenv PROJECT_CONFIGURATION_OPTIONS
+# ========================================
+
+# == Loop over projects and invoke ctest =
+foreach project (`cat ${project_file} | grep -v "#"`)
+    set PROJECT_NAME=`printf "${project}" | cut -d ":" -f 1`
+    set BRANCH_NAME=`printf "${project}" | cut -d ":" -f 2`
+    set BRANCH_PATH=`printf "${project}" | cut -d ":" -f 3`
+    printf "Processing ${PROJECT_NAME} ${BRANCH_NAME}...\n"
+    setenv PROJECT_SOURCE "${mydir}/${PROJECT_NAME}_${BRANCH_NAME}"
+    setenv PROJECT_ROOT ${BRANCH_PATH}
+    setenv PROJECT_BUILD_DIRECTORY "${mydir}/${PROJECT_NAME}-${HOSTNAME}-${BRANCH_NAME}-${mode}"
+    rm -f ${PROJECT_NAME}_${BRANCH_NAME}_${mode}_log.txt
+    ctest -S ./automated_test_script.cmake,${mode} -V >& ${PROJECT_NAME}_${BRANCH_NAME}_${mode}_log.txt 
+end
+# ========================================
+

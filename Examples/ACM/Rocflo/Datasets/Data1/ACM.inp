@@ -1,0 +1,126 @@
+# BLOCKMAP
+NBLOCKS 0
+#
+
+# FORMATS
+GRID      0	! 0 - PLOT3D ASCII,
+SOLUTION  2	! 0 - ROCFLO ASCII, 1 - ROCFL0 binary, 2 -  HDF
+#
+
+# FLOWMODEL
+BLOCK    0 0
+MODEL    0 	! 0 - Euler, 1 - Navier-Stokes
+MOVEGRID 1	! 0 - static grid, 1 - moving grid
+#
+
+! grid motion scheme -----------------------------------------------------------
+
+# GRIDMOTION
+TYPE    2        ! 0=block-TFI, 1=block-WgLaplacian 2=global-WgLaplacian
+                 ! 3=global-NuLaplacian 4=block-Elliptic 5=global-Elliptic
+NITER   0        ! number Laplacian iterations (TYPE>0)
+VITER   5        ! number volume elliptic PDE iterations (TYPE=4,5)
+SITER  20        ! number surface elliptic PDE iterations (TYPE=4,5)
+POWER   2.       ! power of inverse node distance in frame gm (TYPE=1,2,4,5)
+AMPLIFX 1.20     ! 1.5 amplification factor for frame motion (TYPE=2,3,5)
+AMPLIFY 1.0      ! 1.2 amplification factor for frame motion (TYPE=2,3,5)
+AMPLIFZ 1.0      ! 1.2 amplification factor for frame motion (TYPE=2,3,5)
+NEIGHBOR 48      ! 12 number of closest block-corner neigbours <=26 (TYPE=2,3,5)
+NSURFMATCH 3    ! number iteration for block interface matching >=2 (TYPE=2,3)
+ORTHODIR   0     ! orthogonality direction: 0=all, 1=I, 2=J, 3=K (TYPE=2,3,5)
+ORTHOWGHTX 0.0   ! x-wghting factor for block lvl orthogonality (TYPE=2,3,5)
+ORTHOWGHTY 0.0   ! y-wghting factor for block lvl orthogonality (TYPE=2,3,5)
+ORTHOWGHTZ 0.0   ! z-wghting factor for block lvl orthogonality (TYPE=2,3,5)
+WEIGHT     0.5   ! weighting factor for cell center averaging (TYPE=3)
+ORTHOCELL  0.5   ! weighting factor for cell level orthogonality (TYPE=3)
+#
+
+! forces
+-----------------------------------------------------------------------
+
+# FORCES
+TYPE     1       ! 0=no forces calculated, 1=pressure forces, 2=1+viscous forces
+#
+
+# REFERENCE
+GAMMA	1.2259
+CP	1905.849
+#
+
+# PROBE
+NUMBER 2
+0 0.015 0.0 0.0
+0 0.0495735 0.0 0.0
+#
+WRITIME 0.000005
+OPENCLOSE 1
+#
+
+! thrust -----------------------------------------------------------------------
+
+# THRUST
+TYPE       2     ! 0=none, 1=momentum thrust only, 2=momentum and pressure thrust
+PLANE      1      ! 1: x=const, 2: y=const, 3: z=const. plane
+COORD      0.0495735   ! coordinate of the plane
+PAMB       1.E+5  ! ambient pressure (only if TYPE=2)
+WRITIME    1.E-5  ! time offset [s] to store thrust history
+WRIITER    10     ! offset between iterations to store thrust history
+OPENCLOSE  1      ! open & close file with thrust every time (0=no, 1=yes)
+#
+
+# INITFLOW
+BLOCK   0 0 
+NDUMMY  2
+VELX	0.0
+VELY	0.0
+VELZ 	0.0
+PRESS	1.0E+5
+DENS	1.16
+#
+
+! numerics
+---------------------------------------------------------------------
+# MULTIGRID
+START    1       ! at which grid level to start (>0; 1=finest grid)
+CYCLE    0       ! 0=no MG, 1=V-cycle, 2=W-cycle
+REFINE   99999   ! no. of iterations before switching to next finer grid
+#
+
+# TIMESTEP
+FLOWTYPE   1      ! 0=steady flow, 1=unsteady flow
+SOLVERTYPE   0    ! 0=explicit, 1=implicit
+
+! if FLOWTYPE=0
+STARTITER  0      ! current iteration
+MAXITER    5000   ! max. number of iterations
+RESTOL     1.E-5  ! max. density residual to stop iterations
+WRIITER    10     ! offset between iterations to store solution
+PRNITER    1      ! offset between iterations to print convergence
+
+! if FLOWTYPE=1
+TIMESTEP   1.E-6  ! max. physical time step [s]
+STARTTIME  0.     ! current time
+MAXTIME    0.5    ! max. time simulated [s]
+WRITIME    1.E-2  ! time offset [s] to store solution
+PRNTIME    0.     ! time offset [s] to print convergence
+
+! if FLOWTYPE=1 and SOLVERTYPE=1 (dual time-stepping)
+ORDER       2     ! 2=second-order, 3=third-order scheme
+MAXSUBITER  50   ! max. number of subiterations
+TOLSUBITER  1.E-5 ! convergence tolerance of subiterations
+PREDICTSOL  0     ! predict start solution for subiterations (0=no, 1=yes)
+#
+
+# NUMERICS
+BLOCK    0 0
+SMOOCF   -0.7    ! coefficient of implicit residual smoothing (<0 - no smooth.)
+CFL      3.0	! CFL number
+DISCR    0      ! Type of space discretization (1 - Roe, 2 - MAPS)
+ORDER    2      ! Order of accuracy (1 - first, 2 - second)
+K2       0.1
+1/K4     128
+PSWTYPE   1      ! 0=standard pressure switch, 1=TVD type (if discr=0)
+PSWOMEGA  0.1    ! blending coefficient for PSWTYPE=1 (if discr=0)
+LIMFAC   5.0     ! limiter coefficient (if discr=1)
+ENTROPY  0.05   ! Entropy correction coefficient (if DISCR=1)
+#

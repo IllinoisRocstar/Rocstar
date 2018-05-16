@@ -1,0 +1,44 @@
+///
+/// @page existingproject_guide Use IR Project Template in an Existing Project
+///
+/// Merging IRProject with an existing project is slightly more complicated than
+/// creating a project from scratch, and involves some human-driven steps.
+/// Assuming your existing project's name is MyProject.  The procedure to use IRProject
+/// to enhance your existing project is as follows:
+///
+/// 1. Check out and build IRProject
+/// > svn co file:///Projects/IR/SourceRepository/IRProject trunk IRProject\n
+/// > mkdir irproject_build\n
+/// > cd irproject_build\n
+/// > cmake ../IRProject\n
+/// > make\n
+/// > cd ../\n
+/// 2. Check out your project: 
+/// > svn co file:///Projects/IR/SourceRepository/MyProject\n
+/// 3. Use the <b>make_project</b> command as if you were making a new project.
+/// > irproject_build/bin/make_project IRProject MyProject\n
+/// 4. Verify that none of your project-specific files have changed:
+/// > cd MyProject\n
+/// > svn status\n 
+/// 5. Cherry-pick or hand-merge CMake-related files.
+/// At this point the status should show you only the files that came from the Illinois Rocstar
+/// Project Template (IRProject) as being unknown (i.e. with status ?).
+/// The CMakeLists.txt.template file and your own will need to be hand-merged.  This is 
+/// not usually a major undertaking, and should be easily accomplished with some judicious 
+/// cut-and-paste.
+/// 6. Test the build
+/// > mkdir ../myproject-build\n
+/// > cd ../myproject-build\n
+/// > cmake \<ANY OPTIONS YOU USUALLY USE\> ../MyProject\n
+/// > make\n
+/// > make test\n
+///
+/// The "make test" command should at least run the example tests that came with IRProject, but
+/// should also run your own tests if you had any set up before importing IRProject.
+///
+/// Next, you should clean up and add the new files to your project
+/// > cd ../MyProject\n
+/// > svn add *\n
+/// > svn commit -m "Imported IRProject"\n
+///
+

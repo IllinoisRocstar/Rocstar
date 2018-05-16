@@ -1,0 +1,973 @@
+#!/bin/csh
+#
+# voyager_new
+#
+# Embarrassingly parallel use of Voyager on ONE compute node.
+#
+# This verison processes each output time separately
+#
+# Written by Robert Fiedler, revised 9/22/08.
+#.......................................................................
+
+# Identify machine
+
+# Detername name of host computer
+
+set Has_hostname = (`which hostname`)
+set Has_hostname = (`echo $Has_hostname | grep "not found"`)
+if ($#Has_hostname > 0) then
+  if (! $?HOSTNAME) then
+    echo "WARNING: Cannot find the hostname command; please check"
+    echo "your PATH or set the HOSTNAME environment variable"
+    set Host_name = ""
+  else
+    set Host_name = "$HOSTNAME"
+  endif
+else
+  set Host_name = "`hostname`"
+endif
+
+# Set the number of CPUs per node (TPN), large file
+# system name (GP), HOST name, LLNL flag, and possibly
+# the batch queue (CLASS) to use.
+
+unset LLNL
+switch ($Host_name)
+  case tun*:
+#   tungsten (Intel Xeon [IA-32] cluster at NCSA)
+    set TPN = "2"
+    set GP  = "/scratch/users"
+    set HOST = tungsten
+    set LLNL = no
+    breaksw
+  case turing-*:
+  case tur?-*:
+#   new turing (Macintosh G5 cluster at CSE)
+    set TPN = "2"
+    set GP  = "/turing/projects/csar"
+    set HOST = turing2
+    set LLNL = no
+    set CLASS = batch
+    breaksw
+  case Cu*:
+  case cu12*:
+#   copper (IBM-SP at NCSA [64-bit])
+    set TPN = "32"
+    set GP  = "/scratch/users"
+    set HOST = copper
+    set LLNL = no
+#    set CLASS = debug
+    set CLASS = batch
+    breaksw
+  case ds0*:
+#   datastar (IBM-SP at SDSC [64-bit])
+    set TPN = "8"
+    set GP  = "/dsgpfs2"
+    set HOST = datastar
+    set LLNL = no
+    set CLASS = normal
+    breaksw
+  case up*:
+#   up (IBM-SP at LLNL [64-bit])
+    set TPN = "8"
+    set GP  = "/p/gup1"
+    set HOST = up
+    set LLNL = y
+    breaksw
+  case co-login*:
+#   cobalt (Intel itanium-2 [IA-64] cluster at NCSA)
+    set TPN = "2"
+    set GP  = "/scratch/users"
+    set HOST = cobalt
+    set LLNL = no
+    set CLASS = standard
+    breaksw
+  case alc*:
+#   alc (Intel Xeon [IA-32] cluster at LLNL)
+    set TPN = "2"
+    set GP  = "/p/ga1"
+    set HOST = alc
+    set LLNL = y
+    set HDFHOME = $HOME/HDF
+    breaksw
+  case zeus*:
+#   zeus (Opteron cluster at LLNL)
+    set TPN = "8"
+    set GP  = "/nfs/tmp0"
+    set HOST = zeus
+    set LLNL = y
+    set HDFHOME = $HOME/HDF_zeus
+    breaksw
+  case blackrose:
+#   blackrose (Opteron cluster at SNL)
+    set TPN = "8"
+    set GP  = "/scratch"
+    set HOST = blackrose
+    set LLNL = n
+    set HDFHOME = $HOME/HDF
+    breaksw
+  case thunder*:
+#   thunder (Intel Itanium [IA-64] cluster at LLNL)
+    set TPN = "4"
+    set GP  = "/p/gt1"
+    set HOST = thunder
+    set LLNL = y
+    set HDFHOME = $HOME/HDF_thunder
+    breaksw
+  case tcs*:
+#   lemieux (Alpha cluster TCS at PSC)
+    set TPN = "4"
+    set GP  = "/scratch/users"
+    set HOST = lemieux
+    set LLNL = n
+    breaksw
+  case slayton*:
+    set TPN = "2"
+    set GP = "/csar"
+    set HOST = slayton
+    set LLNL = n
+    breaksw
+  default:
+#   Unsupported
+    echo "Host $Host_name is not recognized."
+    echo "There is no guarantee this script will work for you, but here goes ..."
+    echo -n "Enter the host name: "
+    set HOST = "$<"
+    echo -n "Is this machine at LLNL (y/no): "
+    set LLNL = "$<"
+    echo -n "Enter the number of CPUs per node: "
+    set TPN = "$<"
+    echo -n "Enter the path to the filesystem in which to run (up to but not including ${LOGNAME}): "
+    set GP  = "$<"
+    breaksw
+endsw
+
+if ($?PWD) then
+  set CURDIR = "$PWD"
+else
+  set CURDIR = `pwd`
+endif
+set OUTDIR = $CURDIR
+# Set default values
+
+set FRAMES_DIR = `pwd`
+set camera_def = ""
+set file_list_def = "filelist"
+set hdf_output_def = "${FRAMES_DIR:h}/Rocout"
+#set hdf_output_def = "${FRAMES_DIR:h}/"'Rocout.remesh'
+set FLUID_DIR = ${FRAMES_DIR:h}
+set RUN_DIR = $FLUID_DIR:h
+set procs_def = "$TPN"
+set ROCS = (`ls *.roc`)
+if ("$#ROCS" >= 1) then
+  set roc_def = "$ROCS[1]"
+else
+  set roc_def = "Rocket1.roc"
+  echo 'WARNING: no *.roc file found in current directory'
+endif
+set files_per_image_def = `echo $RUN_DIR:t | sed -e 's/procs//' | sed -e 's/^0*//'`
+set time_def = "59"
+set JOBNAME = "VOYAGER"
+set FILE = $HOME/voyager_js
+
+# Set the number of 0's required at the end of the output dump times
+# to weed out some dumps in simulations with many.
+
+if (! $?ZEROS) then
+  setenv ZEROS "000"
+endif
+
+if (! $?AT_END) then
+   setenv AT_END "y"
+endif
+
+if (! $?POOL) then
+  setenv POOL pbatch
+endif
+
+if (! $?BANK) then
+  setenv BANK illinois
+#  setenv BANK illdat
+endif
+
+if (-e /bin/ex) then
+  set EX = '/bin/ex'
+else
+  set EX = '/usr/bin/ex'
+endif
+
+# Handle command line arguments
+
+if ($#argv == 0) then
+  echo 'Usage: Voyager [-c camera_file] [-f file_list] [-h hdf_output_dir] \ '
+  echo '[-p procs] [-r roc_file] [-s files_per_image] [-t minutes]'
+  echo ""
+  echo "I assume you are in the desired frames directory,"
+  echo 'which contains the rocket.cam and *.roc files.'
+  echo ""
+  echo -n "Enter camera file (default="${camera_def}"): "
+  set camera = "$<"
+  if ("$camera" == "") then
+    set camera = $camera_def
+  endif
+  set file_list = $file_list_def
+  echo -n "Enter HDF output directory (default="${hdf_output_def}"): "
+  set HDF_OUTPUT_DIR = "$<"
+  if ("$HDF_OUTPUT_DIR" == "") then
+    set HDF_OUTPUT_DIR = $hdf_output_def
+  endif
+  echo -n "Enter number of Voyager processors (default="${procs_def}"): "
+  set procs = "$<"
+  if ("$procs" == "") then
+    set procs = $procs_def
+  endif
+  echo -n "Enter roc file (default="${roc_def}"): "
+  set roc = "$<"
+  if ("$roc" == "") then
+    set roc = $roc_def
+  endif
+  echo -n "Enter number of hdf files per image (default="${files_per_image_def}"): "
+  set files_per_image = "$<"
+  if ("$files_per_image" == "") then
+    set files_per_image = $files_per_image_def
+  endif
+  echo -n "Enter time limit in minutes (default="${time_def}"): "
+  set time = "$<"
+  if ("$time" == "") then
+    set time = $time_def
+  endif
+else
+  set time = $time_def
+  set procs = $procs_def
+  while ($#argv > 1)
+    switch ($argv[1])
+    case -c:
+      set camera = $argv[2]
+      breaksw
+    case -h:
+      set HDF_OUTPUT_DIR = $argv[2]
+      breaksw
+    case -f:
+      set file_list = $argv[2]
+      breaksw
+    case -p:
+      set procs = $argv[2]
+      breaksw
+    case -r:
+      set roc = $argv[2]
+      breaksw
+    case -s:
+      set files_per_image = $argv[2]
+      breaksw
+    case -t:
+      set time = $argv[2]
+      breaksw
+    default
+      echo 'Usage: Voyager [-c camera_file] [-f file_list] [-h hdf_output_dir] \ '
+      echo '[-p procs] [-r roc_file] [-s files_per_image] [-t minutes]'
+      echo ""
+      echo "I assume you are in the desired frames directory,"
+      echo 'which contains the rocket.cam and *.roc files'
+      echo ""
+      exit
+    endsw
+    shift
+    shift
+  end
+endif
+
+# Determine solver type
+
+# Assume fluid for now; will check files later
+#set SOLVER = "`echo $HDF_OUTPUT_DIR | grep Rocfl`"
+#if ("$SOLVER" != "") then
+  set SOLVER = fluid
+#else
+#  set SOLVER = solid 
+#endif
+
+# Convert optional arguments to command line strings
+
+if ("$camera" == "") then
+  set CAMERA = ""
+else
+  set CAMERA = "-c $FRAMES_DIR/$camera"
+endif
+# Name the file list after the output dump time later
+#if ("$file_list" == "") then
+#  set FILE_LIST = ""
+#else
+#  set FILE_LIST = "-f $FRAMES_DIR/$file_list"
+#endif
+if ("$files_per_image" == "") then
+  set FILES_PER_IMAGE = "$files_per_image_def"
+else
+  set FILES_PER_IMAGE = "$files_per_image"
+endif
+set ROC_FILE = $roc
+
+# Determine how many nodes to use
+
+  if ($procs == 1) then
+    set nodes = 1
+    set ppn = 1
+  else
+    set extra = `expr $procs % $TPN`
+    if ($extra == 0) then
+      set nodes = `expr $procs / $TPN`
+    else
+      set nodes = `expr $procs / $TPN + 1`
+    endif
+    set ppn = $TPN
+  endif
+
+if ("$HOST" == "turing2") then
+# Convert job time limit in minutes to hh:mm:ss format for PBS
+  set LIM_HOURS = `expr $time / 60`
+  set LIM_MINUTES = `expr $time - $LIM_HOURS \* 60`
+  set SLEEP_TIME = `expr $LIM_HOURS \* 3600 + $LIM_MINUTES \* 60`
+  if ("$LIM_HOURS" < 10) then
+    set LIM_HOURS = "0${LIM_HOURS}"
+  endif
+  if ("$LIM_MINUTES" < 10) then
+    set LIM_MINUTES = "0${LIM_MINUTES}"
+  endif
+else
+  set LIM_MINUTES = $time
+endif
+
+# Create batch job script to run the voyager processes
+
+########################################################################
+# Begin OS-specific header
+########################################################################
+
+switch ($HOST)
+  case turing2:
+    cat >! $FILE << STP
+# Number of nodes to use, which network, and processes (CPUs) per node
+#PBS -l nodes=${nodes}:ppn=$ppn
+# Wall clock limit hh:mm:ss
+#PBS -l walltime=${LIM_HOURS}:${LIM_MINUTES}:00
+# Name the job to identify it in qstat output
+#PBS -N $JOBNAME
+# Merge std err into std out.
+#PBS -j oe
+# Run in this batch queue
+#PBS -q batch
+STP
+
+    breaksw
+  case copper:
+    cat >! $FILE << STP
+#!/bin/csh
+#@ node_usage = shared
+#@ resources = ConsumableCpus(1) ConsumableMemory(600 mb)
+#@ wall_clock_limit = 00:${LIM_MINUTES}:00
+#@ class = $CLASS
+
+#@ node = $nodes
+#@ total_tasks = $procs
+
+#@ job_type = parallel
+
+#@ notify_user = ${LOGNAME}
+#@ notification = always
+
+#@ output = ${JOBNAME}${procs}.o\$(jobid)
+#@ error = ${JOBNAME}${procs}.o\$(jobid)
+#@ initialdir = ${OUTDIR}
+#@ queue
+STP
+
+    breaksw
+  case up:
+  case zeus:
+  case slayton:
+    cat >! $FILE << STP
+#!/bin/csh
+#PSUB -r ${JOBNAME}${procs}     # Job name
+#PSUB -ln $nodes          # Number of nodes
+#PSUB -g ${procs}us@dist  # Number of tasks [protocol][@layout]
+#PSUB -tM ${LIM_MINUTES}m # Wall time limit (minutes)
+#PSUB -b ${BANK}          # Bank to use
+#PSUB -pool ${POOL}       # Constrain to pdebug or pbatch node pool
+#PSUB -c ${HOST}          # Constrain to this machine
+#PSUB -eo                 # Combine stderr and stdout
+#PSUB -mb                 # Send mail at job startup
+#PSUB -me                 # Send mail at job completion
+STP
+
+#    if (! $?AIX_DEBUG && ! $?LINUX_DEBUG) then
+#      cat <<STP >> $FILE
+##PSUB -lc 1kb           # Limit core file size
+#STP
+#    endif
+
+    if ("$HOST" == "up") then
+      cat <<STP >> $FILE
+set JOBID = "\${PSUB_JOBID}"
+echo "Request \${JOBID}"  # Display request ID
+echo "Beginning at"
+date
+echo ""
+echo "PATH is \$PATH"
+set echo
+echo ""
+
+setenv ROCKETEER_VERSION "v1.3.6-64"
+setenv LIBPATH "\${ROCKETEER_HOME}/\${ROCKETEER_VERSION}/lib:\${ROCKETEER_HOME}/\${ROCKETEER_VERSION}/readers:\${ROCKETEER_HOME}/\${ROCKETEER_VERSION}/quality:/usr/lib:/lib"
+echo "LIBPATH is \$LIBPATH"
+echo ""
+# Help prevent /var/tmp from filling up
+if (\$?LOADL_STEP_ID) then
+  setenv TMPDIR /var/tmp/\$LOADL_STEP_ID
+endif
+
+# If not compiled with LLNL_COMPILE_SINGLE_TREADED set to TRUE, use:
+#setenv MP_SINGLE_THREAD "y"
+unsetenv MP_SINGLE_THREAD
+
+# Use large pages (up)
+setenv LDR_CNTRL "LARGE_PAGE_DATA=Y"
+
+#unsetenv MPI_TIMEOUT
+#setenv MP_INFOLEVEL 4
+#setenv MP_S_CHECK_PARITY "y"
+setenv MP_WAIT_MODE "yield"
+
+STP
+    endif
+#   up
+    if ($?AIX_DEBUG || $?LINUX_DEBUG) then
+      cat <<STP >> $FILE
+unsetenv MP_COREFILE_FORMAT
+setenv MP_COREFILE_SIGTERM "yes"
+STP
+    endif
+    breaksw
+  default:
+    echo "I do not know how write batch job scripts for $HOST"
+    exit
+    breaksw
+endsw
+
+################################################################
+# End OS-specific header
+################################################################
+
+# Find out which output times exist and allow user to choose
+
+echo -n "Enter search pattern (default $ZEROS at the end): "
+set ZZZ = "$<"
+if ("$ZZZ" != "") then
+  set ZEROS = "$ZZZ"
+  echo -n 'At the end of the time stamp only? (y/n default y): '
+  setenv AT_END "$<"
+  if ("$AT_END" == "") then
+    setenv AT_END "y"
+  endif
+endif
+
+LOOP_ZEROS:
+echo ""
+echo "Getting output dump times that contain $ZEROS"
+if ("$AT_END" == "y") then
+  echo "at the end of the time stamp."
+else
+  echo "anywhere in the time stamp."
+endif
+if ("$AT_END" == "y") then
+  set TIMES = (`ls $HDF_OUTPUT_DIR/${SOLVER}_??.*${ZEROS}_0000.hdf | sed -e "s/..*\/${SOLVER}_//" | sed -e 's/_....\.hdf//'`)
+else
+  set TIMES = (`ls $HDF_OUTPUT_DIR/${SOLVER}_??.*${ZEROS}*_0000.hdf | sed -e "s/..*\/${SOLVER}_//" | sed -e 's/_....\.hdf//'`)
+endif
+
+if ($#TIMES >= 1) then
+  set i = 1
+  echo "Index  Dump Time"
+  while ($i <= $#TIMES)
+    echo ' '$i'   '$TIMES[$i]
+    @ i++
+  end
+  echo "Enter index of first dump to plot"
+  echo -n " (default = 1, 0 to change search pattern): "
+  set ifirst = "$<"
+  if ("$ifirst" == "") then
+    set ifirst = 1
+  else if ("$ifirst" == "0") then
+    echo ""
+    echo -n "Enter new search pattern: "
+    setenv ZEROS "$<"
+    echo -n 'only at the end of the time stamp? (default y): '
+    setenv AT_END "$<"
+    if ("$AT_END" == "") then
+      setenv AT_END "y"
+    endif
+    goto LOOP_ZEROS
+  endif
+  echo -n "Enter index of last dump to plot (default = $#TIMES): "
+  set ilast = "$<"
+  if ("$ilast" == "") then
+    set ilast = $#TIMES
+  endif
+else
+  echo "No output dumps $HDF_OUTPUT_DIR/${SOLVER}_??.*${ZEROS}*_0000.hdf found"
+  exit
+endif
+
+cat <<STP >> $FILE
+echo "Running Voyager"
+echo ""
+
+# Go to frames directory
+cd $FRAMES_DIR
+set BDIR = "../BLOCK_LISTS"
+mkdir -p \$BDIR
+
+# Get the output dump times during the batch job
+
+if ("$AT_END" == "y") then
+  set TIMES = (\`ls $HDF_OUTPUT_DIR/${SOLVER}_??.*${ZEROS}_0000.hdf | sed -e "s/..*\/${SOLVER}_//" | sed -e 's/_....\.hdf//'\`)
+else
+  set TIMES = (\`ls $HDF_OUTPUT_DIR/${SOLVER}_??.*${ZEROS}*_0000.hdf | sed -e "s/..*\/${SOLVER}_//" | sed -e 's/_....\.hdf//'\`)
+endif
+
+# Loop through the output dumps $procs at a time
+
+set i = $ifirst
+LOOP:
+if (\$i > $ilast) then
+  goto OUT
+endif
+  set j = 0
+  set k = \$i
+  while (\$j < $procs)
+    set TIME = \$TIMES[\$k]
+
+#   Work with a copy of the *.roc file.  Strip DOS
+#   carriage returns while making the copy.
+
+    set ROC_FILE_COPY = $FRAMES_DIR/ROC_FILE_COPY.\$TIME
+
+    tr -d '\15\32' < $FRAMES_DIR/$ROC_FILE > \$ROC_FILE_COPY
+
+# Check *.roc for materials to be plotted
+
+    set FLUID = "\`grep -l '^fluid' \$ROC_FILE_COPY\`"
+    set IFLUID_B = "\`grep -l '^ifluid_b' \$ROC_FILE_COPY\`"
+    set IFLUID_NB = "\`grep -l '^ifluid_nb' \$ROC_FILE_COPY\`"
+    set IFLUID_NI = "\`grep -l '^ifluid_ni' \$ROC_FILE_COPY\`"
+
+# Create filelist for dump k, if it does not exist
+# This is the only file we need to modify for each
+# Voyager process.  Giving the list file for each dump
+# a different name allows them to be visualized concurrently.
+
+    set FILE_LIST = $FRAMES_DIR/${file_list}_\${TIME}.txt
+    if (-e \$FILE_LIST) then
+      rm -f \$FILE_LIST
+    endif
+
+# If HDF_OUTPUT_DIR contains a wildcard, resolve it here.
+# Take only the latest remesh subdir with that snapshot.
+
+    set HDF_OUTPUT_DIRS = (\`ls -d $HDF_OUTPUT_DIR\`)
+    if (\$#HDF_OUTPUT_DIRS > 1) then
+      foreach DIR (\$HDF_OUTPUT_DIRS)
+        set NFILES = (\`ls \$DIR/*fluid*\$TIME*.hdf | wc -l\`)
+        if ("\$NFILES[1]" != "0") then
+          set HDF_OUT = \$DIR
+        endif
+      end
+    else
+      set HDF_OUT = \$HDF_OUTPUT_DIRS[1]
+    endif
+
+    if ("\$FLUID" != "") then
+      ls \$HDF_OUT/fluid_\${TIME}_????.hdf > \$FILE_LIST
+#      set COUNT = (\`ls \$HDF_OUT/fluid_\${TIME}_????.hdf | wc -l\`)
+      set COUNT = (\`grep -c '\/fluid_' \$FILE_LIST \`)
+      set FILES_PER_IMAGE = \$COUNT[1]
+
+#     Do we have the right number of blocks in SECTIONS?
+#     Assume 1 block per fluid*.hdf file.  
+#     Check FILE_LIST vs. ROC_FILE_COPY
+
+      set ROC_COUNT = (\`grep '^DATAFILES: ' \$ROC_FILE_COPY | sed -e 's/DATAFILES: //'\`)
+      if ("\$ROC_COUNT[1]" != "\$COUNT[1]") then
+#       They have different numbers of blocks.  Generate new list of blocks
+        set ib = 0
+        set SECTIONS = "SECTIONS:"
+        while (\$ib < \$COUNT[1])
+          @ ib++
+          set jb = \$ib
+          if (\$ib < 10) then
+            set jb = "0\$jb"
+          endif
+          set jb = "\${jb}00"
+          set SECTIONS = "\$SECTIONS \$jb"
+        end
+
+#       Edit ROC_FILE_COPY to put in the right DATAFILES and SECTIONS.
+#       Avoid excessively long lines with ex editor.
+        set echo
+        ex \$ROC_FILE_COPY << WHOA
+/^DATAFILES
+.,.+\$ROC_COUNT[1] d
+i     
+DATAFILES: \$COUNT[1]
+.       
+. r \$FILE_LIST
+wq
+WHOA
+
+#-------------------------------------------------------------------------------
+# The following ex commands were deleted from the above edit:
+# . d   
+# 1,.-1 w! RFC_TOP.\$TIME
+# .,\\\$ w! RFC_BOT.\$TIME
+# and an alternative procedure to get the parts of the ROC file
+# above and below the line specifying the sections to display was devised:
+
+#       Find line number of SECTIONS line
+        set SEC_NUM = \`grep -n '^SECTIONS' \$ROC_FILE_COPY | sed -e 's/:..*//'\`
+        @ SEC_NUM--
+#       TOP is everything above SECTIONS line
+        head -\$SEC_NUM \$ROC_FILE_COPY > RFC_TOP.\$TIME
+        set TOT_NUM = (\`wc -l \$ROC_FILE_COPY\`)
+        @ SEC_TAIL = \$TOT_NUM[1] - \$SEC_NUM
+        @ SEC_TAIL--
+#       BOT is everything below SECTIONS line
+        tail -n \$SEC_TAIL \$ROC_FILE_COPY > RFC_BOT.\$TIME
+#       Assemble new ROC file
+        cp RFC_TOP.\$TIME \$ROC_FILE_COPY
+        echo "\$SECTIONS" | sort >> \$ROC_FILE_COPY
+        cat RFC_BOT.\$TIME >> \$ROC_FILE_COPY
+#       Clean up
+        rm RFC_TOP.\$TIME RFC_BOT.\$TIME
+#-------------------------------------------------------------------------------
+      endif
+    else
+      set FILES_PER_IMAGE = 0
+    endif
+
+    if ("\$IFLUID_B" != "") then
+#      ls \$HDF_OUT/ifluid_b_\${TIME}_????.hdf >> \$FILE_LIST
+      ls \$HDF_OUT/ifluid_b_\${TIME}_????.hdf > IFB_FILE_LIST.\$TIME
+      cat IFB_FILE_LIST.\$TIME >> \$FILE_LIST
+#      set COUNT = (\`ls \$HDF_OUT/ifluid_b_\${TIME}_????.hdf | wc -l\`)
+      set COUNT = (\`grep -c '\/ifluid_b_' \$FILE_LIST \`)
+      @ FILES_PER_IMAGE = \$FILES_PER_IMAGE + \$COUNT[1]
+    endif
+
+    if ("\$IFLUID_NB" != "") then
+#      ls \$HDF_OUT/ifluid_nb_\${TIME}_????.hdf >> \$FILE_LIST
+      ls \$HDF_OUT/ifluid_nb_\${TIME}_????.hdf > IFNB_FILE_LIST.\$TIME
+      cat IFNB_FILE_LIST.\$TIME >> \$FILE_LIST
+#      set COUNT = (\`ls \$HDF_OUT/ifluid_nb_\${TIME}_????.hdf | wc -l\`)
+      set COUNT = (\`grep -c '\/ifluid_nb_' \$FILE_LIST \`)
+      @ FILES_PER_IMAGE = \$FILES_PER_IMAGE + \$COUNT[1]
+    endif
+
+    if ("\$IFLUID_NI" != "") then
+#      ls \$HDF_OUT/ifluid_ni_\${TIME}_????.hdf >> \$FILE_LIST
+      ls \$HDF_OUT/ifluid_ni_\${TIME}_????.hdf > IFNI_FILE_LIST.\$TIME
+      cat IFNI_FILE_LIST.\$TIME >> \$FILE_LIST
+#      set COUNT = (\`ls \$HDF_OUT/ifluid_ni_\${TIME}_????.hdf | wc -l\`)
+      set COUNT = (\`grep -c '\/ifluid_ni_' \$FILE_LIST \`)
+      @ FILES_PER_IMAGE = \$FILES_PER_IMAGE + \$COUNT[1]
+    endif
+
+# Start a Voyager process for dump k, if tiff file does not exist
+# Note that the time written by Voyager can differ from the one
+# for the HDF file in the last digit.
+
+    set DIGITS = \`echo \$TIME | sed -e 's/..*\.//'\`
+    set MANT = \`echo \$TIME | sed -e 's/\..*//'\`
+    @ DP = \$DIGITS + 1
+    @ DM = \$DIGITS - 1
+
+    if (! -e ${FRAMES_DIR}/frm_\${TIME}.tiff && ! -e ${FRAMES_DIR}/frm_\${MANT}.\${DP}.tiff && ! -e ${FRAMES_DIR}/frm_\${MANT}.\${DM}.tiff) then
+      echo ""
+      echo "Processing dump \$TIME"
+      echo ""
+
+# If not done already, edit the *.roc file so that it plots all panes
+# for each surface material, to support remeshing.
+
+      if (! $?USE_ALL) then
+
+#       No "%ALL" keyword allowed; slow, but images are perfect.
+#       Extract the block names using Reader.x
+        
+        if ("\$IFLUID_B" != "") then
+          if (! -e \$BDIR/IFB_BLOCKS_\${TIME}) then
+            read_blocks IFB_FILE_LIST.\$TIME \$BDIR/IFB_BLOCKS_\${TIME}
+          endif
+          set BLOCKS = (\`cat \$BDIR/IFB_BLOCKS_\${TIME} | sort\`)
+#         The list of blocks can be too long for ex to work, so use echo.
+          ex \$ROC_FILE_COPY << WHOA
+/^ifluid_b
+1,. w! RFC_TOP.\$TIME
+/END
+.,\\\$ w! RFC_BOT.\$TIME
+q
+WHOA
+          cp RFC_TOP.\$TIME \$ROC_FILE_COPY
+          echo "SECTIONS: \$BLOCKS" >> \$ROC_FILE_COPY
+#          echo "SECTIONS: \`cat \$BDIR/IFB_BLOCKS_\${TIME} | sort\`" >> \$ROC_FILE_COPY
+          cat RFC_BOT.\$TIME >> \$ROC_FILE_COPY
+          rm -f RFC_TOP.\$TIME RFC_BOT.\$TIME
+        endif
+        if ("\$IFLUID_NB" != "") then
+          if (! -e \$BDIR/IFNB_BLOCKS_\${TIME}) then
+            read_blocks IFNB_FILE_LIST.\$TIME \$BDIR/IFNB_BLOCKS_\${TIME}
+          endif
+          set BLOCKS = (\`cat \$BDIR/IFNB_BLOCKS_\${TIME} | sort\`)
+          ex \$ROC_FILE_COPY << WHOA
+/^ifluid_nb
+.+1 d
+i
+SECTIONS: \$BLOCKS
+.
+wq
+WHOA
+        endif
+
+        if ("\$IFLUID_NI" != "") then
+          if (! -e \$BDIR/IFNI_BLOCKS_\${TIME}) then
+            read_blocks IFNI_FILE_LIST.\$TIME \$BDIR/IFNI_BLOCKS_\${TIME}
+          endif
+          set BLOCKS = (\`cat \$BDIR/IFNI_BLOCKS_\${TIME} | sort\`)
+          ex \$ROC_FILE_COPY << WHOA
+/^ifluid_ni
+.+1 d
+i
+SECTIONS: \$BLOCKS
+.
+wq
+WHOA
+        endif
+
+      else
+
+#       Keyword %ALL exists, but images may be defective for large datasets
+
+        if ("\`grep -l '^SECTIONS: %ALL' \$ROC_FILE_COPY\`" == "") then
+
+          if ("\$IFLUID_B" != "") then
+            ex \$ROC_FILE_COPY << WHOA
+/^ifluid_b
+.+1 d
+i
+SECTIONS: %ALL
+.
+wq
+WHOA
+          endif
+
+          if ("\$IFLUID_NB" != "") then
+            ex \$ROC_FILE_COPY << WHOA
+/^ifluid_nb
+.+1 d
+i
+SECTIONS: %ALL
+.
+wq
+WHOA
+          endif
+
+          if ("\$IFLUID_NI" != "") then
+            ex \$ROC_FILE_COPY << WHOA
+/^ifluid_ni
+.+1 d
+i
+SECTIONS: %ALL
+.
+wq
+WHOA
+          endif
+        endif
+#       Look for ALL
+      endif
+#     Use ALL or not
+
+#     Put the right number of files and the file names in ROC_FILE_COPY
+      ex \$ROC_FILE_COPY << WHOA
+/^# Configure window
+5,.-1 d
+i
+DATAFILES: \$FILES_PER_IMAGE
+.
+. r \$FILE_LIST
+a
+
+.
+wq
+WHOA
+      echo ""
+      echo "Here is the actual ROC_FILE_COPY to be used for this image:"
+      echo ""
+      cat \$ROC_FILE_COPY
+      echo ""
+
+STP
+
+########################################################################
+# Begin run voyager
+########################################################################
+
+switch ($HOST)
+  case up:
+  case datastar:
+#   Use mpirun
+    cat <<STP >> $FILE
+      echo "mpirun -np 1 \${ROCKETEER_HOME}/\${ROCKETEER_VERSION}/bin/Voyager $CAMERA -f \$FILE_LIST -s \$FILES_PER_IMAGE -F ${FRAMES_DIR}/frm_%09.6f \$ROC_FILE_COPY &"
+
+        mpirun -np 1 \${ROCKETEER_HOME}/\${ROCKETEER_VERSION}/bin/Voyager $CAMERA -f \$FILE_LIST -s \$FILES_PER_IMAGE -F ${FRAMES_DIR}/frm_%09.6f \$ROC_FILE_COPY &
+
+STP
+    breaksw
+  case zeus:
+  case blackrose:
+  case slayton:
+#   Run Voyager interactively
+    cat <<STP >> $FILE
+      echo "Voyager $CAMERA -f \$FILE_LIST -s \$FILES_PER_IMAGE -F ${FRAMES_DIR}/frm_%09.6f \$ROC_FILE_COPY &"
+
+      Voyager $CAMERA -f \$FILE_LIST -s \$FILES_PER_IMAGE -F ${FRAMES_DIR}/frm_%09.6f \$ROC_FILE_COPY &
+
+STP
+    breaksw
+  case turing2:
+    cat <<STP >> $FILE
+      echo "rjq $procs Voyager $CAMERA -f \$FILE_LIST -s \$FILES_PER_IMAGE -F ${FRAMES_DIR}/frm_%09.6f \$ROC_FILE_COPY"
+
+      rjq $procs Voyager $CAMERA -f \$FILE_LIST -s \$FILES_PER_IMAGE -F ${FRAMES_DIR}/frm_%09.6f \$ROC_FILE_COPY
+
+STP
+    breaksw
+  default:
+    echo "I do not know how to run Voyager on $HOST"
+    exit
+    breaksw
+endsw
+
+########################################################################
+# End run voyager
+########################################################################
+
+cat <<STP >> $FILE
+      echo ""
+
+    else
+
+      echo ""
+      echo "Image file ${FRAMES_DIR}/frm_\${TIME}.tiff already exists"
+      echo ""
+
+    endif
+
+    @ j++
+    @ k = \$i + \$j
+    if (\$k > $ilast) then
+      goto OUT
+    endif
+  end
+  echo ""
+  echo "Waiting for Voyager processes to finish"
+  echo ""
+  wait
+  set i = \$k
+goto LOOP
+
+OUT:
+
+echo ""
+echo "Waiting for Voyager processes to finish"
+echo ""
+wait
+
+echo ""
+echo "All Voyager processes have terminated"
+echo ""
+
+#rm \$ROC_FILE_COPY
+
+date
+
+exit
+
+STP
+
+echo ""
+echo "Created the following batch job script for Voyager:"
+echo ""
+cat $FILE
+echo ""
+echo -n "Should I submit the job (y/n/x; default = y): "
+set RESPONSE = "$<"
+if ("$RESPONSE" == "") then
+  set RESPONSE = "y"
+endif
+if  ("$RESPONSE" != "y" && "$RESPONSE" != "x") then
+  echo "Job not submitted"
+  exit
+endif
+
+########################################################################
+# Begin submit job
+########################################################################
+
+switch ($HOST)
+  case turing2:
+    echo "qsub $FILE"
+    qsub $FILE
+    breaksw
+  case copper:
+  case datastar:
+    echo "llsubmit $FILE"
+    llsubmit $FILE
+    breaksw
+  case zeus:
+  case blackrose:
+  case slayton:
+    echo ""
+    echo "Running the script interactively"
+    echo ""
+    chmod u+x $FILE
+    $FILE
+    breaksw
+  case up:
+    if ("$RESPONSE" == "y") then
+      echo "psub $FILE"
+      psub $FILE
+    else if ("$RESPONSE" == "x") then
+#     Change the bank to illdat and expedite the job
+#      echo "psub -b illdat -expedite $FILE"
+#      psub -b illdat -expedite $FILE
+      set ILLDAT = "`grep illdat $FILE`"
+      if ("$ILLDAT" == "") then
+        echo "Changing the SU bank in $FILE from illinois to illdat"
+        ex $FILE <<STP
+/illinois
+s/illinois/illdat
+wq
+STP
+        echo "psub -expedite $FILE"
+        psub -expedite $FILE
+      endif
+    endif
+    breaksw
+  default:
+    echo "I do not know how submit batch jobs on $HOST"
+    exit
+    breaksw
+endsw
+
+########################################################################
+# End submit job
+########################################################################
+
+exit

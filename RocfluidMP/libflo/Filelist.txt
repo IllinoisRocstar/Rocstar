@@ -1,0 +1,145 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.18 2006/03/18 21:46:03 wasistho Exp $
+#
+# Purpose: Filelist for libflo.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003 by the University of Illinois
+#
+################################################################################
+
+SRCF90+=        RFLO_ArcLengthBounds.F90\
+                RFLO_BoundaryDeformation.F90\
+                RFLO_CalcCellCentroids.F90\
+                RFLO_CalcFaceCentroids.F90\
+                RFLO_CalcGradConnBc.F90\
+                RFLO_CalcGradDummyConn.F90\
+                RFLO_CalcGradDummy.F90\
+                RFLO_CalcGradDummyPhys.F90\
+                RFLO_CalcGradDummySymm.F90\
+                RFLO_CalcGradFaces.F90\
+                RFLO_CalcGradPhysBc.F90\
+                RFLO_CalcGradVector.F90\
+                RFLO_ChangeInteriorGrid.F90\
+                RFLO_CheckValidity.F90\
+                RFLO_CopyBoundaryData.F90\
+                RFLO_CopyEdgeFaceNorm.F90\
+                RFLO_CopyEdgeFaceParal.F90\
+                RFLO_CopyGeometryDummy.F90\
+                RFLO_CopyTopologyLevels.F90\
+                RFLO_DerivedInputValues.F90\
+                RFLO_EdgeDeformation.F90\
+                RFLO_EdgeDeformationStraight.F90\
+		RFLO_ExchangeDnodeCopy.F90\
+		RFLO_ExchangeDnodeSend.F90\
+		RFLO_ExchangeDnodeRecv.F90\
+		RFLO_ExtrapIntCellVec.F90\
+		RFLO_ExtrapIntCellScal.F90\
+                RFLO_GenerateCoarseGrids.F90\
+                RFLO_GetDimensions.F90\
+                RFLO_GetPatchDimens.F90\
+                RFLO_GetPatchMapping.F90\
+                RFLO_GridRemesh.F90\
+                RFLO_InitInputValues.F90\
+                RFLO_InterpolDistrib.F90\
+		RFLO_RandomInit.F90\
+                RFLO_ReadBcFarfSection.F90\
+                RFLO_ReadBcFromFile.F90\
+                RFLO_ReadBcInflowTotAngSection.F90\
+                RFLO_ReadBcInflowVelSection.F90\
+                RFLO_ReadBcInjectMrateSection.F90\
+                RFLO_ReadBcInjectAPNSection.F90\
+                RFLO_ReadBcInputFile.F90\
+                RFLO_ReadBcNoslipSection.F90\
+                RFLO_ReadBcOutflowSection.F90\
+                RFLO_ReadBcSlipWallSection.F90\
+                RFLO_ReadDataFile.F90\
+                RFLO_ReadGrid.F90\
+                RFLO_ReadGridRegion.F90\
+                RFLO_ReadRandomState.F90\
+                RFLO_ReadRegionTopology.F90\
+                RFLO_ReadSolution.F90\
+                RFLO_ReadSolutionRegion.F90\
+		RFLO_ReadTbcInputFile.F90\
+		RFLO_ReadTbcSection.F90\
+                RFLO_SetMstageCoeffs.F90\
+                RFLO_Tfint.F90\
+                RFLO_WriteDataFile.F90\
+                RFLO_WriteGrid.F90\
+                RFLO_WriteGridRegion.F90\
+                RFLO_WriteRandomState.F90\
+                RFLO_WriteRegionTopology.F90\
+                RFLO_WriteSolution.F90\
+                RFLO_WriteSolutionRegion.F90\
+                RFLO_ZeroDummyCells.F90
+
+ifdef STATS
+  SRCF90+=	RFLO_ReadStat.F90\
+		RFLO_ReadStatRegion.F90\
+		RFLO_WriteStat.F90
+endif
+
+################################################################################
+#
+# RCS Revision history:
+#
+#   $Log: Filelist.txt,v $
+#   Revision 1.18  2006/03/18 21:46:03  wasistho
+#   removed GridFlatPatch
+#
+#   Revision 1.17  2006/03/12 22:03:37  wasistho
+#   added RFLO_GridFlatPatch
+#
+#   Revision 1.16  2006/03/12 20:39:57  wasistho
+#   added RFLO_EdgeDeformationStraight
+#
+#   Revision 1.15  2006/01/20 06:13:03  wasistho
+#   added ReadBcInjectMrate and ReadBcInjectAPN
+#
+#   Revision 1.14  2005/11/11 07:20:25  wasistho
+#   removed RFLO_WriteDegeneratEC
+#
+#   Revision 1.13  2005/10/27 05:52:58  wasistho
+#   removed RFLO_LaplaceGrid... routines
+#
+#   Revision 1.12  2005/10/20 06:51:46  wasistho
+#   added RFLO_CalcFaceCentroids
+#
+#   Revision 1.11  2005/05/27 01:53:11  wasistho
+#   added rflo_gridremesh
+#
+#   Revision 1.10  2005/04/28 05:45:19  wasistho
+#   added velocity based inflow BC
+#
+#   Revision 1.9  2004/11/29 21:06:25  wasistho
+#   lower to upper case
+#
+#   Revision 1.8  2004/11/09 10:52:52  wasistho
+#   added RFLO_readStatRegion
+#
+#   Revision 1.7  2004/09/30 16:56:51  wasistho
+#   added RFLO_extrapIntCellVec/Scal routines
+#
+#   Revision 1.6  2004/08/21 00:33:38  wasistho
+#   added RFLO_writeDegeneratEC
+#
+#   Revision 1.5  2004/07/26 19:01:56  wasistho
+#   add RFLO_CheckValidity
+#
+#   Revision 1.4  2003/11/21 22:22:58  fnajjar
+#   Added Read/Write capabilities for Random Number Generator
+#
+#   Revision 1.3  2003/08/11 21:51:17  jblazek
+#   Added basic global grid smoothing scheme.
+#
+#   Revision 1.2  2003/07/03 21:48:44  jblazek
+#   Implemented dual-time stepping.
+#
+#   Revision 1.1  2003/03/20 19:26:21  haselbac
+#   Initial revision
+#
+################################################################################

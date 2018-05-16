@@ -1,0 +1,142 @@
+///
+/// @page visualization Visualizations 
+/// 
+/// @section rocketeer_viz Visualizations with Rocketeer
+///
+/// @subsection prereqs Prerequsites on Linux
+/// Rocketeer needs:
+/// - libstdc++.so.5 (compat rpm’s)
+/// - libGLU.so.1 (rpm)
+/// \image html rocketeer_prereqs.png
+/// @subsection description_rocketeer Description of Rocketeer
+/// All data sets
+/// - Times, Blocks
+/// - Coordinates/Ranges
+/// - Nodes/elements
+/// - Variables/Ranges
+///   - Scalars, Vectors, Tensors
+/// .
+/// Mesh
+/// - Blocks by color
+/// .
+/// Quality Metrics
+/// - Min/Max angle
+/// - Size, Skewness, etc.
+/// .
+/// Also contains the surface plots
+/// \image html rocketeer_mesh.png
+/// \image html rocketeer_angle.png
+/// Glyphs
+/// - Particles
+/// - Vector fields
+/// .
+/// Isosurfaces
+/// 3-D mesh plots
+/// Opacity controls
+/// - Constant
+/// - Value-dependent
+/// .
+/// Thresholds
+/// Animation
+/// - Output series
+/// - Moving camera
+/// .
+/// Stand-alone, client/server, and batch versions
+/// \image html rocketeer_glyphs.png
+/// \image html rocketeer_thresholds.png
+/// @subsection using_rocketeer Using Rocketeer
+/// \image html rocketeer_using.jpg Open Rocketeer on Windows by double-clicking icon
+/// @subsection select_data Select Data to Display
+/// \image html rocketeer_select_data.jpg Choose File->Select Data Files…
+/// @subsection data_selection Data Selection Dialog
+/// \image html rocketeer_data_selection.png
+/// @subsection data_display Data Display
+/// \image html rocketeer_data_display.png
+/// @subsection select_vars Selecting Variables to Visualize
+/// \image html rocketeer_select_var.png
+/// @subsection activating_display Activating Display
+/// \image html rocketeer_activity_display.png
+/// @subsection moving_image Moving the Image With the Mouse
+/// - Left button – free rotate
+/// - Ctrl-Left Button – Rotate in plane of screen
+/// - Right button hold/move up: larger image
+/// - Right button hold/move down: smaller image
+/// - Center button: translate in plane of screen
+/// - Note: There is no “return to default” command
+/// @subsection change_mesh_display Change How Mesh Displays
+/// \image html rocketeer_mesh_displays.png
+/// @subsection edit_surface Edit Surface/Grid Dialog
+/// \image html rocketeer_grid_dialogue.png
+/// @subsection new_timestep Add a New Timestep
+/// \image html rocketeer_new_timestep.png
+/// @subsection diff_times Displaying Different Times 
+/// \image html rocketeer_different_time.png
+/// @subsection diff_variables Displaying Different Variables
+/// \image html rocketeer_displ_vars.jpg Click on Mesh icon in Variable area. & Choose Visualize->Remove Surface/Grid & Click on pf variable (pressure) & Choose Visualize->Add Surface/Grid & Then click Renderer: On button
+/// @subsection add_colorbar Add Colorbar
+/// \image html rocketeer_add_colorbar.png
+/// @subsection clipping_planes Clipping Planes
+/// \image html rocketeer_clipping_planes.png
+/// @subsection set_clipping_plane Set Clipping Plane
+/// \image html rocketeer_clipping_planes2.png
+/// @subsection add_displ_elem Add Display Elements
+/// \image html rocketeer_add_display_elem.png
+/// @subsection second_var Add a Second Variable
+/// \image html rocketeer_add_2nd_var.png
+/// @subsection edit_glyphs Edit Glyphs
+/// \image html rocketeer_edit_glyphs.png
+/// @subsection opacity Opacity
+/// \image html rocketeer_opacity.png
+/// @subsection final_display Final Display
+/// \image html rocketeer_final_display.jpg Displaying translucent pressure, isosurfaces, and velocity glyphs.
+/// @subsection save_images Save Images and Movies
+/// \image html rocketeer_saving_images.png
+///
+/// @subsection much_more Further Capabilities of Rocketeer
+/// - Ability to use multiple materials (fluid and solid, surface)
+/// - Enable block Selection and movie Fly-throughs
+/// - Visualize slices and bounding boxes
+///
+/// @section tecplot Loading Rocstar Files into Tecplot
+///
+/// @subsection hdf4_tecplot HDF4 to Tecplot Conversion Utility
+/// HDF4 to Tecplot conversion utility: <build>/bin/hdf2plt \n
+/// Usage: <b> hdf2plt –regex “hdf files to convert ” –o <filename>.dat </b> \n
+/// Available command line flags for hdf2plt:
+/// - - -regex "{somestring}*.hdf": specifies a set of hdf files
+/// - -g: enables ghost node inclusion in the output file
+/// - -o {outputfile} : Specifies output file. Output is printed to STDOUT by default
+///
+/// @subsection rocstar_partitions Rocstar Partitions to Tecplot
+/// Information on grid partitioning
+/// - Rocstar partitions grids with M original blocks into N sub-blocks for running on N processors (N >= M)
+/// - Rocstar solution files are written by partitioned block, with each block represented by a separate .hdf file 
+/// - An N-processor run will produce N .hdf files
+/// - Each hdf file will be translated to separate zone of the single Tecplot file produced by hdf2plt
+/// - Note: The University of Illinois version of hdf2plt will produce discontinuous zone boundaries when visualized in Tecplot
+///   - New version under production
+///
+/// @subsection more_tecplot_utils Preplot and Load Solution Files
+/// Preplot (Tecplot utility)
+/// - hdf2plt writes an ascii Tecplot file that can be quite large (many Gb)
+/// - Converting this file into Tecplot’s binary format (appended with .plt) saves time transferring and loading solution files
+/// - Preplot is a Tecplot utility for performing this conversion. It is included in a standard Tecplot installation and can be distributed freely
+/// - Usage: $ preplot <filename>.dat 
+/// - Generates: <filename>.plt
+/// .
+/// Loading fluid solution file into Tecplot
+/// - After conversion, the .dat or .plt solution file can be loaded by the standard Tecplot data loader:
+/// - File->Load Data Files -> Tecplot Data Loader		
+/// .
+/// Probe files
+/// - The probe text files are not covered by an existing utility
+/// - They can be loaded into Tecplot, Excel, etc. using the General Text Loader
+///
+/// @subsection tecplot_vis Rocstar Data Visualization in Tecplot
+/// All of Tecplot’s visualization and analysis tools can now be applied to the Rocstar simulation \n
+/// Allows deriving new variables, etc. that Rocketeer does not do
+/// \image html tecplot.png
+///
+/// These sections are adapted from the <a href="Section_14_Rocketeer.pdf" target="_blank"><b>Rocketeer</b></a> and
+/// <a href="Section_12_Visualization.pdf" target="_blank"><b>Visualization</b></a> powerpoints respectively.
+

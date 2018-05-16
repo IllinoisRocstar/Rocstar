@@ -1,0 +1,159 @@
+                          PROGRAMMING RULES
+                          =================
+
+                    Clean - readable - documented
+
+
+* Fortran keywords and intrinsic functions in capital letters (ENDDO, SIN)
+
+* variable names start with lower-case letter (var)
+
+* subroutine / function names start with capital letter (Func)
+
+* parameters are completely in upper-case letters (CV_MIXT_DENS)
+
+* module names start with "Mod"
+
+* use capital letter(s) to separate words in variable or function name
+  (moveGrid)
+
+* indent IF-THEN-ELSE-ENDIF and DO-ENDDO constructs and similar by 2 spaces
+
+* no more than 80 characters per line
+
+* format statements placed at the end of a subroutine
+
+* explicit interface for each subroutine or function - module "ModInterface"
+
+* all variables must be explicitly declared (use IMPLICIT NONE statement)
+
+* full description of input/output parameters to a subroutine/function
+
+* variable or subroutine names must reflect their purpose (but do not use
+  excessively long names)
+
+* precise comments / hints (inline comments allowed) - start with !
+
+* one subroutine or function per file where reasonable
+  (filename = name of subroutine)
+
+* inline comments at ENDIF or ENDDO for longer IF-conditions or DO-loops
+
+* keep subroutines/functions shorter than approx. 200 (executable) lines
+
+* write one general subroutine/function instead of multiple similar ones
+
+* obligatory form of a program unit is provided in TEMPLATE.F90
+
+* Example:
+
+!******************************************************************************
+!
+! Purpose: To demonstrate the coding rules
+!
+! Description: Numerical scheme is based on the paper: ...
+!
+! Input: iReg  = region number
+!        alpha = angle of attack
+!        cv    = conservative variables
+!        dv    = dependent variables
+!
+! Output: machNumber = Mach number distribution
+!
+! Notes: Routine operates only on one region.
+!
+!******************************************************************************
+!
+! $Id: CODING_RULES,v 1.2 2002/09/05 18:28:18 jblazek Exp $
+!
+! Copyright: (c) 2001 by the University of Illinois
+!
+!******************************************************************************
+
+SUBROUTINE CodingRules( global,iReg,alpha,cv,dv,machNumber )
+
+  USE ModDataTypes
+  USE ModError
+  USE ModGlobal, ONLY     : t_global
+  USE ModInterfaces, ONLY : SomeFunction
+  USE ModParameters
+  IMPLICIT NONE
+
+! ... parameters
+  INTEGER :: iReg
+
+  REAL(RFREAL), POINTER :: cv(:,:), machNumber(:)
+
+  TYPE(t_global), POINTER :: global
+
+! ... loop variables
+  INTEGER :: i, j, k
+
+! ... local variables
+  CHARACTER(CHRLEN) :: RCSIdentString
+
+  INTEGER :: ipcBeg, ipcEnd, jpcBeg, jpcEnd, kpcBeg, kpcEnd
+  INTEGER :: specModel
+
+  REAL(RFREAL) :: s, c, temp
+
+!******************************************************************************
+
+  RCSIdentString = '$RCSfile: CODING_RULES,v $ $Revision: 1.2 $'
+
+  CALL RegisterFunction( global,'CodingRules',__FILE__ )
+
+  ... some code here ...
+
+! comment ---------------------------------------------------------------------
+
+  s    = SIN(alpha)
+  c    = TAN(alpha)
+  temp = 3._RFREAL*c/(s+2._RFREAL)
+
+! comment
+
+  IF (iReg == 1) THEN
+
+    CALL SomeFunction( c,s,cv )
+
+    IF (temp > 0._RFREAL) THEN
+
+      ... some code here ...
+
+! --- comment
+
+      DO k=kpcBeg,kpcEnd
+        DO j=jpcBeg,jpcEnd
+          DO i=ipcBeg,ipcEnd
+
+             ... some code here ...
+
+             machNumber(ijk) = ... cv(CV_MIXT_DENS,ijk) ...
+          ENDDO
+        ENDDO
+      ENDDO
+
+    ELSE
+
+! --- comment
+
+      ... some code here ...
+
+    ENDIF   ! temp>0
+
+! comment
+
+  ELSE IF (iReg==global%nRegions .AND. specModel==PERFGAS) THEN
+
+    ... some code here ...
+
+  ENDIF   ! iReg==1
+  
+! comment ---------------------------------------------------------------------
+
+  ... some code here ...
+
+  CALL DeregisterFunction( global )
+
+END SUBROUTINE CodingRules

@@ -1,0 +1,74 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.7 2005/03/07 05:06:32 wasistho Exp $
+#
+# Purpose: Filelist for Rocperi module.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003 by the University of Illinois
+#
+################################################################################
+
+  SRCF90+=	PERI_ModInterfaces.F90\
+		PERI_ModParameters.F90\
+		PERI_AllocateMemory.F90 \
+		PERI_BuildVersionString.F90\
+		PERI_CheckParamInput.F90 \
+		PERI_CnlForceTerm.F90 \
+		PERI_DerivedInputValues.F90 \
+		PERI_InitInputValues.F90 \
+		PERI_InitSolution.F90 \
+		PERI_ModHybridDES.F90 \
+		PERI_PrintUserInput.F90 \
+		PERI_ReadInputFile.F90 \
+		PERI_ReadPeriSection.F90 \
+		PERI_SolutionUpdate.F90 \
+		PERI_SourceTerms.F90 \
+		PERI_UserInput.F90 
+
+ifdef RFLO
+  SRCF90+=	PERI_coCnlInitSolutionFlo.F90 \
+		PERI_coCprInitSolutionFlo.F90 \
+		PERI_coCprSlowTermsFlo.F90 \
+		PERI_coPgradUpdateFlo.F90
+endif
+
+ifdef RFLU
+  SRCF90+=	PERI_coCnlInitSolutionFlu.F90 \
+		PERI_coCprInitSolutionFlu.F90 \
+		PERI_coCprSlowTermsFlu.F90 \
+		PERI_coPgradUpdateFlu.F90 \
+		PERI_rFLU_DeallocateMemory.F90
+endif
+
+################################################################################
+#
+# RCS Revision history:
+#
+#   $Log: Filelist.txt,v $
+#   Revision 1.7  2005/03/07 05:06:32  wasistho
+#   install hybrid DESSA turbulence model
+#
+#   Revision 1.6  2004/12/01 00:00:11  wasistho
+#   added BuildVersionString
+#
+#   Revision 1.5  2004/06/17 23:02:14  wasistho
+#   added PERI_RFLU_DeallocateMemory
+#
+#   Revision 1.4  2004/06/11 21:49:40  wasistho
+#   prepared for RFLU
+#
+#   Revision 1.3  2004/06/08 23:52:09  wasistho
+#   changed nomenclature
+#
+#   Revision 1.2  2003/04/02 02:09:25  wasistho
+#   removed unused files
+#
+#   Revision 1.1.1.1  2003/03/29 03:36:30  wasistho
+#   install ROCPERI
+#
+#
+################################################################################

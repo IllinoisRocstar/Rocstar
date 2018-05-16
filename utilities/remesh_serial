@@ -1,0 +1,303 @@
+#!/bin/csh
+#
+# remesh_serial NPROCS PROBLEM SSIZING VSIZING SURF PROP
+#
+# Invoke a batch job to run Rocrem on zeus/atlas for 
+# serial remeshing stage
+#
+# The values of the settings are optional
+#
+# Written by Robert Fiedler, revised 10/2/08.
+#
+#..................................................................
+
+set MACHINE_NAME = "`/bin/hostname -s`"
+switch ($MACHINE_NAME)
+case thunder*:
+  set HOST = thunder
+  breaksw
+case alc*:
+  set HOST = alc
+  breaksw
+case zeus*:
+  set HOST = zeus
+  breaksw
+case atlas*:
+  set HOST = zeus
+  breaksw
+case up*:
+  set HOST = up
+  breaksw
+default:
+  echo "Edit $0 to support $MACHINE_NAME"
+  exit
+  breaksw
+endsw
+
+if ($#argv == 0) then
+  echo "Call $0 with arguments NPROCS PROBLEM SSIZING VSIZING SURF PROP"
+  exit
+endif
+
+if ($#argv == 1) then
+# RSRM_Z<ZOOM> (legacy)
+  set NPROCS = 256
+  set PROBLEM = RSRM_Z$1
+else
+  set NPROCS = $1
+  set PROBLEM = $2
+endif
+set RSRM = "`echo $PROBLEM | grep RSRM`"
+
+if (! $?RS_PROP) then
+  if ($#argv < 6) then
+#   Use default Rocprop surface smoothing
+    set PROP = "1"
+  else
+    set PROP = "$6"
+  endif
+else
+  set PROP = "$RS_PROP"
+endif
+if ("$PROP" != "") then
+  set MPROP = "-mprop $PROP"
+else
+  set MPROP = ""
+endif
+
+if (! $?RS_SURF) then
+  if ($#argv < 5) then
+#   Use default surface remeshing aggressiveness
+    set SURF = "2"
+  else
+    set SURF = "$5"
+  endif
+else
+  set SURF = "$RS_SURF"
+endif
+if ("$SURF" != "") then
+  set RSURF = "-l $SURF"
+else
+  set RSURF = ""
+endif
+
+if (! $?RS_VSIZING) then
+  if ($#argv < 4) then
+#   Use default VSIZING
+    set VSIZING = 0.2
+  else
+    set VSIZING = $4
+  endif
+else
+  set VSIZING = $RS_VSIZING
+endif
+
+if (! $?RS_SSIZING) then
+  if ($#argv < 3) then
+#   Use default SSIZING
+    set SSIZING = 1.0
+  else
+    set SSIZING = $3
+  endif
+else
+  set SSIZING = $RS_SSIZING
+endif
+set NEGATIVE = "`echo $SSIZING | grep '^-'`"
+if ("$NEGATIVE" == "") then
+  set SSIZING = "-srel $SSIZING"
+else
+  set SSIZING = "-savg `echo $SSIZING | sed -e 's/-//'`"
+endif
+
+# Choose machine on which to run the remeshing job
+if ($?RS_USE_ATLAS) then
+  echo "RS_USE_ATLAS is set"
+  set MACHINE = atlas
+else
+  set MACHINE = zeus
+endif
+
+if ($?RS_TLIM) then
+# Issue setenv RS_TLIM <n> to set job limit to <n> minutes
+  set TLIM = $RS_TLIM
+else
+# Default time limit (minutes)
+  if ("$RSRM" == "") then
+#   Smaller meshes (the BSM is no longer small!)
+#    set TLIM = 30
+    set TLIM = 99
+  else
+    set TLIM = 119
+  endif
+endif
+
+if ($?RS_POOL) then
+# Do setenv RS_POOL pbatch to use that pool
+  set POOL = $RS_POOL
+else
+# Default pool depends on the job length
+# However, atlas has a 2 hr limit for pdebug nights and weekends
+  if ("$TLIM" > 30) then
+    set POOL = pbatch
+#    set POOL = pdebug
+  else
+    set POOL = pdebug
+  endif
+endif
+
+if ($?RS_NOADAPT) then
+# Do setenv RS_NOADAPT for faster, lower quality remeshing without adaptivity
+  set SSIZING = "-f $SSIZING"
+endif
+
+# Work on a copy of the remeshing batch script
+
+if (! $?RS_SUFFIX) then
+#  set SUFFIX = "_latest"
+  set SUFFIX = ""
+else 
+  if ("$RS_SUFFIX" == "") then
+    set SUFFIX = ""
+  else
+    set SUFFIX = "_$RS_SUFFIX"
+  endif
+endif 
+set SCRIPT = $HOME/gen3_zeus/genx_remesh${SUFFIX}/pjob_rem_RSRM_z.$PROBLEM
+cp $HOME/gen3_zeus/genx_remesh${SUFFIX}/pjob_rem_RSRM_z $SCRIPT
+
+# Edit remeshing batch script to put in NRPOCS PROBLEM SSIZING VSIZING
+
+ex $SCRIPT <<STP
+/Rem_
+d
+i
+#PSUB -r Rem_${PROBLEM}     # Job name
+.
+/tM
+d
+i
+#PSUB -tM ${TLIM}m # Wall time limit (minutes)
+.
+/pool
+d
+i
+#PSUB -pool $POOL      # Constrain to pdebug or pbatch node pool
+.
+/^set NPROCS
+d
+i
+set NPROCS = ${NPROCS}
+.
+/^set PROBLEM
+d
+i
+set PROBLEM = ${PROBLEM}
+.
+/^set SSIZING
+d
+i
+set SSIZING = "${SSIZING}"
+.
+/^set VSIZING
+d
+i
+set VSIZING = ${VSIZING}
+.
+/^set SURFACE1
+d
+i
+set SURFACE1 = "${RSURF}"
+.
+/^set SMOOTHING
+d
+i
+set SMOOTHING = "${MPROP}" 
+.
+wq
+STP
+
+# Display part of the batch job file
+
+echo ""
+echo ""
+echo "Here is the modified script"
+echo ""
+head -75 $SCRIPT
+echo ""
+echo ""
+
+# Check that we have the latest files copied to NFS (G300),
+# provided that the Rocstar run directory is on G30D.
+
+if ("$HOST" == "up") then
+  set PROCS = $NPROCS
+  if ($NPROCS < 100) then
+    set PROCS = "0${PROCS}"
+  endif
+  if ($NPROCS < 10) then
+    set PROCS = "0${PROCS}"
+  endif
+  set ROCOUT = $G300/$PROBLEM/${PROCS}procs/Rocflu/Rocout
+  if (! -d $ROCOUT) then
+#    echo "ERROR: NFS directory $ROCOUT does not exist"
+    echo "NFS directory $ROCOUT does not exist; creating it"
+#    exit
+    mkdir $ROCOUT
+  endif
+  set ROCOUTD = $G30D/$PROBLEM/${PROCS}procs/Rocflu/Rocout
+  if (! -d $ROCOUTD) then
+#    echo "ERROR: Rocflu Rocout directory $ROCOUTD does not exist"
+    echo "Rocflu Rocout directory $ROCOUTD does not exist, so no copying needed"
+#    exit
+#   The Rocstar directory is presumably on NFS.
+    set ROCOUTD = "$ROCOUT"
+  endif
+
+  cd $ROCOUTD
+  set REMESH_TIME = `ls fluid_in_??.??????.txt | tail -n 1 | sed -e 's/fluid_in_//' | sed -e 's/\.txt//'`
+  echo ""
+  echo ""
+  echo "Remesh time is $REMESH_TIME"
+  echo ""
+  if ("$ROCOUTD" != "$ROCOUT") then
+    set HAVE_FLUID_FILES = (`ls $ROCOUT/fluid_${REMESH_TIME}_0000.hdf`)
+    if ("$HAVE_FLUID_FILES" == "") then
+      echo "Copying files to NFS"
+      echo ""
+      cp ifluid*_${REMESH_TIME}*.* $ROCOUT
+      touch $ROCOUT/fluid_${REMESH_TIME}_0000.hdf
+    endif
+  endif
+endif
+
+# Put the screen dump in the following directory
+
+mkdir -p $HOME/gen3_zeus/genx_remesh
+
+# Submit the batch job
+
+if ($?RS_USE_ATLAS) then
+
+# Typical batch job submission:
+  cd $HOME/gen3_zeus/genx_remesh
+  psub $SCRIPT
+  echo "Batch job submitted"
+
+## Alternately, as a work-around for the 2 hour pdebug batch queue
+## time limit on atlas for off-hours, use srun to run job 
+## interactively (no MOAB).  Note that doing this requires that
+## pj_all_ar be changed so that it does not wait for completion
+## of a batch job.
+#  chmod u+x $SCRIPT
+#  ssh atlas "cd $HOME/gen3_zeus/genx_remesh ; srun -n 1 -p pdebug $SCRIPT"
+#  echo ""
+#  echo "Interactive batch job completed"
+else
+  cd $HOME/gen3_zeus/genx_remesh
+  psub $SCRIPT
+  echo "Batch job submitted"
+endif
+
+#echo "Batch job submitted"
+
+exit

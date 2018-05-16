@@ -1,0 +1,356 @@
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\setcounter{equation}{0}
+
+\irsection{Physics Implementation in \Rocburn\ Source}{Code}
+
+\Rocburn\ is a module within the larger multiphysics code \Rocstar. Its one-dimensional model is called a series of times, iterating over every surface point (or cell). The one-dimensional approach described above implies that each surface point is treated independently of the others. Specifically for the propellant surface, \ireq{eq}{eq:sld} is integrated for each point on the gas--solid interface. 
+
+The burn update is invoked by the main flow solver for each surface point at each timestep of the unsteady simulation. The temperature outside the turbulent boundary layer and the film coefficient are passed as input from the main solver to the burn update module, which computes the burn rate and the temperature of the injected gas used in the fluid phase boundary conditions. Porous surface boundary conditions are imposed for $T_s > T_{\rm ignition}$ while solid surface boundary conditions are applied for $T_s < T_{\rm ignition}$. 
+
+The unsteady heat conduction equation, \ireq{eq}{eq:sld}, is discretized using second-order, finite differences in the spatial directions and a first-order, forward difference scheme in time. The very thin temperature boundary layer associated with the heat wave traveling into the solid requires a stretched grid to properly resolve the heat flux at the surface. To preserve second-order spatial accuracy, a computational mapping is used. The von Neumann boundary condition at the fluid--solid interface is imposed by solving a discrete form of \ireq{eq}{eq:bc3}. The first derivative is discretized using a standard second-order, one-sided formula and the nonlinear function $g$ is expanded in a Taylor's series up to first order to obtain an explicit expression for the temperature at the surface, i.e., $T_s$. 
+
+For non-propellant surfaces, the treatment is similar to that just described except that the flux condition \ireq{eq}{eq:bc3} is treated differently. In fact it can be shown that the numerical approximation leads to a quadratic function for the surface temperature, and the correct root must be taken. It is assumed, however, that, in the gas phase, the resolution is such that the heat flux can be adequately captured for time-accurate solutions.
+
+As might be implied from above, the two main functions of \Rocburn\ are to pass information to the main solver upon initialization (e.g., temperature outside the turbulent boundary layer and the film coefficient) and then to update and compute the burn rate and heat flux as a function of time. The implementation is straightforward, and \Rocburn\ only has three main files and a limited number of subroutines. Information specific to the various files and subroutines are given in more detail below.
+
+\begin{description}
+\item[\irfilename{setup\_py.f90}]{Reads user parameters from input file, sets up the (internal \Rocburn) grid and timestep information, and reads the data from the table (if enabled)}
+\item[\irfilename{init\_py.f90}]{Sets up the initial conditions for $t=0$ and determines if any cells are set to burning upon initialization}
+\item[\irfilename{update\_py.f90}]{Updates the various temperatures and variables as functions of time, determines if new cells are burning (i.e., $T_s > T_{\rm ignition}$), and calculates the flux $g$}
+\end{description}
+
+\irssection{Problem Setup}{Setup}
+
+\begin{Verbatim}[frame=single]
+                              setup_py.f90
+
+MODULE SETUP_PY
+
+  USE data_py
+
+CONTAINS
+
+  SUBROUTINE get_time_step_1d(bp,rb,Toa,dt_max)
+  SUBROUTINE burn_init_0d(bp,comm,IN_DIR,nx_read,To_read)
+  SUBROUTINE read_properties(bp,IN_DIR)
+  SUBROUTINE grid(bp)
+  SUBROUTINE READTABLE(bp,IN_DIR)
+  SUBROUTINE STEADYTEMP(bp,TIN,pIN,out,rb,g)
+  SUBROUTINE CHECK_INPUT_RANGE(bp)
+  SUBROUTINE burn_finalize_0d(bp)
+\end{Verbatim}
+
+\begin{description}
+\item[\texttt{get\_time\_step\_1d(bp,rb,Toa,dt\_max)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}  
+\item{Variable \texttt{dt\_max = delt\_max}}
+\end{itemize}
+}
+
+\item[\texttt{burn\_init\_0d(bp,comm,IN\_DIR,nx\_read,To\_read)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize} 
+\item{Call \texttt{read\_properties} to read in the propellant thermophysical properties}
+\item{Set the return values \texttt{nx\_read = numx} and \texttt{To\_read = To} that are read from input}
+\item{Call \texttt{grid} to set up the computational grid}
+\item{If a table is to be read from input, then call \texttt{readtable}}
+\end{itemize}
+}
+
+\item[\texttt{read\_properties(bp,IN\_DIR)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize} 
+\item{Read in all 29 required input parameters from \irfilename{RocburnPYControl.txt} and write them to the screen for verification}
+\item{Note that the 29 parameters must be in the proper order and that the input file is named appropriately}
+\item{Input parameters are discussed in detail in \irref{Section}{Input}}
+\item{Call \texttt{CHECK\_INPUT\_RANGE} to verify input parameters}
+\end{itemize}
+}
+
+\item[\texttt{grid(bp)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}
+\item{Variables \texttt{gridtype = igrid}, \texttt{numx = numx}, \texttt{beta = beta}, \texttt{xmax = xmax}, and \texttt{delz = 1 / (numx-1)}, which are all read from the input file}
+\item{Set up $x$- and $z$-coordinate arrays}
+\item{Set up first and second derivatives of $z$, i.e., $zx$ and $zxx$, respectively}
+\item{Create either exponential or boundary layer grid, depending on \texttt{igrid} input parameter choice}
+\item{Calculate maximum $\Delta t$ for time integration}
+\item{Call \texttt{STEADYTEMP} to get appropriate state state temperature information}
+\end{itemize}
+}
+
+\item[\texttt{READTABLE(bp,IN\_DIR)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}
+\item{If the table read option is enabled in the input file, read the name of the file with the table information, which is also specified in the input file}
+\item{Allocate table fields and work fields}
+\end{itemize}
+}
+
+\item[\texttt{STEADYTEMP(bp,TIN,pIN,out,rb,g)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}
+\item{Variable \texttt{To = To}, which is read from the input file}
+\item{Call \texttt{polin2} (several times) to pass in information read from the table}
+\item{Variable \texttt{out = g - (Tin - To)*rb / alfa}}
+\end{itemize}
+}
+
+\item[\texttt{CHECK\_INPUT\_RANGE(bp)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}
+\item{Check that 14 selected parameters of the total 29 lie within the proper range}
+\item{Input parameters and their associated ranges are discussed in detail in \irref{Section}{Input}}
+\end{itemize}
+}
+
+\item[\texttt{burn\_finalize\_0d(bp)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}
+\item{Deallocate \texttt{bp} global array that contains data read from input}
+\end{itemize}
+}
+
+\end{description}
+
+\irssection{Parameter Initialization at \textit{t} = 0}{Init}
+
+\begin{Verbatim}[frame=single]
+                              init_py.f90
+
+MODULE INIT_PY
+
+  USE data_py
+
+CONTAINS
+
+  SUBROUTINE burn_get_film_coeff_1d(bp,p_coor,Ts,Teuler,P_in,Qc,Qcprime)
+  SUBROUTINE burn_init_1d(bp,bflag,Pin,To,rhoc,p_coor,rb,Toa,fr,Tn,Tflame)    
+\end{Verbatim}
+
+\begin{description}
+
+\item[\texttt{burn\_get\_film\_coeff\_1d(bp,p\_coor,Ts,Teuler,P\_in,Qc,Qcprime)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}
+\item{Variable \texttt{P = P\_in}}
+\item{Variable \texttt{Te = min(Teuler,2*Tstar0)}, where  \texttt{Tstar0} is read from the input file (Note: \texttt{Teuler} is $T_g$ in \irref{Section}{Theory})}
+	\begin{itemize}
+		\item{Avoid Euler temperatures larger than twice the adiabatic flame temperature}
+		\item{Note: ``This is a temporary hardwired fix. It should never affect the solution.''}
+	\end{itemize}
+
+\item{Review \texttt{ixsymm} parameter read from the input file, and if it is nonzero, the cell is already burning at $t=0$}
+
+	\begin{itemize}
+
+	\item{If \texttt{ixsymm.ge.1}, then...}
+		\begin{itemize}
+			\item{Variable \texttt{x\_surf = p\_coor(ixsymm)}, where \texttt{ixsymm} is 1, 2, or 3 for $x$, $y$, or $z$, respectively}
+			\item{Calculate the film coefficient $h$ based on \ireq{eqs}{eq:hfilmcoeff} \textcolor{teal}{-- (\ref{eq:hfilmcoefffull})}}
+			\item{Variable \texttt{front\_dist = x\_surf - x\_surf\_burn} where \texttt{x\_surf\_burn} is read from the input file}
+			\item{Variable \texttt{try\_film} is determined from calculated $h$ (and other constants)}
+		\end{itemize}
+
+	\item{Else...}
+		\begin{itemize}
+			\item{Variable \texttt{try\_film = film\_cons}, which is read from the input file}
+		\end{itemize}
+
+	\end{itemize}
+
+\item{Calculate the heat flux \texttt{Qc} and the derivative of the heat flux \texttt{Qcprime} (Note: The heat flux is specified by $g(T_s,T_g)$ in \irref{Section}{g})}
+	\begin{itemize}
+		\item{$Q_c$ (i.e., $g$) is given by \ireq{eq}{eq:qc} and cannot be negative, where the $\Delta T$ coefficient is the appropriate \texttt{try\_film}}
+		\item{$Q_c^\prime$ (i.e., $g^\prime$) is given by \ireq{eq}{eq:qcprime}, using the appropriate \texttt{try\_film}}
+	\end{itemize}
+
+\end{itemize}
+}
+
+\item[\texttt{burn\_init\_1d(bp,bflag,Pin,To,rhoc,p\_coor,rb,Toa,fr,Tn,Tflame)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}
+\item{Review the \texttt{ixsymm} parameter read from the input file, and if it is nonzero, the cell is already burning at $t=0$}
+
+	\begin{itemize}
+
+	\item{If \texttt{ixsymm.ge.1}, then...}
+		\begin{itemize}
+			\item{Variable \texttt{x\_surf = p\_coor(ixsymm)}, where \texttt{ixsymm} is 1, 2, or 3 for $x$, $y$, or $z$, respectively}
+			\item{If \texttt{x\_surf.le.x\_surf\_burn}, then burn flag \texttt{bflag = 1}; else \texttt{bflag = 0}}
+		\end{itemize}
+
+	\item{Else...}
+		\begin{itemize}
+			\item{Flag \texttt{bflag = 0}}
+		\end{itemize}
+
+	\end{itemize}
+	
+\item{Convert \texttt{P = Pin*pa2atm}}
+\item{Calculate $T_s$ and $r_b$ given \texttt{To} and \texttt{P}}
+
+	\begin{itemize}
+
+	\item{If \texttt{bflag.ne.0}, then...}
+		\begin{itemize}
+			\item{If no table is read from input, then...}
+				\begin{itemize}
+					\item{Calculate \texttt{rb} using \ireq{eq}{eq:pyro1}}
+					\item{\ireq{Eq}{eq:pyro2} is rearranged to solve for $T_s$}
+					\item{Using value for \texttt{rb}, calculate \texttt{Ts} from rearranged \ireq{eq}{eq:pyro2}}
+					\item{Variable \texttt{alp = alfac}, which is read from the input file}
+				\end{itemize}
+			
+			\item{Else...}
+				\begin{itemize}
+					\item{Call \texttt{polin2} (several times) and pass in information read from the table}
+				\end{itemize}
+			
+			\item{Variable \texttt{xcond = rb / alp}}
+			\item{Variable \texttt{dtemp = Ts - To}}
+			\item{Loop over all grid points and calculate variable \texttt{Tn} ($T^n$) at every grid point for use later with \ireq{eq}{eq:fotimeint}}
+			\item{Variable \texttt{Tflame = Tstar0}, which is read from the input file}
+		\end{itemize}
+
+	\item{Else...}
+		\begin{itemize}
+			\item{Variable \texttt{dtemp = Tsurf - To} (Note: \texttt{Tsurf} \textbf{\underline{is not}} the same as \texttt{Ts}!)}
+			\item{Loop over all grid points and calculate variable \texttt{Tn} at every grid point using linear scaling}
+			\item{Variable \texttt{Tflame = Tsurf}, which is read from the input file}
+			\item{Variable \texttt{rb = 0}}
+		\end{itemize}
+
+	\end{itemize}
+
+\item{Variable \texttt{Toa = Tsurf}, which is read from the input file}
+\item{Variable \texttt{fr = 0}}
+\item{Convert \texttt{rb = rb / m2cm}}
+
+\end{itemize}
+}
+
+\end{description}
+
+\irssection{Parameter Update at Time \textit{t}}{Update}
+
+\begin{Verbatim}[frame=single]
+                              update_py.f90
+
+MODULE UPDATE_PY
+
+  USE data_py
+
+CONTAINS
+
+  SUBROUTINE BURN_GET_BURNING_RATE1D(bp,delt,P,To,Tn,Qc,Qc_old,Qr,Qr_old,
+                                     rhoc,Toa,rb,fr,bflag,Tnp1,Tflame,coor)
+  SUBROUTINE GFUN(bp,bw)
+  SUBROUTINE MFUN(bp,bw)
+  SUBROUTINE TFUN(bp,bw)
+\end{Verbatim}
+
+\begin{description}
+
+\item[\texttt{BURN\_GET\_BURNING\_RATE1D(bp,delt,P,To,Tn,Qc,Qc\_old,Qr,Qr\_old,rhoc,Toa,rb,}]{\hfill \\ \textbf{\texttt{fr,bflag,Tnp1,Tflame,coor)}} \vspace{-5pt}
+\begin{itemize}
+\item{If \texttt{press\_min < P < press\_max}, then proceed; else, print an error message and abort; where \texttt{press\_min} and \texttt{press\_max} are read from the input file}
+\item{Convert \texttt{P = P*pa2atm}}
+\item{Convert \texttt{rhoc = rhoc*kgmc2gcc}}
+\item{Convert \texttt{Qc = Qc*j\_msq2cal\_cmsq}}
+\item{Convert \texttt{Qcprime = Qr*j\_msq2cal\_cmsq}}
+\item{Variable \texttt{Ts = Tn(1)}}
+\item{Variable \texttt{To = To}, which is read from the input file}
+\item{Variable \texttt{lamc = rhoc*alfac*C}, where \texttt{alfac} and \texttt{C} are read from the input file}
+\item{Variable \texttt{nx = numx}, which read from the input file}
+\item{Call \texttt{MFUN(bp,bw)}}
+\item{Merge the previous $r_b$ value with the new $r_b$ value}
+\item{Loop over all grid points and calculate variable \texttt{Tnp1} ($T^{n+1}$) at every grid point using \ireq{eq}{eq:fotimeint}}
+\item{Variable \texttt{Tnp1(nx) = To}, which is read from the input file}
+\item{Variable \texttt{ignited = Ts > Tignition}, where \texttt{Tignition} is read from the input file}
+\item{Call \texttt{GFUN(bp,bw)}}
+\item{Update the surface boundary conditions for the iteration}
+	\begin{itemize}
+		\item{If the cell has ignited, then call \texttt{TFUN(bp,bw)}}
+		\item{Else, variable \texttt{Tstar = Tstar0}, which is read from the input file}
+	\end{itemize}
+
+\item{Variable \texttt{Tnp1(1) = Ts}}
+\item{Call \texttt{MFUN(bp,bw)}}
+\item{Merge the previous $r_b$ value with the new $r_b$ value}
+\item{Convert $r_b$ back to MKS units}
+\item{Variable \texttt{Tflame = Tstar}}
+\item{Check output for divergence}
+	\begin{itemize}
+		\item{If \texttt{rb\_min < rb < rb\_max}, then write it to the screen; else, print an error message and abort; where \texttt{rb\_min} and \texttt{rb\_max} are read from the input file}
+		\item{If \texttt{Tf\_min < Tflame < Tf\_max}, then write it to the screen; else, print an error message and abort; where \texttt{Tf\_min} and \texttt{Tf\_max} are read from the input file}
+	\end{itemize}
+
+\end{itemize}
+}
+
+\item[\texttt{GFUN(bp,bw)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}
+\item{Solve for $(T_s^0)^{-1}$ by combining \ireq{eqs}{eq:pyro1} and \textcolor{teal}{(\ref{eq:pyro2})}}
+
+\item{If parameter \texttt{ignited.eq.true}, then ...}
+	\begin{itemize}
+	
+		\item{If no information is read from the table, then...}
+
+			\begin{itemize}
+			
+				\item{Solve for variable \texttt{Tstar} ($T_\star$) using \ireq{eq}{eq:tstar}}
+				\item{If \texttt{Ts.gt.Ts0.and.Ts.gt.Tslimit}, then \texttt{Tstar = Tstar0}, where \texttt{Tstar0} is read from the input file}
+				\item{Solve for variable \texttt{fs}, i.e., $g$, using \ireq{eq}{eq:gofT}}
+				\item{Solve for variable \texttt{fsprime}, i.e., $\partial g/\partial T$, using \ireq{eq}{eq:dgdT}}
+			
+			\end{itemize}
+		
+		\item{Else...}
+			\begin{itemize}
+				\item{Call \texttt{polin2} (several times) and pass in information read from the table}
+			\end{itemize}	
+		
+	\end{itemize}
+
+\item{Else...}
+
+	\begin{itemize}
+		\item{Variable \texttt{fs = Qc / lamc}}
+		\item{Variable \texttt{fsprime = Qcprime / lamc}}
+	\end{itemize}
+
+\end{itemize}
+}
+
+\item[\texttt{MFUN(bp,bw)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}
+\item{Calculate mass flux over density}
+
+\item{If no table is read from input, then...}
+	\begin{itemize}
+		\item{Calculate \texttt{rb} from \ireq{eq}{eq:pyro2}}
+		\item{Variable \texttt{alfa\_eff = alfac}, which is read from the input file}
+	\end{itemize}
+			
+\item{Else...}
+	\begin{itemize}
+		\item{Call \texttt{polin2} (several times) and pass in information read from the table}
+	\end{itemize}
+
+\end{itemize}
+}
+
+\item[\texttt{TFUN(bp,bw)}]{\hfill \\ \vspace{-15pt}
+\begin{itemize}
+\item{Calculate the temperature of the injected gas, i.e, flame temperature, \texttt{Tstar}}
+
+\item{If no table is read from input, then...}
+	\begin{itemize}
+		\item{Rearrange \ireq{eq}{eq:tstar} and solve for \texttt{Tstar}}
+		\item{If \texttt{Ts.gt.Ts0.and.Ts.lt.Tslimit}, then \texttt{Tstar = Tstar0}, which is read from the input file}
+	\end{itemize}
+			
+\item{Else...}
+	\begin{itemize}
+		\item{Call \texttt{polin2} and pass in information read from the table}
+	\end{itemize}
+
+\end{itemize}
+}
+
+\end{description}

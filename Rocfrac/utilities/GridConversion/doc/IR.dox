@@ -1,0 +1,68 @@
+/// @page irp_main Illinois Rocstar Project Template
+/// @ingroup irp 
+/// @section irp_basics IRProject Basics
+/// @subsection intro_sec Introduction
+/// 
+/// This is the main documentation page for IRProject.
+/// 
+/// %IRProject is a template project that can be used as an example
+/// for documentation, and/or testing, or as a template for creating 
+/// a software suite that can be readily integrated into Illinois Rocstar's 
+/// software development environment with unified look, feel, and style.
+///
+/// %IRProject includes:
+/// * Base CMake files 
+/// * Base CTest files
+/// * Example/Model Documentation 
+/// * Example Unit Tests
+/// * Example serial andd parallel programs
+/// * Uses/depends on \subpage irad_main "IRAD"
+/// 
+/// @subsection install_irproject Installation
+///
+/// %IRProject uses the CMake build system. CMake is a system for
+/// configuration and building that generates platform indpendent
+/// build files (e.g. Makefiles) for software packages.  
+///
+/// @subsubsection getting_irproject Get IRProject
+/// 
+/// Get %IRProject from the IR repository:
+///
+///     svn co ${IRREPO}/IRProject/trunk IRProject
+///
+/// @subsubsection environ_irproject Set Up Your Build Environment
+///
+/// Create a directory in which to build %IRProject:
+///
+///     mkdir build_irproject
+///     cd build_irproject
+///
+/// Tell CMake where you want to install %IRProject:
+///
+///     CMAKE_INSTALL_PREFIX=/the/path/to/IRProject/Installation
+///
+/// If you have third party software tools installed in non-standard locations
+/// then you need to let CMake know where to find those packages:
+///
+///     CMAKE_PREFIX_PATH=/third_party_install/path1:/third_party_install/path2
+///
+/// @subsubsection cmake_irproject Makefile Generation
+///
+/// Invoke cmake to generate your makefiles:
+///
+///     cmake ../IRProject
+///
+/// @subsubsection install_irproject Build and Install IRProject
+/// 
+/// Build and test the %IRProject with:
+///
+///     make
+///     make test
+///
+/// @subsection irguide Guides
+/// * @subpage makeproject_guide
+/// * @subpage existingproject_guide
+/// * @subpage testingproject_guide
+/// * @subpage ir_documentation_guide
+/// * @subpage ir_coding_guide
+///

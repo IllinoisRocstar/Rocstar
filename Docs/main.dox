@@ -1,0 +1,73 @@
+///
+/// @mainpage Introduction to Rocstar
+///
+/// @section welcome Welcome
+/// Welcome to the Rocstar multiphysics simulation application! \n
+///
+/// @subsection building_rocstar Building Rocstar
+/// For information on building and installing Rocstar see the <a href="RocstarQuickStart.pdf" target="_blank"><b>Rocstar Quickstart Guide</b></a>. \n
+/// For further details about the requirements of building Rocstar, click <a href="Section_08_BuildingRocstar.pdf" target="_blank"><b>here</b></a>. \n
+/// For more details on how to run Rocstar including information regarding its build structure, click <a href="Section_10_RunRocstar.pdf" target="_blank"><b>here</b></a>.
+///
+/// @subsection motivation Motivation of Rocstar
+/// Historically, there have been many challenges involved with rocket simulation. 
+/// There was a need to handle challenges such as:
+///    - Complex, dynamically changing geometry 
+///    - Extremely diverse spatial and temporal scales
+///    - Complex material properties and physical processes
+///    - Enormous computational capacity required for high-resolution simulations
+///
+/// Development for Rocstar was started at the Center for Simulation of Advanced Rockets with the overarching goal of simulating solid propellant rockets.
+/// The Simulation Suite aimed to do several things:
+///    - Provide detailed, whole-system simulation of solid propellant rockets under normal and abnormal operating conditions
+///    - Provide accurate models of physical components
+///    - Provide subscale simulations of materials and accident scenarios
+///    - Provide a software framework and computational infrastructure to facilitate component integration and support large-scale simulation
+///
+/// The entire Rocstar Simuation Suite is laid out as such:
+/// \image html physics_sim.png
+///
+/// @section user User Guides
+/// Here are quick links to access the userguides for some of the various Roc-modules. These guides include information for the user and/or the developer. 
+/// 
+/// |Modules     | \b User \b Guides                                                             |\b Developer \b Guides                                                 |\b Combined Guides                                                   |
+/// |:----------:| :-----------------:                                                           |:---------------------:                                                |:----------:                                                         | 
+/// |Misc.       |<a href="Rocstar3_UG.pdf" target="_blank"><b>Rocstar Suite</b></a>|                                                                       |                                                                     |
+/// |Rocblas     |<a href="Rocblas_ug.pdf" target="_blank"><b>X</b></a>             |<a href="Rocblas_dg.pdf" target="_blank"><b>X</b></a>     |                                                                     |
+/// |Rocburn2D   |                                                                               |                                                                       |<a href="Rocburn2D_UG.pdf" target="_blank"><b>X</b></a> |
+/// |Roccom      |<a href="Roccom_ug.pdf" target="_blank"><b>X</b></a>              |                                                                       |                                                                     |
+/// |Rocface     |<a href="Rocface_ug.pdf" target="_blank"><b>X</b></a>             |                                                                       |                                                                     |
+/// |RocfluMP    |                                                                               |                                                                       |<a href="rocflump_book.pdf" target="_blank"><b>X</b></a>|
+/// |Rocfrac     |<a href="Rocfrac_ug.pdf" target="_blank"><b>X</b></a>             |<a href="Rocfrac_dg.pdf" target="_blank"><b>X</b></a>     |                                                                     |
+/// |Rocin/Rocout|<a href="Rocin_ug.pdf" target="_blank"><b>X</b></a>               |                                                                       |                                                                     |
+/// |Rocketeer   |<a href="rocketeer.pdf" target="_blank"><b>X</b></a>              |                                                                       |                                                                     |
+/// |Rocman      |                                                                               |<a href="Rocman_design.pdf" target="_blank"><b>X</b></a>  |                                                                     |
+/// |Rocmap      |                                                                               |                                                                       |<a href="Rocmap_UDG.pdf" target="_blank"><b>X</b></a>   |  
+/// |Rocmop      |<a href="Rocmop_UG.pdf" target="_blank"><b>X</b></a>              |<a href="Rocmop_DG.pdf" target="_blank"><b>X</b></a>      |                                                                     |
+/// |Rocpart     |<a href="rocpart_ug.pdf" target="_blank"><b>X</b></a>             |<a href="rocpart_dg.pdf" target="_blank"><b>X</b></a>     |                                                                     |
+/// |Rocrad      |<a href="Rocrad_ug.pdf" target="_blank"><b>X</b></a>              |<a href="Rocrad_dg.pdf" target="_blank"><b>X</b></a>      |                                                                     |
+/// |Rocsolid    |<a href="Rocsolid_3.4_UG.pdf" target="_blank"><b>X</b></a>        |<a href="Rocsolid_3.4_DG.pdf" target="_blank"><b>X</b></a>|                                                                     |
+/// |Rocturb     |<a href="rocturb_ug.pdf" target="_blank"><b>X</b></a>             |<a href="rocturb_dg.pdf" target="_blank"><b>X</b></a>     |                                                                     |
+///
+/// @subsection additional Additional Guides
+/// The table show gives additional guides that aren't necesarily user or developer guides. Click <a href="../html/extra_guides.html"><b>Here</b></a> 
+/// for more information about each document.
+///
+/// |Modules |Extra Guides                                                                                                     |                                                                                      |
+/// |:---:   |:---:                                                                                                            |:---:                                                                                 |
+/// |Rocstar |<a href="Section_06_ServiceComponents.pdf" target="_blank"><b>Service Components</b></a>      |<a href="Rocstar_TimeZooming.pdf" target="_blank"><b>Time Zooming</b></a>| 
+/// |Rocman  |<a href="Section_05_RocmanOrchestration.pdf" target="_blank"><b>Rocman Orchestration</b></a>  |<a href="rocman3.pdf" target="_blank"><b>Rocman Paper</b></a>            |
+/// |Roccom  |<a href="Section_04_IntegrationInterface.pdf" target="_blank"><b>Integration Interface</b></a>|<a href="FileFormats.pdf" target="_blank"><b>FileFormats</b></a>         |
+/// |Rocface |<a href="surfdiver.pdf" target="_blank"><b>Surfdiver</b></a>                                        |                                                                                      |        
+///
+/// @section guidelines Guidelines
+/// Developers at Illinois Rocstar attempt to adhere to a set of semi-flexible guidelines for 
+/// documentation and coding standards when developing new code. It is not guaranteed that existing 
+/// code meets these guidelines; however, every effort should be made to follow them for new code. 
+/// We also suggest that developers working in areas of older code attempt to "spruce things up a bit" 
+/// so that the code is in better shape than when they found it. For more details on our coding and 
+/// documentation standards, see the following pages:
+///
+/// \li @subpage ir_documentation_guide
+/// \li @subpage ir_coding_guide
+///

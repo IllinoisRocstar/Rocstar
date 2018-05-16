@@ -1,0 +1,100 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.11 2006/03/26 20:22:17 haselbac Exp $
+#
+# Purpose: Filelist for Rocsmoke module.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003-2005 by the University of Illinois
+#
+################################################################################
+
+ SRCF90+=	SPEC_BuildVersionString.F90
+
+ifdef RFLO
+ SRCF90+= 	SPEC_ModInterfaces.F90
+endif 
+
+ifdef RFLU
+  SRCF90+=	SPEC_ModInterfaces.F90\
+		SPEC_ModParameters.F90\
+		SPEC_RFLU_ModChemistry.F90\
+		SPEC_RFLU_ModReadWriteVars.F90\
+		SPEC_CheckUserInput.F90\
+		SPEC_DerivedInputValues.F90\
+		SPEC_EqEulCorr.F90\
+		SPEC_EqEulCorrPatch.F90\
+		SPEC_InitInputValues.F90\
+		SPEC_InitInputValuesSpecType.F90\
+		SPEC_PrintUserInput.F90\
+		SPEC_ReadInputFile.F90\
+		SPEC_ReadSpecSection.F90\
+		SPEC_ReadSpecTypeSection.F90\
+		SPEC_UpdateDependentVars.F90\
+		SPEC_UserInput.F90\
+		SPEC_RFLU_AllocateMemory.F90\
+		SPEC_RFLU_AllocateMemoryEEv.F90\
+		SPEC_RFLU_AllocateMemorySol.F90\
+		SPEC_RFLU_AllocateMemoryTStep.F90\
+		SPEC_RFLU_AllocateMemoryVert.F90\
+		SPEC_RFLU_DeallocateMemory.F90\
+		SPEC_RFLU_DeallocateMemoryEEv.F90\
+		SPEC_RFLU_DeallocateMemorySol.F90\
+		SPEC_RFLU_DeallocateMemoryTStep.F90\
+		SPEC_RFLU_DeallocateMemoryVert.F90\
+		SPEC_RFLU_EnforceBounds.F90\
+		SPEC_RFLU_InitFlowHardCode.F90\
+		SPEC_RFLU_InitFlowScratch.F90\
+		SPEC_RFLU_PrintFlowInfo.F90\
+		SPEC_RFLU_ReadBcFarfSection.F90\
+		SPEC_RFLU_ReadBcInflowSection.F90\
+		SPEC_RFLU_ReadBcInjectSection.F90\
+		SPEC_RFLU_ReadBcInputFile.F90\
+		SPEC_RFLU_ReadBcSectionDummy.F90\
+		SPEC_RFLU_SetEEv.F90\
+                SPEC_RFLU_SetVarInfo.F90\
+                SPEC_RFLU_SourceTerms_GL.F90
+endif
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Filelist.txt,v $
+# Revision 1.11  2006/03/26 20:22:17  haselbac
+# Added entry for SPEC_RFLU_SourceTerms_GL.F90
+#
+# Revision 1.10  2005/11/27 01:53:06  haselbac
+# Added entries for new routines, removed {Read/Write}Flow routines
+#
+# Revision 1.9  2005/04/15 15:07:33  haselbac
+# Removed entry for SPEC_RFLU_ImposeFlowUniform, cosmetics
+#                                      
+# Revision 1.8  2005/03/31 17:16:39  haselbac                 
+# Added entry for SPEC_RFLU_ReadBcSectionDummy                
+#
+# Revision 1.7  2004/12/01 00:04:48  wasistho                 
+# added BuildVersionString                                    
+#
+# Revision 1.6  2004/11/02 02:33:19  haselbac                 
+# Added entry for SPEC_RFLU_SetVarInfo                        
+#
+# Revision 1.5  2004/07/30 22:47:37  jferry                   
+# Implemented Equilibrium Eulerian method for Rocflu          
+#
+# Revision 1.4  2004/04/01 21:31:01  haselbac                 
+# Added entry for SPEC_RFLU_ModChemistry.F90                  
+#
+# Revision 1.3  2004/01/29 22:59:33  haselbac                 
+# Added SPEC_UpdateDependentVars and SPEC_RFLU_EnforceBounds  
+#
+# Revision 1.2  2003/11/25 21:08:34  haselbac                 
+# Added routines                                              
+#
+# Revision 1.1  2003/03/20 19:26:22  haselbac                 
+# Initial revision                                            
+#
+################################################################################

@@ -1,0 +1,82 @@
+# FORMATS
+GRID      0	! 0 - ROCFLU ASCII, 1 - ROCFLU binary, 2 - ROCFLU HDF
+SOLUTION  0	! 0 - ROCFLU ASCII, 1 - ROCFLU binary, 2 - ROCFLU HDF
+GRIDSRC   4	! 0 - CENTAUR ASCII, 1 - VGRIDNS, 2 - MESH3D
+#
+
+# FLOWMODEL
+MODEL    0 	! 0 - Euler, 1 - Navier-Stokes
+MOVEGRID 1	! 0 - static grid, 1 - moving grid
+#
+
+# NUMERICS
+CFL      1.0	! CFL number
+DISCR    3      ! Type of space discretization (1 - Roe, 2 - MAPS)
+ORDER    2      ! Order of accuracy (1 - first, 2 - second)
+ENTROPY  0.05   ! Entropy correction coefficient (if DISCR=1)
+#
+
+# TIMESTEP
+FLOWTYPE  1	! 0 - steady flow, 1 - unsteady flow
+TIMESTEP  0.000001 ! Max. physical time step 
+STARTTIME 0.0 ! Current iteration
+MAXTIME   0.2 ! Maximum number of iterations
+WRITIME   0.001 ! Offset between iterations to store solutions
+PRNTIME   0.00000005 ! Offset between iterations to print convergence 
+DTMINLIMIT 5.0E-09
+#
+
+# GRIDMOTION 
+TYPE 	3
+NITER	10
+SFACT	0.25
+#
+
+# REFERENCE
+GAMMA	1.2444
+CP	1905.0
+#
+
+# PROBE
+NUMBER 2
+0.001 0.0 0.0
+0.0495735 0.0 0.0
+#
+WRITIME 0.000005
+OPENCLOSE 1
+#
+
+# INITFLOW
+FLAG    1 
+DENS	1.16
+VELX	0.0
+VELY	0.0
+VELZ 	0.0
+PRESS	1.0E+5
+#
+
+# TRANSFORM
+FLAG 1
+SCALE_X 0.0254
+SCALE_Y 0.0254
+SCALE_Z 0.0254
+#
+
+# PREP
+SURFFLAG 1
+#
+
+# POST
+PLTTYPE    1
+PLTVOLFLAG 0
+MERGEFLAG  0
+#
+
+# ROCKET
+CASERAD .0066167
+#
+
+# TIMEZOOMING
+MAXPLANE     0.047625
+MINPLANE     0.00
+#

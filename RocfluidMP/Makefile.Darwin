@@ -1,0 +1,292 @@
+################################################################################
+#
+# $Id: Makefile.Darwin,v 1.17 2006/12/16 19:54:37 haselbac Exp $
+#
+# Purpose: Mac OS-X-specific makefile
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2004-2006 by the University of Illinois
+#
+################################################################################
+
+AR= ar
+CPP=cpp
+LIBMPI=
+LIBSYS=
+LIBTEC=
+MODEXT=mod
+MODULES=*.$(MODEXT)
+MPIINC= 
+
+### Machine-dependent settings ################################################
+
+MACHINE= $(shell uname -n)
+
+### Andreas' PowerBook ########################
+ifeq ($(MACHINE),popovich.csar.uiuc.edu)
+  ARFLAGS= crsu
+
+  COMP=mpif90
+  FC=xlf90_r
+  F90DIR:= $(dir $(shell which xlf90_r))
+  
+  CXX=mpicxx
+  CXXFLAGS=
+  CXXOPT= 
+  LINKER=$(CXX)
+  CXXLINKFLAGS= -L$(F90DIR)../lib -lxlf90_r -lxlopt -lxlfmath -lxl
+  FORTFLAGS= -DFORTRAN_LOWERCASE 
+
+  ifdef DEBUG
+    CMFLAGS=-g -C $(MPIINC)
+    LDFLAGS=-g $(MPILIB)
+    ifdef CHARM
+      LDFLAGS+=-memory paranoid
+    endif
+  else
+    CMFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 $(MPIINC)
+    LDFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 $(MPILIB)
+  endif
+  ifdef PROF
+    CMFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 -p $(MPIINC)
+    LDFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 -p
+    $(MPILIB)
+  endif 
+
+  LIBSYS= -lstdc++ 
+  LIBMET=/Users/haselbac/packages/metis-4.0/libmetis.a
+
+  TECHOME=/Applications/Tec100
+  LIBTEC=$(TECHOME)/lib/tecio.a
+
+  ifdef RFLUPOST
+    INCTEC=-I$(TECHOME)/include
+  endif
+endif
+
+
+### My MacPro ########################
+ifeq ($(findstring vonkarman,$(MACHINE)),vonkarman)
+  ARFLAGS= crsu
+
+  COMP=mpif90
+  FC=ifort
+  F90DIR:= $(dir $(shell which ifort))
+
+  CXX=mpicxx
+  CXXFLAGS=
+  CXXOPT= 
+  LINKER=$(CXX)
+  
+  F90LIBS      = -lifcore -lm -lirc -limf -lsvml
+  CXXLINKFLAGS = -L$(F90DIR)../lib/for_main.o $(F90LIBS)  
+  
+  FORTFLAGS= -DFORTRAN_LOWERCASE -DFORTRAN_UNDERSCORE
+  ifdef DEBUG
+    CMFLAGS=-g -C
+    LDFLAGS=-g -C
+  else
+    CMFLAGS=-O3 $(MPIINC)
+    LDFLAGS=-O3 $(MPILIB)
+  endif
+  ifdef PROF
+    CMFLAGS=-O3 -p $(MPIINC)
+    LDFLAGS=-O3 -p $(MPILIB)
+  endif 
+
+  ifdef ROCPROF
+    FPPFLAGS+= -DROCPROF
+    LIBSYS+= -L$(ROCPROF)/lib -lRocprof
+  endif
+
+  LIBMET=/usr/local/metis-4.0/libmetis.a
+
+  TECHOME=/Applications/Tec360
+  LIBTEC=$(TECHOME)/lib/tecio.a
+
+  ifdef RFLUPOST
+    INCTEC=-I$(TECHOME)/include
+  endif
+endif
+
+
+### Mike's PowerBook ########################
+ifeq ($(MACHINE),aldrin.csar.uiuc.edu)
+  ARFLAGS= crsu
+
+  COMP=mpif90
+  FC=xlf90_r
+  F90DIR:= $(dir $(shell which xlf90_r))
+  
+  CXX=mpiCC
+  CXXFLAGS=
+  CXXOPT= 
+  LINKER=$(CXX)
+  CXXLINKFLAGS= -L$(F90DIR)../lib -lxlf90_r -lxlopt -lxlfmath -lxl
+  FORTFLAGS= -DFORTRAN_LOWERCASE 
+
+  ifdef DEBUG
+    CMFLAGS=-g $(MPIINC)
+    LDFLAGS=-g $(MPILIB)
+    ifdef CHARM
+      LDFLAGS+=-memory paranoid
+    endif
+  else
+    CMFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 $(MPIINC)
+    LDFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 $(MPILIB)
+  endif
+  ifdef PROF
+    CMFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 -p $(MPIINC)
+    LDFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 -p
+    $(MPILIB)
+  endif 
+
+  LIBSYS= -lstdc++ 
+
+  TECHOME=/Applications/Tec100
+  LIBTEC=$(TECHOME)/lib/tecio.a
+
+  ifdef RFLUPOST
+    INCTEC=-I$(TECHOME)/include
+  endif
+endif
+
+### CSAR Mac Cluster ########################
+ifeq ($(findstring turing,$(MACHINE)),turing)
+  ARFLAGS= crsu
+
+  COMP=mpif90
+  FC=xlf90_r
+  F90DIR:= $(dir $(shell which xlf90_r))
+
+  CXX=mpiCC
+  CXXFLAGS=
+  CXXOPT= 
+  LINKER=$(CXX)
+  CXXLINKFLAGS= -L$(F90DIR)../lib -lxlf90_r -lxlopt -lxlfmath -lxl
+  FORTFLAGS= -DFORTRAN_LOWERCASE -DFORTRAN_UNDERSCORE
+  ifdef DEBUG
+    CMFLAGS=-g $(MPIINC) -C
+    LDFLAGS=-g $(MPILIB) -C
+  else
+    CMFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 $(MPIINC)
+    LDFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 $(MPILIB)
+  endif
+  ifdef PROF
+    CMFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 -p $(MPIINC)
+    LDFLAGS=-O3 -qstrict -qtune=g5 -qarch=g5 -p $(MPILIB)
+  endif 
+
+  ifdef PETSC
+    FPPFLAGS+= -I$(PETSC_DIR) -I$(PETSC_DIR)/include -I$(PETSC_DIR)/bmake/$(PETSC_ARCH) \
+	   -I/turing/software/mpich-gm/include/
+###    LIBLAP=-L/System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Versions/Current -lLAPACK -lBLAS
+    LIBLAP=/private/automount/home/hdewey2/LAPACK/blas_LINUX.a \
+	   /private/automount/home/hdewey2/LAPACK/lapack_LINUX.a
+    LIBPET=-L$(PETSC_DIR)/lib/$(PETSC_ARCH) -lpetscksp -lpetscmat -lpetscvec\
+	   -lpetscdm -lpetscfortran -lpetsc -lpetscsnes
+    LIBX11=/usr/X11R6/lib/libX11.a
+  endif
+
+  ifdef ROCPROF
+    FPPFLAGS+= -DROCPROF
+    LIBSYS+= -L$(ROCPROF)/lib -lRocprof
+  endif
+
+  LIBMET=/turing/software/metis-4.0/lib/libmetis.a
+
+  TECHOME=/Applications/Tec100
+  LIBTEC=$(TECHOME)/lib/tecio.a
+
+  ifdef RFLUPOST
+    INCTEC=-I$(TECHOME)/include
+  endif
+endif
+
+
+
+### Pattern rules ##############################################################
+%.o: %.F90
+ifeq ($(FC),ifort)
+	$(COMP) $(FPPFLAGS) $(CMFLAGS) $(MODDIR:%=-I%) -c $< -o $@
+endif
+ifeq ($(FC),xlf90_r)
+	$(COMP) $(FPPFLAGS:-D%=-WF,-D%) $(CMFLAGS:-D%=-WF,-D%) \
+	$(MODDIR:%=-I%) -qsuffix=f=f90:cpp=F90 -qthreaded -c $< -o $@
+endif	
+%.o: %.f
+ifeq ($(FC),ifort)
+	$(COMP) $(CMFLAGS) -c $< -o $@
+endif
+ifeq ($(FC),xlf90_r)
+	$(COMP) $(CMFLAGS:-D%=-WF,-D%) -qsuffix=f=f -qfixed -c $< -o $@
+endif	
+%.o: %.C
+	$(CXX) $(CXXOPT) -I$(FLUIDHOME)/include $(INCTEC) $(FORTFLAGS) -c $< -o $@
+
+
+### Default action #############################################################
+all:
+
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Makefile.Darwin,v $
+# Revision 1.17  2006/12/16 19:54:37  haselbac
+# Bug fix: Last ci broke compilation on turing
+#
+# Revision 1.16  2006/12/15 13:18:09  haselbac
+# Added section for MacPro desktop
+#
+# Revision 1.15  2006/03/25 22:10:18  haselbac
+# Removed changes of accidental ci
+#
+# Revision 1.14  2005/11/10 01:54:41  haselbac
+# Added Rocprof for turing, deleted erroneous new line
+#
+# Revision 1.13  2005/10/31 21:09:33  haselbac
+# Changed specModel and SPEC_MODEL_NONE
+#
+# Revision 1.12  2005/08/02 18:14:21  hdewey2
+# Added PETSC section
+#
+# Revision 1.11  2005/07/14 21:38:36  haselbac
+# Adapted popovich section
+#
+# Revision 1.10  2005/05/19 16:05:56  haselbac
+# Changed Tecplot linking problem workaround bcos of Frost
+#
+# Revision 1.9  2005/05/05 18:31:07  haselbac
+# Fixed problem where missing path to tecplot can break compilation
+#
+# Revision 1.8  2005/05/04 13:00:50  haselbac
+# Added Tecplot linkage problem workaround
+#
+# Revision 1.7  2005/05/03 03:01:20  haselbac
+# Changed to linking with C++
+#
+# Revision 1.6  2005/04/15 15:05:42  haselbac
+# Removed Charm/FEM stuff
+#
+# Revision 1.5  2005/03/24 18:40:15  haselbac
+# Added popovich section
+#
+# Revision 1.4  2005/01/26 16:03:15  haselbac
+# Fixed compiler to be mpif90, not mpxlf90
+#
+# Revision 1.3  2005/01/20 02:00:25  haselbac
+# Enabled Tecplot on turing
+#
+# Revision 1.2  2005/01/08 02:29:14  haselbac
+# Adapted to (new) turing
+#
+# Revision 1.1  2004/02/16 01:09:26  haselbac
+# Initial revision
+#
+################################################################################
+

@@ -1,0 +1,273 @@
+#!/bin/csh
+#
+# Retrieve files stored by archive_hdf to mass storage.
+#
+# Run this command in the Rocstar run directory, whose name
+# is assumed to be .../<problem name>/<nnnprocs>
+#
+# Written by Robert Fiedler, revised 12/8/07.
+#
+#.......................................................................
+
+set DIR = `pwd`
+
+# 1) Get base dir name in HPSS
+#    Assume we are in local nnnprocs directory
+
+if (! $?HOST) then
+  set HOST = `hostname`
+endif
+set NNNPROCS = $DIR:t
+set PROBLEM_def = $DIR:h
+set PROBLEM_def = $PROBLEM_def:t
+
+if (! $?PROBLEM) then
+  echo -n "Enter problem name on mass storage (default ${PROBLEM_def}): "
+  set PROBLEM = "$<"
+  if ("$PROBLEM" == "") then
+    set PROBLEM = "$PROBLEM_def"
+  endif
+endif
+
+if (-d Rocflu) then
+  set FLUID = "Rocflu"
+else if (-d Rocflo) then
+  set FLUID = "Rocflo"
+else
+  echo "I cannot find a fluid solver directory."
+  exit
+endif
+set REMOTE_DIR = "GEN3/$PROBLEM/$NNNPROCS/$FLUID"
+echo "REMOTE_DIR = $REMOTE_DIR"
+set REMOTE_DIRB = "GEN3/$PROBLEM/$NNNPROCS/RocburnAPN"
+
+
+# 2) Get list of Rocout subdirs on HPSS
+
+set SCRIPT = retrieve.$$
+echo "Creating script $SCRIPT to list Rocout subdirectories on mass storage."
+echo "The remote directory is $REMOTE_DIR"
+echo "#\!/bin/csh" > $SCRIPT
+switch ($HOST)
+case up*:
+  echo "ftp -iv storage << STP" >> $SCRIPT
+  breakssw
+case alc*:
+case zeus*:
+  echo "ftp -iv storage << STP" >> $SCRIPT
+  # Add a "return" to get to the password prompt.
+  # It will be entered interactively when the transfer script is run.
+  echo "" >> $SCRIPT
+  breaksw
+case blackrose*:
+case dslogin*:
+  echo "hsi << STP" >> $SCRIPT
+  breaksw
+default:
+  echo "Machine $HOST not supported"
+  exit
+  breaksw
+endsw
+echo "cd $REMOTE_DIR" >> $SCRIPT
+echo "dir" >> $SCRIPT
+echo "STP" >> $SCRIPT
+echo "exit" >> $SCRIPT
+
+# Execute the script, and save the output to a file
+
+echo ""
+echo "Running the script"
+echo ""
+
+chmod u+x $SCRIPT
+$SCRIPT |& tee SUBDIR_LIST
+
+echo ""
+echo "N  Subdir_name"
+
+# Process the script output to get the subdir names
+
+# A grep and and awk ought to do the trick here
+
+#set SUBDIRS = (`cat SUBDIR_LIST | grep Rocout.remesh | awk '{print $9}'`)
+set SUBDIRS = (`cat SUBDIR_LIST | grep Rocout | awk '{print $9}'`)
+
+# 3) Loop over subdirs
+
+set i = 1
+foreach SUBDIR ($SUBDIRS)
+  echo "$i  $SUBDIR"
+  @ i++
+end
+
+echo -n "Enter index of first subdir whose dumps are to be listed (default 1): "
+set ibeg = "$<"
+if ("$ibeg" == "") then
+  set ibeg = 1
+endif 
+
+#echo -n "Enter index of last subdir whose dumps are to be listed (default $#SUBDIRS): "
+#set iend = "$<"
+#if ("$iend" == "") then
+#  set iend = $#SUBDIRS
+#endif 
+
+set i = 1
+while ($i < $ibeg)
+  shift SUBDIRS
+  @ i++
+#  @ iend--
+end
+
+foreach SUBDIR ($SUBDIRS)
+
+  echo ""
+  echo -n "Do you wish to list dumps in $SUBDIR (y/n default y): "
+  set DO_LIST = "$<"
+  if ("$DO_LIST" == "") then
+    set DO_LIST = "y"
+  endif
+
+  if ("$DO_LIST" == "y") then
+
+#   4) Get times already present (see archive_hdf)
+
+    set TIMES = (`ls fluid_??\.??????_0000\.hdf | sed -e 's/fluid_//' | sed -e 's/_0000\.hdf//'`)
+
+#   5) Get times in HPSS (???)
+
+    echo "Creating script $SCRIPT to list dumps in subdirectories on mass storage."
+    echo "#\!/bin/csh" > $SCRIPT
+    switch ($HOST)
+    case up*:
+      echo "ftp -iv storage << STP" >> $SCRIPT
+      breaksw
+    case alc*:
+    case mcr*:
+    case zeus*:
+      echo "ftp -iv storage << STP" >> $SCRIPT
+      # Add a "return" to get to the password prompt.
+      # It will be entered interactively when the transfer script is run.
+      echo "" >> $SCRIPT
+      breaksw
+    case blackrose*:
+    case dslogin*:
+      ftp "hsi << STP" >> $SCRIPT
+      breaksw
+    default:
+      echo "Machine $HOST not supported"
+      exit
+      breaksw
+    endsw
+    echo "cd $REMOTE_DIR" >> $SCRIPT
+    echo "cd $SUBDIR" >> $SCRIPT
+    echo 'dir fluid_*.tar' >> $SCRIPT
+    echo "STP" >> $SCRIPT
+    echo "exit" >> $SCRIPT
+
+# Execute the script, and save the output to a file
+
+echo ""
+echo "Running the script"
+echo ""
+chmod u+x $SCRIPT
+$SCRIPT |& tee SUBDIR_LIST
+echo ""
+
+# Process the script output to get the subdir names
+
+# A grep and and awk ought to do the trick here
+
+    set HTIMES = (`cat SUBDIR_LIST | grep fluid_ | awk '{print $9}' | sed -e 's/fluid_//' | sed -e 's/\.hdf\.tar//'`)
+
+
+#   6) Loop over times in HPSS
+
+    echo ""
+    echo "Dumps on remote storage are:"
+    set ihtime = 1
+
+LOOP_HTIMES:
+
+##   7)   If local time does not exist, get from HPSS
+#
+#      set iltime = 0
+#
+#LOOP_LTIMES:  
+#
+#        @ iltime++
+#        if ($iltime <= $#TIMES) then
+#          goto LOOP_LTIMES
+#        endif
+#    
+## END LOOP_LTIMES
+
+      if ($ihtime <= $#HTIMES) then
+        echo "$ihtime    $HTIMES[$ihtime]"
+        @ ihtime++
+        goto LOOP_HTIMES
+      endif 
+
+      echo ""
+      echo -n "Enter index of first time to transfer (default 1): "
+      set ifirst = "$<"
+      if ("$ifirst" == "") then
+        set ifirst = 1
+      endif
+      if ($ifirst < $#HTIMES) then
+        echo -n "Enter index of last time to transfer (default $#HTIMES): "
+        set ilast = "$<"
+        if ("$ilast" == "") then
+          set ilast = $#HTIMES
+        endif
+      else
+        set ilast = $ifirst
+      endif
+
+# END LOOP_HTIMES
+
+      set ihtime = $ifirst
+
+LOOP_HTIMES2:
+
+      if ($ihtime <= $ilast) then
+
+        mkdir -p $DIR/$FLUID/$SUBDIR
+        cd $DIR/$FLUID/$SUBDIR
+
+        echo "htar xf $REMOTE_DIR/$SUBDIR/fluid_${HTIMES[$ihtime]}.hdf.tar"
+        htar xf $REMOTE_DIR/$SUBDIR/fluid_${HTIMES[$ihtime]}.hdf.tar
+        echo "htar xf $REMOTE_DIR/$SUBDIR/ifluid_b_${HTIMES[$ihtime]}.hdf.tar"
+        htar xf $REMOTE_DIR/$SUBDIR/ifluid_b_${HTIMES[$ihtime]}.hdf.tar
+        echo "htar xf $REMOTE_DIR/$SUBDIR/ifluid_nb_${HTIMES[$ihtime]}.hdf.tar"
+        htar xf $REMOTE_DIR/$SUBDIR/ifluid_nb_${HTIMES[$ihtime]}.hdf.tar
+        echo "htar xf $REMOTE_DIR/$SUBDIR/ifluid_ni_${HTIMES[$ihtime]}.hdf.tar"
+        htar xf $REMOTE_DIR/$SUBDIR/ifluid_ni_${HTIMES[$ihtime]}.hdf.tar
+
+#       Get RocburnAPN data so we can restart
+
+        mkdir -p $DIR/RocburnAPN/$SUBDIR
+        cd $DIR/RocburnAPN/$SUBDIR
+
+        echo "htar xf $REMOTE_DIRB/$SUBDIR/burn_${HTIMES[$ihtime]}.hdf.tar"
+        htar xf $REMOTE_DIRB/$SUBDIR/burn_${HTIMES[$ihtime]}.hdf.tar
+        echo "htar xf $REMOTE_DIRB/$SUBDIR/iburn_${HTIMES[$ihtime]}.hdf.tar"
+        htar xf $REMOTE_DIRB/$SUBDIR/iburn_${HTIMES[$ihtime]}.hdf.tar
+
+        @ ihtime++
+        goto LOOP_HTIMES2
+      endif
+
+    endif
+# DO_LIST
+
+  cd $DIR
+
+end
+
+# Clean up and exit
+EXIT:
+
+rm -f SUBDIR_LIST retrieve.$$
+
+exit

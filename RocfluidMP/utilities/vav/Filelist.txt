@@ -1,0 +1,53 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.3 2004/12/01 22:48:38 fnajjar Exp $
+#
+# Purpose: Filelist for rocvav utility.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003 by the University of Illinois
+#
+################################################################################
+
+SRCF90+=	RVAV_ModInterfaces.F90\
+                RVAV_ModDataStruct.F90\
+                RVAV_ModGlobal.F90\
+                RVAV_ModParameters.F90\
+		BuildVersionString.F90\
+                RVAV_BlasiusSolution.F90\
+                RVAV_ComputeAnalyticalSolution.F90\
+                RVAV_ComputeError.F90\
+                RVAV_ComputeSimilarField.F90\
+                RVAV_ExtractVariables.F90\
+                RVAV_GammBumpSolution.F90\
+                RVAV_Main.F90\
+                RVAV_PlotResults.F90\
+                RVAV_ProudmanCulickSolution.F90\
+                RVAV_ReadComparisonsSection.F90\
+                RVAV_ReadFileStream1.F90\
+                RVAV_ReadFileStream2Analyt.F90\
+                RVAV_ReadFileStream2Comput.F90\
+                RVAV_ReadFileStream2Experm.F90\
+                RVAV_ReadFileStream2.F90\
+                RVAV_ReadInputFile.F90\
+                RVAV_ReadSectionStream1.F90\
+                RVAV_ReadSectionStream2.F90
+
+################################################################################
+#
+# RCS Revision history:
+#
+#   $Log: Filelist.txt,v $
+#   Revision 1.3  2004/12/01 22:48:38  fnajjar
+#   Changed to upper case
+#
+#   Revision 1.2  2003/03/20 22:39:12  haselbac
+#   Removed ModInterfaces
+#
+#   Revision 1.1  2003/03/20 19:26:22  haselbac
+#   Initial revision
+#
+################################################################################

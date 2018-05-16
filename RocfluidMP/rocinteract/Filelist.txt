@@ -1,0 +1,109 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.13 2004/12/01 22:54:52 fnajjar Exp $
+#
+# Purpose: Filelist for Rocinteract module.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003 by the University of Illinois
+#
+################################################################################
+
+ifdef INRT
+  SRCF90+=	INRT_ModInterfaces.F90\
+		INRT_ModParameters.F90\
+		INRT_AllocateAuxillary.F90\
+		INRT_AugmentConSources.F90\
+		INRT_AugmentDisSources.F90\
+		INRT_BuildVersionString.F90\
+		INRT_BurnStatusUpdate.F90\
+		INRT_CalcBurning.F90\
+		INRT_CalcDrag.F90\
+		INRT_CalcHeatTransferNonBurn.F90\
+		INRT_CalcScouring.F90\
+		INRT_CheckUserInput.F90\
+		INRT_ComputeMaxEdges.F90\
+		INRT_DefineBoilingRegulation.F90\
+		INRT_DefineBurning.F90\
+		INRT_DefineDrag.F90\
+		INRT_DefineHeatTransferNonBurn.F90\
+		INRT_DefineScouring.F90\
+		INRT_DetermineTokens.F90\
+		INRT_FinishMomentumEdge.F90\
+		INRT_Initialize.F90\
+		INRT_PrintMaterialInput.F90\
+		INRT_PrintUserInput.F90\
+		INRT_ReadBoilingRegulation.F90\
+		INRT_ReadBurning.F90\
+		INRT_ReadDefaultSection.F90\
+		INRT_ReadDrag.F90\
+		INRT_ReadHeatTransferNonBurn.F90\
+		INRT_ReadInputFile.F90\
+		INRT_ReadMaterialInput.F90\
+		INRT_ReadScouring.F90\
+		INRT_SetActiveness.F90\
+		INRT_SetMaterial.F90\
+		INRT_SetParticleTemp.F90\
+		INRT_SetPermission.F90\
+		INRT_SourceTerms.F90\
+		INRT_UserInput.F90\
+		INRT_VaporEnergyConversion.F90
+
+  ifdef RFLO
+    SRCF90+=	INRT_TwoDimAverage.F90
+  endif
+
+  ifdef RFLU
+    SRCF90+=
+  endif
+
+endif
+
+################################################################################
+#
+# RCS Revision history:
+#
+#   $Log: Filelist.txt,v $
+#   Revision 1.13  2004/12/01 22:54:52  fnajjar
+#   Added INRT_BuildVersionString entry which was removed by mistake
+#
+#   Revision 1.12  2004/12/01 22:01:42  fnajjar
+#   Changed to upper case
+#
+#   Revision 1.11  2004/12/01 00:02:58  wasistho
+#   added BuildVersionString
+#
+#   Revision 1.10  2004/07/28 15:42:12  jferry
+#   deleted defunct constructs: useDetangle, useSmokeDrag, useSmokeHeatTransfer
+#
+#   Revision 1.9  2004/07/27 21:27:13  jferry
+#   removed rocinteract allocation routines (moved to rocpart)
+#
+#   Revision 1.8  2004/07/26 17:05:51  fnajjar
+#   moved allocation of inrtSources into Rocpart
+#
+#   Revision 1.7  2004/03/02 21:47:29  jferry
+#   Added After Update interactions
+#
+#   Revision 1.6  2003/11/25 21:08:25  haselbac
+#   Added list of files for RFLU
+#
+#   Revision 1.5  2003/09/25 15:48:43  jferry
+#   implemented Boiling Regulation interaction
+#
+#   Revision 1.4  2003/04/03 16:18:28  fnajjar
+#   Include routines for burning and scouring
+#
+#   Revision 1.3  2003/04/02 22:32:03  jferry
+#   codified Activeness and Permission structures for rocinteract
+#
+#   Revision 1.2  2003/03/24 23:30:52  jferry
+#   overhauled rocinteract to allow interaction design to use user input
+#
+#   Revision 1.1  2003/03/20 19:26:21  haselbac
+#   Initial revision
+#
+################################################################################

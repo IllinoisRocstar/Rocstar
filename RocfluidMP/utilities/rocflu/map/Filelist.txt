@@ -1,0 +1,38 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.4 2005/05/03 03:10:41 haselbac Exp $
+#
+# Purpose: Filelist for rflumap utility.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003-2005 by the University of Illinois
+#
+################################################################################
+SRCCXX+=	main.C
+
+SRCF90+=	BuildVersionString.F90\
+		RFLU_PrintHeader.F90\
+		RFLU_WriteVersionString.F90\
+		rflumap.F90
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Filelist.txt,v $
+# Revision 1.4  2005/05/03 03:10:41  haselbac
+# Added compilation of main.C, removed main.F90
+#
+# Revision 1.3  2005/04/18 14:59:45  haselbac
+# Added entry for rflumap
+#
+# Revision 1.2  2004/10/19 19:29:52  haselbac
+# Added routines, cosmetics
+#
+# Revision 1.1  2003/03/20 19:26:22  haselbac
+# Initial revision
+#
+################################################################################

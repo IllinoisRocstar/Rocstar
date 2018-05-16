@@ -1,0 +1,11 @@
+///
+/// @page std_out Rocstar Standard Out
+/// @TODO Add more context to the Rocstar Standard Out page. Right now the powerpoint does not give it any useful information.
+/// 
+/// @section timestep1 Example Screen Output 1
+/// \image html timestep1.png
+/// @section timestep2 Example Screen Output 2
+/// \image html timestep2.png
+/// @section performance_data Performance Data
+/// \image html performance_data.png
+/// This page is adapted from the <a href="Section_11_RocstarIO.pdf" target="_blank"><b>Sample I/O</b></a> powerpoint. 

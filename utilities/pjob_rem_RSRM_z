@@ -1,0 +1,203 @@
+#!/bin/csh -f
+#PSUB -r Rem_RSRM_Z16     # Job name
+#PSUB -ln 1        # Number of nodes
+#PSUB -g 1us@dist # Number of tasks [protocol][@layout]
+#PSUB -np 1     # CPUs per node
+#PSUB -tM 49m # Wall time limit (minutes)
+#PSUB -b illinois       # Bank to use
+#PSUB -pool pbatch      # Constrain to pdebug or pbatch node pool
+#PSUB -c "atlas|zeus"   # Constrain to these machines
+#PSUB -eo               # Combine stderr and stdout
+#PSUB -ro               # Write stdout as the job runs
+#PSUB -mb               # Send mail at job startup
+#PSUB -me               # Send mail at job completion
+##PSUB -lc 1kb           # Limit core file size
+set JOBID = "${SLURM_JOBID}"
+echo "Request ${JOBID}"  # Display request ID
+echo "Beginning at"
+set echo
+date
+echo ""
+
+#-----------------------------------------------------------------------------
+
+# Number of physical CPUs
+
+# Number of partitions to create = number of virtual processors.
+set NPROCS = 256
+
+set PROBLEM = RSRM_Z16
+
+# Rocrem path and parameters
+
+set REMESH_PATH = $HOME/gen3_zeus/genx_remesh/bin
+set SSIZING = "-srel 1.0"
+set VSIZING = 0.2
+
+# Use -u if the surface is not to be remeshed.
+# Use -z to transfer surface data (with -u only)
+#set SURFACE = '-u -z'
+set SURFACE1 = '-l 2'
+set SURFACE = '-l 2'
+
+# Smooth the mesh before data transfer using Rocmop (no Rocprop)
+#set SMOOTHING = '-m'
+#set SMOOTHING = ''
+set SMOOTHING = '-mmop 3 -mprop 1'
+
+#-----------------------------------------------------------------------------
+
+
+# Derive the Rocstar run directory name
+set PROCS = "$NPROCS"
+if ($NPROCS < 100) then
+  set PROCS = "0${PROCS}"
+endif
+if ($NPROCS < 10) then
+  set PROCS = "0${PROCS}"
+endif
+
+# Go to GEN3 run directory
+set RUNDIR = $G300/$PROBLEM/${PROCS}procs
+if (! -d $RUNDIR) then
+  set RUNDIR = $G301/$PROBLEM/${PROCS}procs
+  if (! -d $RUNDIR) then
+      echo "Cannot find directory $PROBLEM/${PROCS}procs on NFS; quitting."
+  endif
+endif
+  
+cd $RUNDIR
+
+# Touch a file to indicate this job is still running
+
+touch REMESH_SERIAL
+
+# Find the latest output time in Rocflu/Rocout
+
+set REMESH_TIMES = (`ls -rt Rocflu/Rocout/fluid_??.??????_0000.hdf | tail -n 2`)
+if ($#REMESH_TIMES > 1) then
+  set REMESH_TIME = `echo $REMESH_TIMES[2] | sed -e 's/..*fluid_//' | sed -e 's/_0000.hdf//'`
+  set RUN_TIME = `echo $REMESH_TIMES[1] | sed -e 's/..*fluid_//' | sed -e 's/_0000.hdf//'`
+else if ($#REMESH_TIMES == 1) then
+  set REMESH_TIME = `echo $REMESH_TIMES[1] | sed -e 's/..*fluid_//' | sed -e 's/_0000.hdf//'`
+  set RUN_TIME = "00.000000"
+else
+  echo "No output dumps found to remesh"
+  goto EXIT
+endif
+
+echo ""
+echo "Running the serial Rocrem code, including METIS and solution transfer"
+
+# Prepare the nodelist, and determine the number of physical CPUs.
+
+srun -l /bin/hostname | sort -n | awk '{print $2}' >  machinefile
+$HOME/bin/charmnodes machinefile > nodelist
+
+set NODES = (`wc -l nodelist`)
+set NNODES = $NODES[1]
+@ NNODES--
+set NCPUS = `expr $NNODES \* 8`
+
+# Remove the old remeshed mesh if this is a serial job
+
+if ($NNODES == 1) then
+
+# Serial stages
+
+  rm -f Rocrem/serial_remesh_fem_vp0_0.dat
+  rm -f Rocrem/serial_fem_${REMESH_TIME}_vp0_0.dat
+
+# Do mesh generation and partioning steps in serial
+
+# Use charmrun to launch, +p<n> to run on <n> physical CPUs.
+# The -t argument causes Rocrem to stop before transfer.
+# The -j argument makes it partition in serial.
+
+#  $HOME/charm_zeus/bin/charmrun $REMESH_PATH/Rocrem $SURFACE1 -j -t -y $SSIZING -svol $VSIZING -g2 $SMOOTHING -v2 -w1 +vp$NPROCS Rocflu $REMESH_TIME +p1
+# Stop after gnerating the serial *.dat file
+  $HOME/charm_zeus/bin/charmrun $REMESH_PATH/Rocrem $SURFACE1 -q1 -t -y $SSIZING -svol $VSIZING -g1 $SMOOTHING -v2 -w1 +vp$NPROCS Rocflu $REMESH_TIME +p1
+
+# Check whether serial meshing succeeded
+
+  if (! -e Rocrem/serial_fem_${REMESH_TIME}_vp0_0.dat) then
+    if (! -e Rocrem/serial_remesh_fem_vp0_0.dat) then
+      echo "Serial remeshing failed at time ${REMESH_TIME}. Quitting"
+      goto EXIT
+    else
+      mv Rocrem/serial_remesh_fem_vp0_0.dat Rocrem/serial_fem_${REMESH_TIME}_vp0_0.dat
+    endif
+  endif
+
+else
+
+# Parallel stages
+
+# Partition in a separate step outside Rocrem/fem1xfer
+
+  cd Rocrem
+  $HOME/charm_zeus/bin/charmrun $REMESH_PATH/partition +vp$NPROCS
+  cd ..
+
+# Check whether serial partitioning succeeded
+
+  set PAR_FILES = (`ls Rocrem/parallel_rem*.dat | wc -l`)
+  set NPAR_FILES = $PAR_FILES[1]
+  if ($NPAR_FILES != $NPROCS) then
+    echo "Serial partitioning produced $NPAR_FILES files, not ${NPROCS}. Quitting"
+    goto EXIT
+  endif
+
+# Perform partitioning, solution transfer, and Rocflu dataset prep in parallel
+
+# The -q0 argument makes it read in the partitioned mesh from
+# the parallel_fem*.dat files.
+
+  $HOME/charm_zeus/bin/charmrun $REMESH_PATH/fem1xfer $SURFACE $SMOOTHING -q0 -g2 -v2 -w1 -j -y +vp$NPROCS Rocflu $REMESH_TIME +p$NCPUS
+#  $HOME/charm_zeus/bin/charmrun $REMESH_PATH/fem1xfer $SURFACE $SMOOTHING -q1 -g2 -v2 -w1 -j -y +vp$NPROCS Rocflu $REMESH_TIME +p$NCPUS
+
+
+#-----------------------------------------------------------------------------
+
+# Check whether remeshing appears to have succeeded
+
+  if (-e Rocflu/Rocout.remesh_${REMESH_TIME}/remesh_vol_${REMESH_TIME}_00001.hdf) then
+
+#   Prepare the Rocburn Rocout directory
+    cd RocburnAPN
+#   This rm will fail unless Rocout is already a link
+    rm -f Rocout
+    if (-e Rocout) then
+#     Try to rename Rocout directory
+      if (! -e Rocout.remesh_00.000000) then
+        mv Rocout Rocout.remesh_00.000000
+      else
+        if ("${RUN_TIME}" != "${REMESH_TIME}") then
+          if (! -e Rocout.remesh_${RUN_TIME}) then
+            mv Rocout Rocout.remesh_${RUN_TIME}
+          else
+            echo "Cannot rename Rocout.  Quitting"
+            goto EXIT
+          endif
+        else
+          echo "Cannot rename Rocout.  Quitting"
+          goto EXIT
+        endif
+      endif
+    endif
+    mkdir Rocout.remesh_${REMESH_TIME}
+    ln -s Rocout.remesh_${REMESH_TIME} Rocout
+
+  else
+    echo "Remeshing appears to have failed at time ${REMESH_TIME}"
+  endif
+
+endif
+# NNODES = 1
+
+EXIT:
+echo ""
+date
+rm -f machinefile nodelist
+rm -f $RUNDIR/REMESH_SERIAL
+exit

@@ -1,0 +1,170 @@
+################################################################################
+#
+# $Id: Makefile.SunOS,v 1.34 2005/04/15 15:05:45 haselbac Exp $
+#
+# Purpose: Sun-specific makefile
+#
+# Description: none
+#
+# Notes: none
+#
+# Copyright: (c) 2001 by the University of Illinois
+#
+################################################################################
+
+AR= ar
+ARFLAGS= cru
+CPP=cpp
+LIBMPI=
+LIBSYS=
+LIBTEC=
+MODEXT=mod
+MODULES=*.$(MODEXT)
+MPIINC= 
+
+### Machine-dependent settings ################################################
+
+MACHINE= $(shell uname -n)
+
+  COMP=f90
+  ifdef MPI
+    COMP=mpif90
+  endif 
+
+  ifdef MPI
+    MPIINC= -I/usr/commercial/ptools/mpich/include
+    LIBMPI= -L/usr/commercial/ptools/mpich/lib/solaris/ch_shmem
+  endif
+
+  ifdef DEBUG
+    CMFLAGS=-ansi -C -g $(MPIINC)
+    LDFLAGS=-g $(MPILIB)
+  else
+    CMFLAGS=-ansi -fast $(MPIINC)
+    LDFLAGS=-fast $(MPILIB)
+  endif
+  ifdef PROF
+    CMFLAGS=-ansi -fast -p $(MPIINC)
+    LDFLAGS=-fast -p $(MPILIB)
+  endif 
+
+  LIBTEC=/usr/commercial/tecplot/lib/tecio.a
+
+### Pattern rules ##############################################################
+%.o: %.f90
+	$(COMP) $(CMFLAGS) $(MODDIR:%=-M%) -c $<
+%.f90: %.F90
+	@cpp -C -P $(FPPFLAGS) $< $@
+%.o: %.f
+	$(COMP) $(CMFLAGS) -c $<
+
+### Default action #############################################################
+all:
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Makefile.SunOS,v $
+# Revision 1.34  2005/04/15 15:05:45  haselbac
+# Removed Charm/FEM stuff
+#
+# Revision 1.33  2003/12/04 03:19:17  haselbac
+# Changed RIFFRAFF and added MODULES
+#
+# Revision 1.32  2003/11/20 16:40:32  mdbrandy
+# Backing out RocfluidMP changes from 11-17-03
+#
+# Revision 1.30  2003/05/15 02:56:59  jblazek
+# Inlined index function.
+#
+# Revision 1.29  2003/04/11 16:46:35  haselbac
+# Fixed bug: RIFFRAFF not defined
+#
+# Revision 1.28  2003/04/11 15:15:18  jiao
+# Changed RFLU_CHARM back to CHARM.
+#
+# Revision 1.27  2003/03/20 22:41:41  haselbac
+# Modifications for new building process
+#
+# Revision 1.25  2003/01/31 22:57:21  jiao
+# Moved MODDIR in build rules
+#
+# Revision 1.24  2003/01/31 22:20:06  jiao
+# Changed to add module paths in CMFLAGS instead of FPPFLAGS
+#
+# Revision 1.23  2003/01/31 22:11:03  jiao
+# Changed to compile modules in modfloflu to avoid duplication of object files.
+#
+# Revision 1.22  2002/10/27 18:39:39  haselbac
+# Added HACK_SCALED
+#
+# Revision 1.21  2002/10/25 14:07:56  f-najjar
+# Added PLAG_FROZENFLOW cpp flag
+#
+# Revision 1.20  2002/10/12 21:37:00  haselbac
+# Changed RFLU_CHARM to RFLU_CHARM
+#
+# Revision 1.19  2002/10/07 17:08:32  olawlor
+# Changed "CHARM=1" make flag to "FLU_CHARM=1".
+#
+# This is needed because the rest of genx uses "CHARM=1"
+# to indicate that we're using AMPI; while here "CHARM=1"
+# means we're running Rocflu under the FEM framework.
+#
+# Revision 1.18  2002/10/01 22:40:06  jiao
+# Jiao: Fixed dependencies
+#
+# Revision 1.17  2002/09/27 00:57:07  jblazek
+# Changed makefiles - no makelinks needed.
+#
+# Revision 1.16  2002/09/20 22:22:32  jblazek
+# Finalized integration into GenX.
+#
+# Revision 1.15  2002/09/17 22:51:22  jferry
+# Removed Fast Eulerian particle type
+#
+# Revision 1.14  2002/08/30 18:25:55  jblazek
+# Forgot to multiply grid speeds by face area ...
+#
+# Revision 1.13  2002/07/25 15:29:22  haselbac
+# Added HACK_PERIODIC flag
+#
+# Revision 1.12  2002/06/27 16:06:14  haselbac
+# Added CHECK_DATASTRUCT precompilation flag
+#
+# Revision 1.11  2002/06/17 13:42:35  haselbac
+# Added GENX precompilation flag to activate SOLVER_NAME
+#
+# Revision 1.10  2002/06/14 21:12:38  haselbac
+# Changed UNIFLOWPRES to CHECK_UNIFLOW
+#
+# Revision 1.9  2002/06/14 21:03:39  wasistho
+# Added STATS and CHECK_GRAD flags
+#
+# Revision 1.8  2002/05/28 13:38:27  haselbac
+# Added charmc
+#
+# Revision 1.7  2002/05/04 17:19:37  haselbac
+# Added UNIFLOWPRES command-line flag
+#
+# Revision 1.6  2002/03/18 22:35:50  jblazek
+# Changed compilation options for postprocessing and LAM-MPI.
+#
+# Revision 1.5  2002/02/22 00:05:44  jblazek
+# Changed TECPLOT link option.
+#
+# Revision 1.4  2002/01/12 00:02:48  jblazek
+# Added postprocessor.
+#
+# Revision 1.3  2001/12/22 00:09:36  jblazek
+# Added routines to store grid and solution.
+#
+# Revision 1.2  2001/12/11 21:59:28  jblazek
+# memory allocation added.
+#
+# Revision 1.1.1.1  2001/12/03 21:44:04  jblazek
+# Import of RocfluidMP
+#
+################################################################################
+

@@ -1,0 +1,17 @@
+options:
+    --src
+    ./Source
+    --doc
+    ./doc
+    --html
+    --latex
+    --singledoc
+    --index
+    --nodesc 
+    --sections
+ignore files:
+    ~
+    .o
+    e
+    .mod
+

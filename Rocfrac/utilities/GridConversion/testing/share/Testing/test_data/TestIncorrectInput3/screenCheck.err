@@ -1,0 +1,9 @@
+gridConversion:Error: Error: 9 number of nodes per element is invalid.
+gridConversion:Error: Valid number of nodes:
+gridConversion:Error:   2: bar
+gridConversion:Error:   3: triangle
+gridConversion:Error:   4: quadrilateral or tetrahedron
+gridConversion:Error:   5: pyramid
+gridConversion:Error:   6: triangular prism
+gridConversion:Error:   8: hexahedron
+gridConversion:Error:  10: tehtrahedron (higher order)

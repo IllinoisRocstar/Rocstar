@@ -1,0 +1,9 @@
+CouplingScheme = SolidFluidSPC
+FluidModule = Rocflo
+SolidModule = Rocfrac
+AutoRestart = True
+CurrentTimeStep = 5.0e-07
+MaximumTime = 1.5e-4
+ZoomFactor = 0.0
+OutputIntervalTime = 1.0e-05
+

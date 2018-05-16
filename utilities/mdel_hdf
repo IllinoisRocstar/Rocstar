@@ -1,0 +1,317 @@
+#!/bin/csh
+#
+# mdel_hdf [SUFFIX]
+#
+# Delete multiple HDF output dumps.
+#
+# This version uses a fluid file list in the home directory.
+#
+# Written by Robert Fiedler, revised for GEN3 8/7/06.
+#
+
+if ($#argv > 0) then
+  set SUFFIX = "_$1"
+else
+  set SUFFIX = ""
+endif
+
+unalias rm
+set DIR = `pwd`
+
+set FDIR = "Rocflo/Rocout$SUFFIX"
+if (! -d $FDIR) then
+  set FDIR = "Rocflu/Rocout$SUFFIX"
+  if (! -d $FDIR) then
+    echo ""
+    echo "Cannot find Rocflo or Rocflu Rocout$SUFFIX directory"
+    echo ""
+    exit
+  endif
+endif
+echo ""
+echo "Fluids directory is $FDIR"
+
+set SDIR = "Rocfrac/Rocout$SUFFIX"
+if (! -d $SDIR) then
+  set SDIR = "Rocsolid/Rocout$SUFFIX"
+  if (! -d $SDIR) then
+    echo ""
+    echo "Cannot find Rocsolid or Rocfrac Rocout$SUFFIX directory"
+    echo ""
+#    exit
+  endif
+endif
+echo ""
+if (-d $SDIR) then
+  echo "Solids directory is $SDIR"
+endif
+
+set BDIR = "RocburnAPN/Rocout$SUFFIX"
+if (! -d $BDIR) then
+  set BDIR = "RocburnPY/Rocout$SUFFIX"
+  if (! -d $BDIR) then
+    echo ""
+    echo "Cannot find RocburnAPN or RocburnPY Rocout$SUFFIX directory"
+    echo ""
+#    exit
+  endif
+endif
+echo ""
+echo "Burn directory is $BDIR"
+echo ""
+
+cd $FDIR
+set FFILES = $HOME/fluid_file_list_$DIR:t
+#if (-e $FFILES) then
+#  echo -n "File list $FFILES exists.  Should I use it (y/n default=y): "
+#  set RESPONSE = "$<"
+#  if ("$RESPONSE" == "") then
+#    set RESPONSE = y
+#  endif
+#  if ("$RESPONSE" == "n") then
+#    ls > $FFILES
+#  endif
+#else
+#  echo "Getting list of fluid files ... "
+#  ls > $FFILES
+#endif
+                                                                                
+set PANDA = "n"
+set DOT = "."
+#set optimes = (`grep '^fluid_..\......._0000\.hdf$' $FFILES | sed -e 's/fluid_//' | sed -e 's/......hdf//'`)
+set optimes = (`ls fluid_??.??????_0000.hdf | sed -e 's/fluid_//' | sed -e 's/......hdf//'`)
+if ($#optimes == 0) then
+  echo ""
+  echo "No HDF dumps written without Rocpanda found.  Looking for Rocpanda output ..."
+  echo ""
+  set PANDA = "y"
+  set DOT = ""
+#  set optimes = (`grep '^fluid_..\......._000\.hdf$' $FFILES | sed -e 's/fluid_//' | sed -e 's/.....hdf//'`)
+  set optimes = (`ls fluid_??.??????_000.hdf | sed -e 's/fluid_//' | sed -e 's/.....hdf//'`)
+  if ($#optimes == 0) then
+    echo ""
+    echo "No Rocpanda HDF output dumps found"
+    echo ""
+    exit
+  else
+#    set Files_per_dump = (`grep '^fluid_'"${optimes[1]}_${DOT}"'...\.hdf$' $FFILES | wc -l`)
+    set Files_per_dump = (`echo $DIR:t | sed -e 's/procs//' | sed -e 's/^0*//'`)
+  endif
+else
+#  set Files_per_dump = (`grep '^fluid_'"${optimes[1]}_${DOT}"'...\.hdf$' $FFILES | wc -l`)
+  set Files_per_dump = (`echo $DIR:t | sed -e 's/procs//' | sed -e 's/^0*//'`)
+  
+endif
+
+set files_per_dump = $Files_per_dump[1]
+echo ""
+echo "There are $files_per_dump files per dump"
+if ($files_per_dump > 1000) then
+  echo ""
+  echo "This script can handle only up to 1000"
+  exit
+endif
+echo ""
+
+echo "Output times are:"
+echo ""
+set i = 1
+LOOP:
+  echo "$i   $optimes[$i]"
+  if ($i < $#optimes) then
+    @ i++
+    goto LOOP
+  endif
+#
+echo ""
+echo -n "Enter index of first time to delete (1): "
+set ifirst = "$<"
+if ("$ifirst" == "") then
+  set ifirst = 1
+endif
+echo -n "Enter index of last time to delete ($#optimes): "
+set ilast = "$<"
+if ("$ilast" == "") then
+  set ilast = $#optimes
+endif
+echo -n "Should I ask for verification to delete each dump (y/n default = n): "
+set VERIFY = "$<"
+if ("$VERIFY" == "") then
+  set VERIFY = "n"
+endif
+echo ""
+echo "VERIFY is $VERIFY"
+
+set i = $ifirst
+LOOP2:
+  echo ""
+  set optime = $optimes[$i]
+  if ("$VERIFY" == "n") then
+    set DELETE = "y"
+    echo "Deleting $optime"
+  else
+    echo -n "Should I delete dump $optime ? (y/n default = n): "
+    set DELETE = "$<"
+    if ("$DELETE" == "") then
+      set DELETE = "n"
+    endif
+  endif
+
+  if ("$DELETE" == "y") then
+
+    echo "cd $DIR/$FDIR"
+    cd $DIR/$FDIR
+
+    echo "rm -f *${optime}*"
+    if ("$PANDA" == "y") then
+      rm -f *${optime}*
+    else
+      rm -f f*${optime}_00??.hdf
+      rm -f if*${optime}_00??.hdf
+      if ($files_per_dump > 100) then
+        rm -f f*${optime}_01??.hdf
+        rm -f if*${optime}_01??.hdf
+        if ($files_per_dump > 200) then
+          rm -f f*${optime}_02??.hdf
+          rm -f if*${optime}_02??.hdf
+          if ($files_per_dump > 300) then
+            rm -f f*${optime}_03??.hdf
+            rm -f if*${optime}_03??.hdf
+            if ($files_per_dump > 400) then
+              rm -f f*${optime}_04??.hdf
+              rm -f if*${optime}_04??.hdf
+              if ($files_per_dump > 500) then
+                rm -f f*${optime}_05??.hdf
+                rm -f if*${optime}_05??.hdf
+                if ($files_per_dump > 600) then
+                  rm -f f*${optime}_06??.hdf
+                  rm -f if*${optime}_06??.hdf
+                  if ($files_per_dump > 700) then
+                    rm -f f*${optime}_07??.hdf
+                    rm -f if*${optime}_07??.hdf
+                    if ($files_per_dump > 800) then
+                      rm -f f*${optime}_08??.hdf
+                      rm -f if*${optime}_08??.hdf
+                      if ($files_per_dump > 900) then
+                        rm -f f*${optime}_09??.hdf
+                        rm -f if*${optime}_09??.hdf
+                      endif 
+                    endif 
+                  endif
+                endif
+              endif
+            endif
+          endif
+        endif
+      endif
+    endif
+
+    if (-d $DIR/$SDIR) then
+      echo "cd $DIR/$SDIR"
+      cd $DIR/$SDIR
+
+      echo "rm -f *${optime}*"
+      if ("$PANDA" == "y") then
+        rm -f *${optime}*
+      else
+        rm -f s*${optime}_00??.hdf
+        rm -f is*${optime}_00??.hdf
+        if ($files_per_dump > 100) then
+          rm -f s*${optime}_01??.hdf
+          rm -f is*${optime}_01??.hdf
+          if ($files_per_dump > 200) then
+            rm -f s*${optime}_02??.hdf
+            rm -f is*${optime}_02??.hdf
+            if ($files_per_dump > 300) then
+              rm -f s*${optime}_03??.hdf
+              rm -f is*${optime}_03??.hdf
+              if ($files_per_dump > 400) then
+                rm -f s*${optime}_04??.hdf
+                rm -f is*${optime}_04??.hdf
+                if ($files_per_dump > 500) then
+                  rm -f s*${optime}_05??.hdf
+                  rm -f is*${optime}_05??.hdf
+                  if ($files_per_dump > 600) then
+                    rm -f s*${optime}_06??.hdf
+                    rm -f is*${optime}_06??.hdf
+                    if ($files_per_dump > 700) then
+                      rm -f s*${optime}_07??.hdf
+                      rm -f is*${optime}_07??.hdf
+                      if ($files_per_dump > 800) then
+                        rm -f s*${optime}_08??.hdf
+                        rm -f is*${optime}_08??.hdf
+                        if ($files_per_dump > 900) then
+                          rm -f s*${optime}_09??.hdf
+                          rm -f is*${optime}_09??.hdf
+                        endif 
+                      endif 
+                    endif
+                  endif
+                endif
+              endif
+            endif
+          endif
+        endif
+      endif
+    endif
+# SDIR exists
+
+    if (-d $DIR/$SDIR) then
+      echo "cd $DIR/$BDIR"
+      cd $DIR/$BDIR
+
+      echo "rm -f *${optime}*"
+      if ("$PANDA" == "y") then
+        rm -f *${optime}*
+      else
+        rm -f b*${optime}_00??.hdf
+        rm -f ib*${optime}_00??.hdf
+        if ($files_per_dump > 100) then
+          rm -f b*${optime}_01??.hdf
+          rm -f ib*${optime}_01??.hdf
+          if ($files_per_dump > 200) then
+            rm -f b*${optime}_02??.hdf
+            rm -f ib*${optime}_02??.hdf
+            if ($files_per_dump > 300) then
+              rm -f b*${optime}_03??.hdf
+              rm -f ib*${optime}_03??.hdf
+              if ($files_per_dump > 400) then
+                rm -f b*${optime}_04??.hdf
+                rm -f ib*${optime}_04??.hdf
+                if ($files_per_dump > 500) then
+                  rm -f b*${optime}_05??.hdf
+                  rm -f ib*${optime}_05??.hdf
+                  if ($files_per_dump > 600) then
+                    rm -f b*${optime}_06??.hdf
+                    rm -f ib*${optime}_06??.hdf
+                    if ($files_per_dump > 700) then
+                      rm -f b*${optime}_07??.hdf
+                      rm -f ib*${optime}_07??.hdf
+                      if ($files_per_dump > 800) then
+                        rm -f b*${optime}_08??.hdf
+                        rm -f ib*${optime}_08??.hdf
+                        if ($files_per_dump > 900) then
+                          rm -f b*${optime}_09??.hdf
+                          rm -f ib*${optime}_09??.hdf
+                        endif 
+                      endif 
+                    endif
+                  endif
+                endif
+              endif
+            endif
+          endif
+        endif
+      endif
+    endif
+# BDIR exists
+
+  endif
+# DeLETE = y
+
+  if ($i < $ilast) then
+    @ i++
+    goto LOOP2
+  endif
+
+exit

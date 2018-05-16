@@ -1,0 +1,7 @@
+Adding some temporary files to demonstrate testing. These can be removed once the actual testing is in place.
+
+ExampleParallelProgram.C  ExampleSourceFile.C  ParallelTestRocstar.C  sep.C
+ExampleSerialProgram.C    MakeProject.C        pepi.C                 TestRocstar.C
+
+
+Mike A.

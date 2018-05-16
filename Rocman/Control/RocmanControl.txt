@@ -1,0 +1,33 @@
+# Rocman verbosity
+Verbose = 0
+
+# write output hdf files into separate <rank> directories
+Separate_out = 1
+
+# order of interpolation
+InterpolationOrder = 1
+# 1 for no sheer, 2 for with sheer
+TractionMode = 1
+# ambient pressure
+P_ambient = 0
+
+# Solid density for fluid-alone mode, pressure and burn-rate for solid-alone mode
+Rhoc = 1703.0
+Pressure = 6.8e6
+BurnRate = 0.01
+
+# Data transfer parameters: verbose level, order of quadrature rules, max iterations , tolerance for iterative solver
+RFC_verb = 1
+RFC_order = 2
+RFC_iteration = 100
+RFC_tolerance = 1.e-6
+
+# Whether to enable face-offsetting
+Face-offsetting = F
+# Number of smoothing iterations
+PROP_rediter = 1
+
+# Whether to use asynchronous input and output
+AsyncInput = F
+AsyncOutput = F
+

@@ -1,0 +1,49 @@
+#!/bin/csh
+#
+# Submit [-expedite] <filename>
+#
+# Submit a batch job under Chaos 4 -- work around MOAB batch job
+# script length limit.
+#
+# Written by Robert Fiedler, revised 8/6/08.
+
+if ($#argv < 1 || $#argv > 2) then
+  echo "Usage: $0 [-expedite] batch_job_script"
+  exit
+endif
+
+if ("$1" == "-expedite") then
+  set EXPEDITE = "-expedite"
+else
+  set EXPEDITE = ""
+endif
+
+cp $argv[$#argv] SCRIPT.$$
+set DIR = `pwd`
+
+# Strip the batch job parameters from the original batch script
+#head -13 SCRIPT.$$ > script.$$
+grep '^#PSUB' SCRIPT.$$ > script.$$
+
+# In the batch job, return to the current directory and run script.
+echo "cd $DIR" >> script.$$
+echo "csh SCRIPT.$$" >> script.$$
+echo "exit" >> script.$$
+
+echo ""
+echo ""
+echo "Here is the script"
+cat script.$$
+echo ""
+echo ""
+
+# Submit the short job script
+psub $EXPEDITE script.$$
+
+sleep 5
+
+# Clean up
+rm script.$$
+
+exit
+

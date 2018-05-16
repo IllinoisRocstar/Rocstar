@@ -1,0 +1,122 @@
+#! /bin/csh
+#
+# prep_data [rundir1 rundir2 ... ]
+#
+# Extracts the input data files for a GENx run from a
+# <rundir>.tar.gz, <rundir).tgz, or <rundir>.tar archive.
+# Makes sure the outptu directories exist.
+#
+# Assumption: the current directory is the parent of the
+#             rocstar run directory.
+#
+# Assumption: either the <rundir> directory exists or the archive
+#             (<rundir>.tar.gz, <rundir>.tgz, or <rundir>.tar) exists,
+#             (not necessarily in the current directory).
+#
+# Arguments are rocstar run directory names.  If no
+# arguments are given, we ask for directory or file names.
+#
+# This version handles Rocflo, Rocflu, Rocfrac, Rocsolid,
+# RocburnAPN, and RocburnPY.
+#
+# Revised by Robert Fiedler, 1/22/04.
+
+if (-e /bin/ex) then
+  set EX = /bin/ex
+else if (-e /usr/ucb/ex) then
+  set EX = /usr/ucb/ex
+else if (-e /usr/bin) then
+  set EX = /usr/bin/ex
+else
+  echo "Cannot find the old-fashioned ex (not vim)"
+  goto EXIT
+endif
+
+unset noclobber
+
+if ( "$*" == "" ) then
+
+# No arguments on the command line
+
+  echo "Enter list of local subdirectories to examine (e.g., 002procs)"
+  echo "or full paths to tar files (WITHOUT the .tar, .tar.gz, or .tgz"
+  echo -n "extension, e.g., 002procs or /csar/$USER/002procs): "
+  set dirs = "$<"
+else
+  set dirs = "$*"
+endif
+
+set curdir = `pwd`
+
+foreach dir ( $dirs)
+  set rundir = $dir:t
+  echo ""
+  echo Working on run directory $rundir ...
+  echo ""
+  if (-e ${dir}.tar.gz) then
+    gunzip -c ${dir}.tar.gz | tar xvf -
+  else if (-e ${dir}.tgz) then
+    gunzip -c ${dir}.tgz | tar xvf -
+  else if (-e ${dir}.tar) then
+    tar xvf ${dir}.tar
+  else
+    echo "Cannot find ${dir}.tar.gz, ${dir}.tgz, or ${dir}.tar"
+  endif
+
+  if (! -d $rundir) then
+    echo "File ${dir}.(tar|tar.gz|tgz) did not contain directory $rundir"
+    goto NEXT
+  endif
+
+  cd $rundir
+
+# Set the start time to 0 and the end time to 120.
+# Replace the Timing data directory name (in case we are on
+# a different file system now).
+
+  echo ""
+  echo "Editing RocstarControl.txt to set start time to 0. and"
+  echo "timing directory to Rocman/Profiles"
+  echo ""
+  $EX RocstarControl.txt << STP
+2d
+1a
+0.     120.
+.
+8d
+7a
+Rocman/Profiles/
+.
+wq
+STP
+
+# Create cannonical timing directory
+
+  echo ""
+  echo "Creating timing data directory Rocman/Profiles"
+  if (! -d Rocman/Profiles) then
+    mkdir -p Rocman/Profiles
+  endif
+  echo ""
+
+  foreach module (Rocflo Rocflu Rocfrac Rocsolid RocburnAPN RocburnPY) 
+    if (-d $module) then
+      echo ""
+      echo "Creating Modout and Rocout directories for $module if needed"
+      echo ""
+      cd $module
+      if (! -d Modout) then
+        mkdir Modout
+      endif
+      if (! -d Rocout) then
+        mkdir Rocout
+      endif
+      cd ..
+    endif
+  end
+
+NEXT:
+  cd $curdir
+end
+
+EXIT:

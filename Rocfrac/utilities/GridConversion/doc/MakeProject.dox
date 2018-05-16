@@ -1,0 +1,35 @@
+///
+/// @page makeproject_guide How To Make A New IR Project
+/// 
+/// @section ir_intro Introduction
+///
+/// A new Illinois Rocstar project can be created easily with
+/// <tt><b>make_project</b></tt>. The <tt><b>make_project</b></tt>
+/// utility uses the IR Project Template and prepares a new
+/// project with directory structure that is ready to be imported
+/// into the IR Source Repository.
+///
+/// Documentation for the <tt><b>make_project</b></tt> utility
+/// can be found in the documentation of the IRProject::MakeProject 
+/// function. The procedure for using the Illinois Rocstar Project
+/// Template for creating a new project is as follows:
+///
+/// 1. Check out the Illinois Rocstar Project Template from SVN
+/// > svn co file:///Projects/IR/SoftwareRepository/IRProject/trunk IRProject
+/// 2. Make a directory for building IRProject and go into it...
+/// > mkdir irproject_build\n
+/// > cd irproject_build \n
+/// 3. Configure and build IRProject
+/// > cmake ../IRProject\n
+/// > make\n
+/// > cd ../\n
+/// 4. Use @a make_project to create your new project:
+/// > irproject_build/bin/make_project IRProject \<NewProjectName\>
+/// 5. Create a repository for your new project by importing:
+/// > svn import \<NewProjectName\> file:///Projects/IR/SourceRepository/\<NewProjectName\>
+/// 
+/// 
+/// @todo LICENSE
+/// @todo AUTHORS
+/// @todo SVN Repository Structure
+///

@@ -1,0 +1,143 @@
+#!/bin/csh -f
+#
+# Timing script for GEN2.  Extracts wall clock times for various
+# modules in a simulation.  It uses program summary.f, which
+# looks at the times for all processes and takes the slowest
+# time for the second and third time steps.  If the slowest
+# time is shorter in the second step, it uses the second step.
+#
+# Assumptions:
+#
+# 1) The summary.x executable is in the same directory as the
+#    timing_script
+#
+# 2) The timing files are in one or more subdirectories of the 
+#    current directory named *procs_timing*, TimingDir, or
+#    *procs/TimingDir
+#
+# Written by Robert Fiedler, revised 4/4/02.
+
+# Find the summary.x executable -- should be in the same
+# directory as this script.
+
+set utils = "$0"
+if ("$utils" == "timing_script") then
+  set utils = "."
+else
+  set utils = "$utils:h"
+endif
+set exe = "$utils/summary.x"
+if (! -e $exe) then
+  echo "Cannot find $exe"
+  exit
+endif
+
+set curdir = `pwd`
+
+set dirs = (`ls -d *procs_timing* ; ls -d TimingDir ; ls -d *procs/TimingDir`)
+echo ""
+echo "Processing timing files with $exe in directories $dirs"
+echo ""
+
+echo "Fluids update time"
+foreach dir ($dirs)
+  echo "cd $dir"
+  cd $curdir/$dir
+  rm -f summary
+  foreach file (`ls`)
+    if (-f "$file") then
+      grep "Fluids update time" $file | head -3 >> summary
+    endif
+  end
+  if (! -z summary) then
+    $exe
+  endif
+  rm -f summary
+  echo ""
+end
+
+echo "Solids update time"
+foreach dir ($dirs)
+  echo "cd $dir"
+  cd $curdir/$dir
+  rm -f summary
+  foreach file (`ls`)
+    if (-f "$file") then
+      grep "Solids update time" $file | head -3 >> summary
+    endif
+  end
+  if (! -z summary) then
+    $exe
+  endif
+  rm -f summary
+  echo ""
+end
+
+echo "Traction transfer time"
+foreach dir ($dirs)
+  echo "cd $dir"
+  cd $curdir/$dir
+  rm -f summary
+  foreach file (`ls`)
+    if (-f "$file") then
+      grep '  Traction transfer time' $file | sed -e 's/=/    =/' | head -3 >> summary
+    endif
+  end
+  if (! -z summary) then
+    $exe
+  endif
+  rm -f summary
+  echo ""
+end
+
+echo "Motion transfer time"
+foreach dir ($dirs)
+  echo "cd $dir"
+  cd $curdir/$dir
+  rm -f summary
+  foreach file (`ls`)
+    if (-f "$file") then
+      grep "Motion transfer time" $file | sed -e 's/=/      =/' | head -3 >> summary
+    endif
+  end
+  if (! -z summary) then
+    $exe
+  endif
+  rm -f summary
+  echo ""
+end
+
+echo "Burn   update time"
+foreach dir ($dirs)
+  echo "cd $dir"
+  cd $curdir/$dir
+  rm -f summary
+  foreach file (`ls`)
+    if (-f "$file") then
+      grep "Burn   update time" $file | head -3 >> summary
+    endif
+  end
+  if (! -z summary) then
+    $exe
+  endif
+  rm -f summary
+  echo ""
+end
+
+echo "PredCorr loop time"
+foreach dir ($dirs)
+  echo "cd $dir"
+  cd $curdir/$dir
+  rm -f summary
+  foreach file (`ls`)
+    if (-f "$file") then
+      grep "PredCorr loop time" $file | head -3 >> summary
+    endif
+  end
+  if (! -z summary) then
+    $exe
+  endif
+  rm -f summary
+  echo ""
+end
+exit

@@ -1,0 +1,91 @@
+%===============================================================================
+% Illinois Rocstar definitions
+%===============================================================================
+\input{preamble}
+
+%------------------------------------------------------------------
+% Includeed Packages
+%------------------------------------------------------------------
+\usepackage{enumitem}
+\usepackage{fancybox}
+\usepackage{threeparttable}
+\usepackage{url}
+\usepackage{pdfpages}
+\usepackage{multicol}
+\usepackage{pgfplots}
+\usepackage{etoolbox}
+\usepackage{alphalph}
+\usepackage{fancyvrb}
+\usepackage{rotating}
+
+%------------------------------------------------------------------
+% New Commands: Program names
+%------------------------------------------------------------------
+%\newcommand{\myhline}{\arrayrulecolor{teal}\hline}
+
+\newcommand{\Rocstar}{\software{Rocstar}}
+\newcommand{\Rocburn}{\software{Rocburn\_PY}}
+
+\newcommand{\midHeader}{}
+\newcommand{\rightHeader}{\Rocburn\ Developer Guide}
+\newcommand{\ir}{Illinois Rocstar LLC}
+
+\DeclareSIUnit\calorie{cal}
+
+%------------------------------------------------------------------
+% Boolean to easily compile GUI and non-GUI relevant documentation (etoolbox)
+%------------------------------------------------------------------
+%\newbool{GUI}
+%\booltrue{GUI}
+%\boolfalse{GUI}
+
+%\ifbool{GUI}
+%{%GUI flag ON
+%}
+%{%GUI flag OFF
+%}
+
+%------------------------------------------------------------------
+%  These two lines will number figures and tables as #1.#2, where #1
+%  number of chapter and #2 is the figure or table number within the chapter
+%------------------------------------------------------------------
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\renewcommand{\thetable}{\thesection.\arabic{table}}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+\renewcommand{\thefootnote}{\emph{\alphalph{\value{footnote}}}}
+\newcommand\gauss[2]{1/(#2*sqrt(2*pi))*exp(-((x-#1)^2)/(2*#2^2))}
+
+%==================================================================
+% Document build
+%==================================================================
+\begin{document}
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{4}
+
+\include{Front}
+
+%header and footer
+\irheader{\rightHeader}{\midHeader}
+\tableofcontents
+
+\newpage
+
+\input{Intro}
+\input{Ibiricu}
+\input{Theory}
+\input{rb_regress}
+\input{g_heatflux}
+\input{NumSol}
+\input{Code}
+\input{Input}
+
+\bibliographystyle{apa}
+\bibliography{all_refs}
+
+%\newpage
+
+%\begin{appendix}
+%\end{appendix}
+
+%==================================================================
+\end{document}

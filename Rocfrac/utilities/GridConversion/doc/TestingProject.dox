@@ -1,0 +1,423 @@
+///
+/// @page testingproject_guide How To Set Up Testing for an IR Project
+///
+/// @section testing_intro Introduction
+/// Testing is part of the IR development process.  It is very important
+/// that we have a consistent, integrated testing in our codes.
+/// General guidelines:
+/// * We use CMake/CTest/CDash for our test driving substrate
+/// * Project unit testing should be centralized/encapsulated in a few constructs
+/// * All applications should return 0 to indicate no errors, or passed test, and non-zero otherwise.
+/// * Project tests should be integrated through CMake so that the user can use "make test" to run them
+/// 
+/// @section testing_constructs_sec Testing with IRAD
+/// IRAD offers facilities designed to assist
+/// with code and program testing.  %IRAD's testing framework supports 
+/// serial, and parallel tests, platform specific tests, and complex behavior tests.
+/// %IRAD's testing facilities come in the form of coding constructs
+/// and utility programs. Both are described below.
+/// @subsection irad_testing_code IRAD Testing Constructs
+/// %IRAD offers the following code constructs for implementing testing in project
+/// codes:
+/// * IRAD::Util::TestResults
+/// * IRAD::Util::TestingObject
+///
+/// In general, project-specific testing objects can inherit from the IRAD::Util::TestingObject and
+/// implement their own tests as member functions of this derived class. The member methods take 
+/// an object of type IRAD::Util::TestResults (or one that inherits from this class), and populate 
+/// it with testing results.  The results object can be streamed - and so typically these results can
+/// be streamed to the screen, to a file, or string for further processing.
+///
+/// The %IRAD testing code constructs are defined in @c IRAD/include/Testing.H and an example of their
+/// use can be found in the IRAD::Util::TestObject class. This object
+/// implements all the tests for the IRAD::Util namespace, and is driven by the 
+/// IRAD::Util::UtilTest function. In other words, the IRAD::Util::UtilTest function implements a 
+/// command line interface for the IRAD::Util::TestObject, which implements all the existing tests
+/// for the IRAD::Util namespace. 
+/// 
+/// More extensive use of the %IRAD code constructs for testing can be found in the example testing
+/// objects for %GridConversion, which are implemented in GridConversion::TestingObject and 
+/// GridConversion::ParallelTestingObject.
+/// These testing objects use simple test fixture functions from the GridConversion::TestFixture
+/// namespace and are driven by GridConversion::Test and GridConversion::ParallelTest, respectively.
+///
+/// @note A major advantage of encapsulating all tests in a single object is that external
+/// entities need only to instantiate your project-specific testing object to get access
+/// to the project's tests. This greatly reduces the complexity of rolling integrated 
+/// software products out of code from multiple projects.
+///
+/// @subsection irad_testing_util IRAD Testing Support Utilities
+/// IRAD also offers a couple of utilities to support the running of tests. These utilities and
+/// their documentation are:
+/// * @a runtest (IRAD::RunTest)
+/// * @a testresults (IRAD::TestResults)
+///
+/// ###Running complex tests with @a runtest.
+/// The @a runtest utility is designed to be called from the project's CMakeLists.txt cmake
+/// configuration file. Its purpose is to run scripted tests where the complexity or 
+/// platform-dependent nature of the test being run precludes its being run as a simple 
+/// test. The @a runtest utility can run a single named executable, a list of test from file, 
+/// or resolve platform-specific tests.
+///
+/// Examples of how to use the @a runtest utility can be found in @c GridConversion/CMakeLists.txt,
+/// where it is used to run the parallel tests (which must use platform-specific parallel
+/// job spawning mechanisms), and other platform-specific, or complex behavior tests.
+///
+/// ###Checking test results with @a testresults.
+/// The @a testresults utility is designed to extract a particular test result from 
+/// a test results file with one test result per line. If the test's results are
+/// such that it has passed, then @a testresults returns with a zero exit code,
+/// and exits with a non-zero error code otherwise. 
+///
+/// Examples of how to use the @a testresults utility can be found in @c GridConversion/CMakeLists.txt,
+/// where it is used to extract the results of all the tests.
+///
+/// @subsection putting_it_together Putting it all together
+/// All together, the %IRAD testing facilities provide an end-to-end framework for running,
+/// collecting, and reporting your project's tests and results to CMake in such a way that
+/// CMake's integrated testing facilty, CTest, can be leveraged to integrate the tests into
+/// the project's build system, automate the tests, and report the test results to a 
+/// @a testing dashboard. The testing dashboard is a web-based facility which collects and 
+/// reports test results the test histories. Illinois Rocstar uses CDash for its testing 
+/// dashboard.
+///
+/// The birds-eye view of the process for using %IRAD's testing facilities with CMake/CTest
+/// goes like this:
+/// 1. Create a project-native testing object (PNTO) by inheriting from IRAD::Util::TestingObject.
+/// 2. Implement unit tests as member functions of the PNTO
+/// 3. Write a driver (or a set of drivers) that instantiates your testing object(s), and drives
+///    them to produce a IRAD::Util::TestResults object with the restults from the testing.
+/// 4. INCLUDE(CTEST) in your CMakeLists.txt file.
+/// 5. Invoke the test driver(s) with CMake's ADD_TEST() construct and store the results in a 
+///    composite testing results file. If necessary use @a runtest to invoke the actual test(s).
+/// 6. If necessary, use @a testresults to extract the results of the tests from the composite 
+///    testing results file and exit with a 0 return code for tests that pass, and a non-zero 
+///    otherwise. This step is also accomplished with CMake's ADD_TEST().
+/// 7. Configure your project (i.e. run cmake), and then run the integrated tests with "make test".
+/// 
+/// @note The reason it may or may not be necessary to use @a runtest and @a testresults in
+/// steps (5) and (6) is that your tests may be directly invoked by CMake's ADD_TEST <b>if</b> 
+/// the test is a standalone executable that returns 0 if it succeeds, and non-zero otherwise.
+/// 
+/// @section irpt_testing Testing in the Illinois Rocstar Project Template
+/// Direct examples of using %IRAD Testing for several different kinds of tests are provided in the
+/// Illinois Rocstar Project Template.  The following sections summarize the main gist of each
+/// of these examples.
+/// 
+/// @subsection irpt_serial_tests Serial Test Examples
+/// The Illinois Rocstar Project Template has both a standalone serial program example, and
+/// several serial unit tests. The unit testing is described below, and discussion of the 
+/// standalone test is deferred to a later section.
+///
+/// For the serial unit tests, the PNTO is called GridConversion::TestingObject. This object inherits from 
+/// IRAD::Util::TestingObject as described in Step (1) above.  The unit tests are in the 
+/// GridConversion::TestingObject's member methods as prescribed in Step (2). The simple tests 
+/// and the code construct that they test are:
+/// * GridConversion::TestingObject::Test__ExampleFunction tests GridConversion::ExampleFunction
+/// * GridConversion::TestingObject::Test__TrapezoidQuadrature tests GridConversion::TrapezoidQuadrature
+/// * GridConversion::TestingObject::Test__MidPointQuadrature tests GridConversion::MidPointQuadrature
+///
+/// The @a gridconversion_test command-line driver executable, implemented by the GridConversion::Test 
+/// function drives the GridConversion::TestingObject by instantiating it, and calling the 
+/// GridConversion::TestingObject::RunTest (if an explicit test name or list was given) or
+/// the GridConversion::TestingObject::Process method to run all tests.  This is Step(3).
+///
+/// Step (4) is trivial, and Step (5) is done with the following line from 
+/// @c GridConversion/CMakeLists.txt:
+///
+/// > ADD_TEST(RunGridConversionTests ${EXECUTABLE_OUTPUT_PATH}/gridconversion_test -o gridconversion_testresults.txt)
+///
+/// This runs all of the GridConversion tests implemented by the GridConversion::TestingObject, and stores the 
+/// results in the file @c gridconversion_testresults.txt.
+///
+/// For Step (6), the @a testresults utility is used to extract the results of each of the tests from 
+/// @c gridconversion_testresults.txt with the following lines from @c GridConversion/CMakeLists.txt:
+/// 
+/// > ADD_TEST(ExampleProgram:Works ${EXECUTABLE_OUTPUT_PATH}/testresults ExampleProgram:Works gridconversion_testresults.txt)\n
+/// > ADD_TEST(ExampleFunction:Works ${EXECUTABLE_OUTPUT_PATH}/testresults ExampleFunction:Works gridconversion_testresults.txt)\n
+/// > ADD_TEST(TrapezoidQuadrature:Runs ${EXECUTABLE_OUTPUT_PATH}/testresults TrapezoidQuadrature:Runs gridconversion_testresults.txt)\n
+/// > ADD_TEST(TrapezoidQuadrature:Accurate ${EXECUTABLE_OUTPUT_PATH}/testresults TrapezoidQuadrature:Accurate gridconversion_testresults.txt)\n
+/// > ADD_TEST(TrapezoidQuadrature:Order ${EXECUTABLE_OUTPUT_PATH}/testresults TrapezoidQuadrature:Order2 gridconversion_testresults.txt)\n
+/// > ADD_TEST(MidPointQuadrature:Runs ${EXECUTABLE_OUTPUT_PATH}/testresults MidPointQuadrature:Runs gridconversion_testresults.txt)\n
+/// > ADD_TEST(MidPointQuadrature:Accurate ${EXECUTABLE_OUTPUT_PATH}/testresults MidPointQuadrature:Accurate gridconversion_testresults.txt)\n
+/// > ADD_TEST(MidPointQuadrature:Order ${EXECUTABLE_OUTPUT_PATH}/testresults MidPointQuadrature:Order2 gridconversion_testresults.txt)\n
+///
+/// In Step (7), users configure GridConversion and invoke "make test" to run the tests and report the results to stdout.
+///
+/// @subsection irpt_parallel_tests Parallel Test Examples
+/// The Illinois Rocstar Project Template has both a standalone parallel application, @a pepi, and
+/// parallel unit tests. The @a pepi program computes \f$\pi\f$ in parallel by doing parallel quadrature, and
+/// the unit tests test the parallel quadrature facility.  Both will be discussed in this section.
+///
+/// In this test, the PNTO is called GridConversion::ParallelTestingObject. This object inherits from 
+/// IRAD::Util::TestingObject as described in Step (1) above.  The unit tests are in the 
+/// GridConversion::ParallelTestingObject's member methods as prescribed in Step (2). The simple tests 
+/// and the code construct that they test are:
+/// * GridConversion::ParallelTestingObject::Test__ParallelTrapezoidQuadrature tests GridConversion::TrapezoidQuadrature in parallel
+/// * GridConversion::ParallelTestingObject::Test__ParallelMidPointQuadrature tests GridConversion::MidPointQuadrature in parallel
+///
+/// The @a gridconversion_parallel_test command-line driver executable, implemented by the GridConversion::ParallelTest 
+/// function drives the GridConversion::ParallelTestingObject by instantiating it, and calling the 
+/// GridConversion::ParallelTestingObject::RunTest (if an explicit test name or list was given) or
+/// the GridConversion::ParallelTestingObject::Process method to run all tests.  This is Step(3).
+///
+/// Step (4) is trivial, and Step (5) for this example is more complicated than that of the serial
+/// case. Since this is a parallel test, it must be spawned in parallel using something like
+/// @a mpiexec or @a mpirun.  The parallel application spawning mechanism is platform-dependent,
+/// and even may need to be done through a batch queueing system.  
+///
+/// Due to the platform-specific nature of executing parallel applications, Step (5) must be accomplished 
+/// using the @a runtest utility.  This is done in the following line from @c GridConversion/CMakeLists.txt:
+///
+/// > ADD_TEST(RunParallelPlatformTests ${EXECUTABLE_OUTPUT_PATH}/runtest -p ${PROJECT_SOURCE_DIR}/share/Platforms/parallel_platforms -o gridconversion_testresults.txt)
+///
+/// This line gives the @c GridConversion/share/Platforms/parallel_platforms file as the @a platform argument to @a runtest.
+/// The parallel_platforms file is line-based and has the following format on each line:
+/// > \<hostname\> \<path to platform-specific test list\>
+/// If not given on the command line, the @a runtest utility will determine the hostname and resolve the list
+/// of tests from this file. The platform-specific test list should list as many parallel testing scripts as 
+/// one needs to do on the given platform.  For example, see @c GridConversion/share/Platforms/parallel_platforms,
+/// and @c GridConversion/share/Platforms/mercury_parallel.list.  You will see that the list includes two 
+/// scripts that invoke the parallel tests:
+/// 1. mercury_parallel_test1.csh (runs the parallel unit test driver)
+/// 2. mercury_parallel_test2.csh (runs @a pepi)
+///
+/// On Illinois Rocstar's mercury cluster, these tests must be conducted through the batch system. These testing 
+/// scripts submit the tests to the batch system and report the results.  These results are then fed into
+/// the @c gridconversion_testsresults.txt file.  
+///
+/// Essentially, these scripts submit the jobs to mercury's queue, and then wait on the results before 
+/// returning to the calling utility, @a runtest.  For further details on how they do this, see
+/// @c GridConversion/share/Platforms/mercury_parallel_test1.csh and @c GridConversion/share/Platforms/mercury_parallel_test2.csh.
+///
+/// Once the @a runtest utility has returned, then the @c gridconversion_testresults.txt file has been updated with the
+/// results from the parallel tests, and, just like for the serial test Step (6), the @a testresults utility is used to 
+/// extract the results of each of the tests from @c gridconversion_testresults.txt with the following lines from @c GridConversion/CMakeLists.txt:
+/// 
+/// > ADD_TEST(ParallelExample:Runs ${EXECUTABLE_OUTPUT_PATH}/testresults PEPI:Runs gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelExample:Works ${EXECUTABLE_OUTPUT_PATH}/testresults PEPI:Works gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelTrapezoidQuadrature:Runs ${EXECUTABLE_OUTPUT_PATH}/testresults ParallelTrapezoidQuadrature:Runs gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelTrapezoidQuadrature:Accurate ${EXECUTABLE_OUTPUT_PATH}/testresults ParallelTrapezoidQuadrature:Accurate gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelTrapezoidQuadrature:Order ${EXECUTABLE_OUTPUT_PATH}/testresults ParallelTrapezoidQuadrature:Order2 gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelTrapezoidQuadrature:WeakScaling ${EXECUTABLE_OUTPUT_PATH}/testresults ParallelTrapezoidQuadrature:WeakScaling gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelTrapezoidQuadrature:StrongScaling ${EXECUTABLE_OUTPUT_PATH}/testresults ParallelTrapezoidQuadrature:StrongScaling gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelMidPointQuadrature:Runs ${EXECUTABLE_OUTPUT_PATH}/testresults ParallelMidPointQuadrature:Runs gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelMidPointQuadrature:Accurate ${EXECUTABLE_OUTPUT_PATH}/testresults ParallelMidPointQuadrature:Accurate gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelMidPointQuadrature:Order ${EXECUTABLE_OUTPUT_PATH}/testresults ParallelMidPointQuadrature:Order2 gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelMidPointQuadrature:WeakScaling ${EXECUTABLE_OUTPUT_PATH}/testresults ParallelMidPointQuadrature:WeakScaling gridconversion_testresults.txt)\n
+/// > ADD_TEST(ParallelMidPointQuadrature:StrongScaling ${EXECUTABLE_OUTPUT_PATH}/testresults ParallelMidPointQuadrature:StrongScaling gridconversion_testresults.txt)\n
+///
+/// In Step (7), users configure GridConversion and invoke "make test" to run the tests and report the results to stdout.
+///
+/// @subsection direct_tests Direct Test Example
+/// The Illinois Rocstar Project Template has one serial example program called @a sep. The
+/// @a sep program simply copies a file. It is a useful example because it can be directly
+/// invoked by CTest since @a sep returns 0 if it succeeds and 1 if not (e.g. the input
+/// file did not exist or something). 
+/// 
+/// The following line from the @c GridConversion/CMakeLists.txt file invokes @a sep and evaluates
+/// whether it succeeded or failed (based solely on its return code):
+///
+/// > ADD_TEST(ExampleProgram:Runs ${EXECUTABLE_OUTPUT_PATH}/sep CMakeCache.txt)
+///
+/// @note There is no output file, just a name for the test, and then the command it should run. 
+///
+/// In order to evaluate whether @a sep actually did what it was told to do, we need a more complicated
+/// facility. In fact, this is done with @a runtest just like above.  The following line from
+/// @c GridConversion/CMakeLists.txt runs a (number of) script(s) from a list.  One of these scripts,
+/// namely @c GridConversion/share/Testing/test_scripts/serial_tests.csh, actually
+/// runs @sep and checks to make sure it copies a file correctly:
+///
+/// > ADD_TEST(RunTests ${EXECUTABLE_OUTPUT_PATH}/runtest -l ${PROJECT_SOURCE_DIR}/share/Testing/test_scripts/tests.list -o gridconversion_testresults.txt)
+///
+/// @subsection direct_use Reusing the Examples
+/// It is highly recommended to simply reuse the testing examples provided in the 
+/// Illinois Rocstar Project Template when creating your own tests that use this 
+/// framework.  
+///
+/// To reuse the example testing objects, the developer could just remove the 
+/// existing test functions in the serial testing object GridConversion::TestingObject and 
+/// the parallel testing object, GridConversion::ParallelTestingObject and then
+/// implement her own unit tests as member functions of those objects.  
+///
+/// The corresponding constructs from the @c CMakeLists.txt file would need to be
+/// removed/added as well - and also the scripts invoking the tests, if necessary.
+/// The rest of the framework, including the test object drivers would still be 
+/// valid and should continue to work without modification.
+/// 
+/// In order to create stand alone tests that utilize scripts users can copy the
+/// scripts located in testing/share/Testing/test_scripts and edit them for 
+/// their needs. Additionally, they will need to follow the examples shown in
+/// testing/CMakeLists.txt for calling the standalone tests and add a call 
+/// for their test. If users are creating a regression test or a "gold standard"
+/// test in which they wish to compare saved data to newly generated data a 
+/// script and example command have been created to help. More information on this 
+/// regression script is below.
+///
+/// @subsection gold_standard Creating a "gold standard" test
+/// 
+/// A script is provided to help users in creating a "gold standard" test. The idea
+/// behind a "gold standard" test is to have saved output from a previous run of the
+/// software, where the solution data or output is known to be accurate. The test will
+/// then run the newly compiled version of the software and compare the generated output
+/// against the saved data. 
+/// Located in <\b>/testing/share/Testing/test_scripts<b> is a script titled regression.csh.
+/// This script is set up to run a "gold standard" test after a few edits from the
+/// user. The places in the file that require editing are marked in the script and are explained
+/// below.
+///
+/// 1) InputDir=_____ This entry should have the name of the input data directory, which
+/// should be created by the user and placed in testing/share/Testing/test_data. 
+/// This directory should house all the necessary input data for running the user's executable.
+/// The regression script will copy this directory, navigate into it, and then execute
+/// the given command. 
+///
+/// 2) Outputs=_____ This entry should contain the names of the generated output files 
+/// that the user wishes to compare with saved data.
+///
+/// 3) OutputsCheck=_____ This entry should contain the names of the saved output
+/// data files to compare the new output files against. Note that the files are compared using the diff command. Also, the files in Outputs must have a
+/// one to one corresponence with the files in OutputsCheck. 
+///
+/// 4) TestName=_____ This entry should contain the name the user wishes to
+/// use for the test.
+///
+/// 5) The command for running the user's executable should be entered at the
+/// appropriate place in the script (the loaction is indicated with a comment). The user 
+/// can also add any other features to the script that may be specific to a
+/// test.
+///
+/// In order to run the test and check the results two lines need to be uncommented
+/// and one of them edited in testing/CMakeLists.txt. These two lines are present in the testing
+/// section and are indicated by RegressionTest as the test name. The first of
+/// these must be uncommented. This line calls the runtest executable which in
+/// turn calls the regression.csh script. The second instance with RegresionTest
+/// calls the testresult executable and verifies the output of the regression.csh
+/// script. This second line must be edited to have the name of the user's test
+/// used in 4) above. These names must match exactly or the test will indicate
+/// failure even if that is not the case. The location to place the test name
+/// is indicated in the file. The regression test should then be ready to run
+/// with the other tests.
+///
+/// Note that the regression.csh script utilizes an executable called diffdatafiles which
+/// is part of IRAD. This executable works like the Unix diff command but will also compare
+/// numbers within a given tolerance. Additionally it can be directed to ignore strings and 
+/// only compare numbers. Using this command users can compare their numerical
+/// output to ensure that the answers are within a certain tolerance and ignore other aspects
+/// of a data file that might be unimportant like a time and date stamp. The default written
+/// into the script is to compare all output files using only the numbers and comparing within
+/// a tolerance of 1.0e-10. Therefore, diffdatafiles will read in each string from the two data
+/// files one at a time. If the strings are in fact numbers it will ensure that the two numbers 
+/// from each file are within 1.0e-10 of one another (strings will not be compared).  The usage 
+/// for the diffdatafiles command is shown below so that users may change its arguments and
+/// runtime behavior if desired.
+///
+///	diffdatafiles [-hnb] [-v [level] -o <filename> -t [tolerance] ] <file1> <file2> 
+/// 
+/// 	-h,--help
+/// 		Print out long version of help and exit.
+/// 
+/// 	-v,--verblevel [level]
+/// 		Set the verbosity level. (default = 1)
+/// 
+/// 	-o,--output <filename>
+/// 		Set the output file to <filename>. (default = stdout)
+/// 
+/// 	-t,--tolerance [tolerance]
+/// 		Set the numerical tolerance for comparing numbers to <tolerance>.
+/// 		(The default for the tolerance is 1.0e-12.)
+/// 		(The default behavior without -t is to compare numbers as strings.)
+/// 		(This flag will automatically force the -b flag to be used.)
+/// 
+/// 	-n,--numbers
+/// 		Only compare the numbers in the two files.
+/// 		(This flag will automatically force the -t flag to be used.)
+/// 
+/// 	-b,--blank
+/// 		Ignore blank space between words (or numbers).
+/// 
+/// 	<file1>
+/// 		First file to read in for comparison against file2.
+/// 
+/// 	<file2>
+/// 		Second file to read in for comparison against file1.
+///
+/// @section autotesting_sec Automated Testing
+/// The Illinois Rocstar Project Template  has a couple of utilities designed to assist in understanding 
+/// and setting up automated testing 
+/// through [CTest](http://www.cmake.org/cmake/help/v2.8.8/ctest.html "CTest Manual"). A sort of "quickstart"
+/// set of steps for setting up automated testing is as follows:
+/// 1. Log in to Illinois Rocstar's [CDash](http://irweb/cdash) instance and 
+/// create a new project for your project (if it does not already exist).
+/// 2. Make a directory from which to run your automated builds and tests (e.g. ~/AutomatedTesting).
+/// 3. Copy @c GridConversion/share/Testing/test_scripts/ctest/{automated_test_script.cmake,run_automated_tests,projects,modules} 
+/// into your testing directory.
+/// 4. Edit the projects file to remove the examples and add the projects that you want to test. 
+/// 5. Modify the environment module file in modules directory for your projects to reflect 
+/// the desired build environment.
+/// 6. Edit the run_automated_tests script with your customizations.
+/// 7. Test the setup by executing: 
+/// > @c ./run_automated_tests @c ./projects Experimental @c ~/AutomatedTesting
+/// 8. If everything works OK, then add a cron job to invoke @a run_automated_tests at your desired intervals and modes.
+///
+/// For Step(1), log into [CDash](http://irweb/cdash) and follow the steps
+/// to create a new project. Add yourself as an author, and anyone else that should know about the status
+/// of the automated builds/tests.   
+///
+/// Steps(2) and (3) are obvious. 
+///
+/// In Step(4), it should be noted that the projects file is processed
+/// line-by-line.  Each line should indicate the parameters for a single build and test. The expected format for each 
+/// functional line of projects file is as follows:
+///
+/// > \<Project Name\>|\<Branch Name\>|\<Branch Path\>|\<Repository Type\>
+///
+/// Based on the line from the projects file, the testing utilities will automatically try to 
+/// check out the following branch from either GIT or SVN with the following command:
+///
+/// svn:
+/// > @c svn @c co @c \<Branch Path\>  @c \<Project Name\>_\<Branch Name\>
+///
+/// git:
+/// > @c git @c clone @c \<Branch Path\> @c \<Project Name\>_\<Branch Name\>
+///
+/// If the \<Project Name\>_\<Branch Name\> directory already exists, then CTest will simply update from SVN
+/// if there are changes in the repository. On fresh check-outs or updates, CTest will (re)configure and (re)build 
+/// the project and run the tests.
+
+/// In Step(5), the script automatically loads (and subsequently unloads) an environment
+/// module file with the project name (if it exists). The module files should setup up 
+/// the required build environment and reduce the need for hand editing of the run_automated_tests script.
+
+/// In Step(6), pay particular attention to the settings of the shell, and 
+/// to the two optional environment settings, @c CMAKE_PREFIX_PATH and @c PROJECT_CONFIGURE_OPTIONS.  These
+/// options are passed to CMake when CTest configures your project(s) for automated build and testing. 
+/// Ideally, any environment specific options should be handled by the module files to keep the build
+/// environment clean for subsequent projects. 
+///
+/// For Step(7), make sure to replace "~/AutomatedTesting" with the directory that you created in Step(2). The usage
+/// for the @a run_automated_tests utility is as follows:
+/// 
+/// > run_automated_tests \<projects file\> \<mode\> \<running directory\>
+///
+/// Valid default modes are @a Experimental, @a Nightly, and @a Continuous. The only real difference between Experimental
+/// and Nightly is how they are denoted in CDash. Experimental builds can happen at any time, whereas nightly tests
+/// are expected to be, well... nightly.  Continuous builds are useful for things such as Test Driven Development.  Continuous
+/// builds do not require cron jobs - but automatically update and build your project according to an interval that you 
+/// can specify, say every 2 minutes or every 10 minutes for example.
+///
+/// In Step(8), your cron job will (presumably) invoke the nightly build/tests.  Assuming you want to 
+/// to run nightly build and test every night at midnight, say, then your crontab would be:
+///
+/// > 00 00 * * * /home/my/AutomatedTesting/run_automated_tests /home/my/AutomatedTesting/projects Nightly /home/my/AutomatedTesting
+///
+/// In general, the format for the crontab is:
+/// > MM HH DD NN W Command
+/// Where MM is the two digit minute, HH the two digit hour (in 24 hour format), DD is date of the month, NN is the month,
+/// and W is the day of the week (0-6). "Command" is the command to be executed.
+///
+/// Once you have all of this working, the building and testing can be more easily customized.  
+/// The [CTest Manual](http://www.cmake.org/cmake/help/v2.8.8/ctest.html "CTest Manual") is useful in learning about
+/// the ways this process can be customized further.  Builds and tests can also be customized or made more specific
+/// by editing/tweaking the @a run_automated_tests script and cron job(s).
+///

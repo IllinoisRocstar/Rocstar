@@ -1,0 +1,8 @@
+#%Module1.0############
+##
+## module to load the IMPACT testing environment
+## Written by Mike Anderson 2014.
+##
+module load compilers/mpich-3.1.2.gnu
+setenv  CMAKE_PREFIX_PATH  /Projects/IR/Software/Install/IRAD
+

@@ -1,0 +1,3343 @@
+#!/bin/csh -f
+#
+# Batch job script creation tool for Rocstar 3 on all machines
+# including the IBM SPs and linux clusters at LLNL, SDSC, and NCSA,
+# and turing.
+#
+# This version can remesh at regular intervals.
+#
+# USAGE INFORMATION
+#
+# Previous JOB ID: For NEW jobs, set it to 0.  for RESTARTS,
+# set it to 1.  On machines that allow dependent jobs, pj_all will 
+# try to determine the JOB ID of the last dependent jobs in the 
+# queue automatically.
+#
+# On any system, this version also saves old output in 
+# *_<PREVIOUS_JOB_ID> directories if you ask it to start a 
+# new run (by setting the OLD JOB ID equal to 0).  It
+# may not get the correct value for the previous job ID.
+#
+# On some systems, this version creates dependent jobs for 
+# restarting a run.
+#
+# This version adds to the screen dump all control files, and some input
+# files, including Rocman/RocmanControl.txt.
+#
+# This version uses either Rocflo or Rocflu,
+#                          Rocfrac or Rocsolid,
+#                          RocburnAPN or RocburnPY
+#
+# This version uses large data on LLNL AIX systems.
+#
+# Environment variables (optional controls):
+#
+# G30D   Parent of Rocstar run directory.  Default depends on
+#        the system, basically ${GP}/${LOGNAME}/gen3-data
+#        where GP is the scratch/parallel file system.
+#
+# ROCCOM_VERBOSITY   Verbosity of Roccom, a rocstar command
+#                    line argument.  See the Rocstar 3 User's
+#                    Guide for details.  Default is 0.
+#
+# NTRIES_MAX   On turing only, this is the number of attempts allowed
+#              to find CPUs using pj.  If pj fails to find enough
+#              CPUs, it waits 5 minutes before trying pj again.
+#              Default is 5 tries.
+#
+# NSTEPS_MAX   Max number of steps to take.  Default is 10000000.
+#
+# RESERVE   Time in minutes at the end of the job to allow for
+#           finalization (includeing output) to complete.   
+#           Default is 15 minutes.
+#
+# PC_TOLS   Tolerances for Predictor-Corrector iterations:
+#           traction, mass, velocity, displacement
+#           Default is "0.001  0.001   0.001  0.001".
+#
+# NODE_RANGE   On turing only, the range of nodes to use.  Default
+#              is "1 207" (all nodes).
+#
+# NETWORK   On the new turing only, tells which network to use.
+#           Choose from "" (default), myr (large partition), or myr2 
+#           (small partition).
+#
+# USE_LOCALDISKS   On new turing only, use the /scratch directories
+#                  for Rocout's output and copy to NFS file system
+#                  after the job terminates.
+#
+# AIX_DEBUG   On LLNL AIX systems, allow full core dumps
+# TOTALVIEW                    run Totalview
+#
+# PJ_RESTART_DT  Restart the rocstar code every "this much"
+#                simulation time to prevent crashes due to memory leaks.
+#
+# PJ_REMESH_DT  Remesh after every "this much"  simulation time.
+#
+# PJ_RSIZING  Relative surface mesh sizing for Rocrem; default is 1.0.
+#             This is a scale factor; 1.0 would give a finer mesh.
+#
+# PJ_VSIZING  Volume mesh sizing for Rocrem; default is 0.2
+#             Larger numbers coarsen the mesh more.
+#
+# PJ_SURF  Rocrem surface remeshing aggressiveness level, 1-3.
+#          Default is 2.
+#
+# PJ_PROP  Rocrem Rocprop surface mesh smoothing iterations.
+#          Default is 1.
+#
+# PJ_MOP  Rocrem Rocmop volume mesh smoothing iterations.
+#         Default is 3.
+#
+# PJ_REMESH_PATH The location of the Rocrem/fem1xfer executables
+#
+# REMESH_NOW  Actually a file in the Rocstar run directory.  If
+#             present, triggers remeshing before running Rocstar.
+#
+# Note: non-interactive mode is broken!
+#
+#.......................................................................
+# 
+# Written by Robert Fiedler, revised 9/30/08.
+#
+#.......................................................................
+
+# Determine whether script is being used in interactive or
+# noninteractive mode
+
+set NARGS = $#argv
+if ("$#argv" == "0") then
+  set INTERACTIVE = "y"
+else if ("$#argv" != 18 && "$#argv" != 19) then
+  echo "Wrong number of arguments; need 18 or 19 for non-interactive mode"
+  goto EXIT
+else
+  set INTERACTIVE = "n"
+endif
+
+unset noclobber
+unalias ls
+unalias rm
+
+# Detername name of host computer
+
+set Has_hostname = (`which hostname`)
+set Has_hostname = (`echo $Has_hostname | grep "not found"`)
+if ($#Has_hostname > 0) then
+  if (! $?HOSTNAME) then
+    echo "WARNING: Cannot find the hostname command; please check"
+    echo "your PATH or set the HOSTNAME environment variable"
+    if ("$INTERACTIVE" == "n") then
+      goto EXIT
+    endif
+    set Host_name = ""
+  else
+    set Host_name = "$HOSTNAME"
+  endif
+else
+  set Host_name = "`hostname`"
+endif
+
+# Set the number of CPUs per node (TPN), large file
+# system name (GP), HOST name, LLNL flag, and possibly
+# the batch queue (CLASS) to use.
+
+unset LLNL
+switch ($Host_name)
+  case tun*:
+#   tungsten (Intel Xeon [IA-32] cluster at NCSA)
+    set TPN = "2"
+    set GP  = "/scratch/users"
+    set HOST = tungsten
+    set LLNL = no
+    breaksw
+  case turing-*:
+  case tur?-*:
+#   new turing (Macintosh G5 cluster at CSE)
+    set TPN = "2"
+    set GP  = "/turing/projects/csar"
+    set HOST = turing2
+    set LLNL = no
+    set CLASS = batch
+    breaksw
+  case Cu*:
+#   copper (IBM-SP at NCSA [64-bit])
+    set TPN = "32"
+    set GP  = "/scratch/users"
+    set HOST = copper
+    set LLNL = no
+#    set CLASS = debug
+    set CLASS = batch
+    breaksw
+  case ds0*:
+#   datastar (IBM-SP at SDSC [64-bit])
+    set TPN = "8"
+    set GP  = "/dsgpfs2"
+    set HOST = datastar
+    set LLNL = no
+    set CLASS = normal
+    breaksw
+  case frost*:
+#   frost (IBM-SP at LLNL [64-bit])
+    set TPN = "16"
+    set GP  = "/p/gf1"
+    set HOST = frost
+    set LLNL = y
+    breaksw
+  case up*:
+#   up (IBM-SP at LLNL [64-bit])
+    set TPN = "8"
+    set GP  = "/p/gup1"
+    set HOST = up
+    set LLNL = y
+    breaksw
+  case co-login*:
+#   cobalt (Intel itanium-2 [IA-64] cluster at NCSA)
+    set TPN = "2"
+    set GP  = "/scratch/users"
+    set HOST = cobalt
+    set LLNL = no
+    set CLASS = standard
+    breaksw
+  case alc*:
+#   alc (Intel Xeon [IA-32] cluster at LLNL)
+    set TPN = "2"
+    set GP  = "/p/ga1"
+    set HOST = alc
+    set LLNL = y
+    set HDFHOME = /usr/local/tools/hdf4/HDF4.2r1
+    breaksw
+  case mcr*:
+#   mcr (Intel Xeon [IA-32] cluster at LLNL)
+    set TPN = "2"
+    set GP  = "/p/gm1"
+    set HOST = mcr
+    set LLNL = y
+    set HDFHOME = $HOME/HDF_mcr
+    breaksw
+  case atlas*:
+#   atlas (AMD Opteron cluster at LLNL)
+    set TPN = "8"
+    set GP  = "/p/lscratchb"
+    set HOST = atlas
+    set LLNL = y
+    set HDFHOME = $HOME/HDF_zeus
+    breaksw
+  case zeus*:
+#   zeus (AMD Opteron cluster at LLNL)
+    set TPN = "8"
+    set GP  = "/p/lscratchb"
+    set HOST = zeus
+    set LLNL = y
+    set HDFHOME = $HOME/HDF_zeus
+    breaksw
+  case thunder*:
+#   thunder (Intel Itanium [IA-64] cluster at LLNL)
+    set TPN = "4"
+    set GP  = "/p/gt1"
+    set HOST = thunder
+    set LLNL = y
+    set HDFHOME = $HOME/HDF_thunder
+    breaksw
+  case tcs*:
+#   lemieux (Alpha cluster TCS at PSC)
+    set TPN = "4"
+    set GP  = "/scratch/users"
+    set HOST = lemieux
+    set LLNL = n
+    breaksw
+  default:
+#   Unsupported
+    echo "Host $Host_name is not recognized."
+    echo "There is no guarantee this script will work for you, but here goes ..."
+    echo -n "Enter the host name: "
+    set HOST = "$<"
+    echo -n "Is this machine at LLNL (y/no): "
+    set LLNL = "$<"
+    echo -n "Enter the number of CPUs per node: "
+    set TPN = "$<"
+    echo -n "Enter the path to the filesystem in which to run (up to but not including ${LOGNAME}): "
+    set GP  = "$<"
+    breaksw
+endsw
+
+
+# Get the old-fashioned version of the text editor "ex"
+
+if (-e /bin/ex) then
+  set EX = '/bin/ex'
+else
+  set EX = '/usr/bin/ex'
+endif
+
+# The screen dump files will appear in the directory in which this
+# script is run (CURDIR).  The executable is in PREFIX/bin/
+
+if ($?PWD) then
+  set CURDIR = "$PWD"
+else
+  set CURDIR = `pwd`
+endif
+set OUTDIR = $CURDIR
+
+if ("$HOST" == "turing2") then
+  if (! $?NETWORK) then
+    set NET = ""
+  else
+    set NET = ":${NETWORK}"
+  endif
+else
+  set NET = ""
+endif
+
+# Try to find the rocstar executable automatically
+
+set PREFIX = ""
+set CODE_def = "rocstar"
+if ("$INTERACTIVE" == "y") then
+  set PREFIX_def = ${CURDIR}/Codes
+  set PREFIX = $PREFIX_def
+  if (! -e ${PREFIX_def}/bin/rocstar && \
+      ! -e ${PREFIX_def}/bin/rocstar_flo && \
+      ! -e ${PREFIX_def}/bin/rocstar_flu) then
+    set PREFIX_def = ${CURDIR}
+    set PREFIX = $PREFIX_def
+    if (! -e ${PREFIX_def}/bin/rocstar && \
+        ! -e ${PREFIX_def}/bin/rocstar_flo && \
+        ! -e ${PREFIX_def}/bin/rocstar_flu) then
+      set PREFIX_def = $HOME/rocstar-build
+      set PREFIX = $PREFIX_def
+      if (! -e ${PREFIX_def}/bin/rocstar && \
+          ! -e ${PREFIX_def}/bin/rocstar_flo && \
+          ! -e ${PREFIX_def}/bin/rocstar_flu) then
+        echo "WARNING: Executable not found automatically --"
+        echo "WARNING: use the full path for the program name (below)"
+        set PREFIX = ""
+      endif
+    endif
+  endif
+  if ("$PREFIX" != "") then
+    echo "Found rocstar, rocstar_flo, and/or rocstar_flu"
+    echo "To use a different executable, enter PREFIX"
+    echo "(full path to parent of Rocstar bin/ directory;" 
+    echo -n "default = ${PREFIX_def}): "
+    set PREFIX = "$<"
+    if ("$PREFIX" == "") then
+      set PREFIX = $PREFIX_def
+    endif
+    if (! -e ${PREFIX_def}/bin/rocstar) then
+      unset CODE_def
+    endif
+  endif
+else
+# Use full path name for non-interactive mode
+  set PREFIX = ""
+endif
+set GENX_DIR = $PREFIX
+
+# Obtain the number of CPUs, etc.  The GENx run directory is typically
+# found at $G30D/<problem name>/<virtual compute cpus>procs
+
+# Virtual Compute CPUs
+set VCCPUS_def = 2
+if ("$INTERACTIVE" == "y") then
+  echo -n "Enter number of (virtual) compute CPUs (${VCCPUS_def}): "
+  set VCCPUS = "$<"
+  if ("$VCCPUS" == "") then
+    set VCCPUS = $VCCPUS_def
+  endif
+else
+  set VCCPUS = "$1"
+  shift
+endif
+
+# Get problem name.  This is the directory above the genx run dir.
+set Problem_def = "Scalability"
+if ("$INTERACTIVE" == "y") then
+  echo -n "Enter problem name (default = ${Problem_def}): "
+  set Problem = "$<"
+  if ("$Problem" == "") then
+    set Problem = "$Problem_def"
+  endif
+else
+  set Problem = "$1"
+  shift 
+endif
+
+# Allow the user to name the GENx run directory something other
+# than the default name.
+
+# Generate default GENx run directory name.  The value of nnn
+# in nnnprocs is the number of compute processes/threads.
+
+@ NCPUS = $VCCPUS
+# Add zeros to NCPUS, if needed, to make nicer file names
+
+if ($VCCPUS < 100) then
+  set NCPUS = "0${NCPUS}"
+endif
+if ($VCCPUS < 10) then
+  set NCPUS = "0${NCPUS}"
+endif
+
+if ( $?G30D ) then
+# User specified file system though environment variable
+  set GPFS = "${G30D}/${Problem}"
+else
+# Default script generated file system name
+  if (-d ${GP}/${LOGNAME}/gen3-data) then
+    set GPFS = "${GP}/${LOGNAME}/gen3-data/${Problem}"
+  else
+    set GPFS = "${GP}/${LOGNAME}/${Problem}"
+  endif
+endif
+
+set GEN30_RUN_DIR_def = ${GPFS}/${NCPUS}procs
+if (! -d $GEN30_RUN_DIR_def) then
+  set GEN30_RUN_DIR_def = /nfs/tmp0/${LOGNAME}/gen3-data/${Problem}/${NCPUS}procs
+  if (! -d $GEN30_RUN_DIR_def) then
+    set GEN30_RUN_DIR_def = /nfs/tmp1/${LOGNAME}/gen3-data/${Problem}/${NCPUS}procs
+  endif
+endif
+
+if ("$INTERACTIVE" == "y") then
+  echo -n "Enter GEN3 run directory name (default = ${GEN30_RUN_DIR_def}): "
+  set GEN30_RUN_DIR = "$<"
+
+  if ("$GEN30_RUN_DIR" == "") then
+    set GEN30_RUN_DIR = "$GEN30_RUN_DIR_def"
+  endif
+else
+  set GEN30_RUN_DIR = "$GEN30_RUN_DIR_def"
+endif
+# See if user's run directory exists
+if (! -d $GEN30_RUN_DIR) then
+  if (! -e RocstarControl.txt) then
+    set PROBLEM_FULL = $Problem
+    if (! -d $PROBLEM_FULL) then
+      echo "ERROR: I cannot find $GEN30_RUN_DIR"
+      goto EXIT
+    else
+      set GEN30_RUN_DIR = $PROBLEM_FULL
+    endif
+  else
+    set GEN30_RUN_DIR = $CURDIR
+  endif
+endif
+
+# Look in RocstarControl.txt to see what the defaults should be
+
+if (! -e $GEN30_RUN_DIR/RocstarControl.txt) then
+  echo "WARNING: Did not find $GEN30_RUN_DIR/RocstarControl.txt"
+  echo "WARNING: This script will create one from scratch for you"
+  cat > $GEN30_RUN_DIR/RocstarControl.txt << STP
+FullyCoupled Rocflo Rocfrac RocburnAPN Rocout
+0., 0.0001
+1, 10000000
+0.001, 0.001, 0.001, 0.001
+1.0e-05 1.
+1.0e-04
+3540
+Rocman/Profiles/
+
+
+        READ(UNIT=UnitCoupling,FMT=*)  mWin, fWin, sWin, bWin
+        READ(UNIT=UnitCoupling,FMT=*) InitialTime, MaximumTime
+        READ(UNIT=UnitCoupling,FMT=*) MaxNumPrecCorrCycles, MaxNumTimeSteps
+        READ(UNIT=UnitCoupling,FMT=*) TolerTract, TolerMass, TolerVelo, TolerDisp
+        READ(UNIT=UnitCoupling,FMT=*) CurrentTimeStep
+        READ(UNIT=UnitCoupling,FMT=*) OutputIntervalTime
+        READ(UNIT=UnitCoupling,FMT=*) MaxWallTime
+        READ(UNIT=UnitCoupling,FMT='(A)') ProfileDir
+
+Rocman modes: 
+       BareBone, FluidAlone, SolidAlone, or FullyCoupled
+Fluids modes:
+       Rocflo, RocfloDummy, Rocflu, or RocfluDummy
+Solids modes:
+       Rocfrac, RocfracDummy, Rocsolid, or RocsolidDummy
+Burn modes:
+       RocburnAPN, RocburnPY, or RocburnZN
+STP
+endif
+
+# At this point, we know we have a Rocstar control file.
+#
+# With ROCMAN=Rocman3 as a compile option, there are two
+# possible formats.  The first line in control files
+# with the new format is 'CouplingScheme = "<scheme>"'.
+
+set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep CouplingScheme`)
+
+if ($#PARAMS_def == 0) then
+
+# Old Rocman
+
+set PARAMS_def = (`head -1 $GEN30_RUN_DIR/RocstarControl.txt`)
+if ($#PARAMS_def < 4) then
+  echo "WARNING: First line of $GEN30_RUN_DIR/RocstarControl.txt has too few words"
+  set PARAMS_def = (FullyCoupled Rocflo Rocfrac RocburnAPN)
+endif
+
+# Rocpanda I/O servers
+set IOSERVS_def = 0
+if ($#PARAMS_def > 4) then
+# Output module specified
+  set IOMODE_def = "$PARAMS_def[5]"
+else
+# Take the default output module
+  set IOMODE_def = "Rocout"
+endif
+if ("$INTERACTIVE" == "y") then
+  if ("$IOMODE_def" == "Rocpanda") then
+    if (-e $GEN30_RUN_DIR/Rocman/RocpandaControl.txt) then
+      set IOMODE_SERVS = (`head -2 $GEN30_RUN_DIR/Rocman/RocpandaControl.txt | tail -n 1`)
+      set IOSERVS_def = $IOMODE_SERVS[2]
+    endif
+    echo -n "Enter number of Rocpanda servers (default = ${IOSERVS_def}): "
+    set IOSERVS = "$<"
+    if ("$IOSERVS" == "") then
+      set IOSERVS = $IOSERVS_def
+    endif
+    if ("$IOSERVS" > 0) then
+      set IOMODE = "Rocpanda"
+    else
+      set IOMODE = "Rocout"
+    endif
+  else
+    set IOMODE = $IOMODE_def
+    set IOSERVS = $IOSERVS_def
+  endif
+  if ($IOSERVS == 0) then
+    echo -n "Enter output module (o = Rocout, p = Rocpanda, default = ${IOMODE_def}): "
+    set IOMODE = "$<"
+    if ("$IOMODE" == "") then
+      set IOMODE = "$IOMODE_def"
+    else if ("$IOMODE" == "p") then
+      set IOMODE = "Rocpanda"
+      echo -n "Enter number of Rocpanda servers (default = 1): "
+      set IOSERVS = "$<"
+      if ("$IOSERVS" == "") then
+        set IOSERVS = "1"
+      endif
+    else if ("$IOMODE" == "o") then
+      set IOMODE = "Rocout"
+    else if ("$IOMODE" != "Rocout") then
+      echo "ERROR: No output module named $IOMODE exists in GEN3.0"
+      goto EXIT
+    endif
+  endif
+else
+  set IOSERVS = "$1"
+  shift
+  set IOMODE = "$IOMODE_def"
+  if ("$IOMODE" == "Rocin") then
+    set IOMODE = "Rocout"
+  endif
+endif
+if ($IOSERVS == 0) then
+  if ("$IOMODE" == "Rocpanda") then
+    set IOMODE = "$IOMODE_def"
+  endif
+endif
+set PANDA_BUF_def = 460
+set PANDA_BUF = "$PANDA_BUF_def"
+
+# Determine the total number of virtual processes
+@ VCPUS = $VCCPUS + $IOSERVS
+
+# Physical CPUs (may not equal virtual CPUs for charm runs)
+@ PCPUS_default = $VCPUS
+if ("$INTERACTIVE" == "y") then
+  echo -n "Enter total number of physical CPUs (${PCPUS_default}): "
+  set PCPUS = "$<"
+  if ("$PCPUS" == "") then
+    set PCPUS = "$PCPUS_default"
+  endif
+else
+  set PCPUS = "$1"
+  shift
+endif
+
+# Wall clock time limit in minutes
+if (! $?RESERVE) then
+# Reserve enough time to write final output after the run stops
+#  @ RESERVE = `expr $VCPUS / 4`
+  set RESERVE = 15
+endif
+
+@ TIME_def = $RESERVE + 15
+if ("$INTERACTIVE" == "y") then
+  set TIME_SECS = `head -7 $GEN30_RUN_DIR/RocstarControl.txt | tail -n 1`
+  set TIME_SECS = `echo $TIME_SECS | sed -e 's/\..*//'`
+  @ TIME_SECS = $TIME_SECS + 60
+  if ("$HOST" == "turing2" && $?USE_LOCALDISKS) then
+    @ TIME_def = `expr $TIME_SECS / 60 + $RESERVE`
+    set TIME_FACT = 60
+    set CPUS_FACT = 60
+    set MATH_FACT = 1000
+    set RVCPUS = `expr $VCCPUS / $CPUS_FACT`
+    if ($TIME_def > 60) then
+      set RHOURS = 1
+    else
+      set RHOURS = 0
+    endif
+    @ DENOM = `expr $TIME_FACT \* $CPUS_FACT - $RHOURS \* $RVCPUS \* $CPUS_FACT` 
+    @ TIME_def = `expr $TIME_def \* $TIME_FACT \* $CPUS_FACT \* $MATH_FACT`
+    @ TIME_def = `expr $TIME_def / $DENOM`
+    @ TIME_def = `expr $TIME_def / $MATH_FACT`
+    @ RES_EST = `expr $TIME_def - $TIME_SECS / 60`
+    if ($RES_EST < 15) then
+      set RES_EST = 15
+      @ TIME_def = `expr $TIME_SECS / 60 + $RESERVE`
+    endif
+  else
+    @ TIME_def = `expr $TIME_SECS / 60 + $RESERVE`
+    set RES_EST = $RESERVE
+  endif
+  echo "${RES_EST} minutes will be reserved for final output"
+  echo -n "Enter total wall clock time limit in minutes (${TIME_def}): "
+  set TIME = "$<"
+  if ("$TIME" == "") then
+    set TIME = $TIME_def
+  endif
+  if ("$HOST" == "turing2" && $?USE_LOCALDISKS) then
+#   Reserve enough time to transfer output from local disk to NFS
+    set RHOURS = `expr $TIME / $TIME_FACT`
+    @ RESERVE = `expr $RESERVE + $RHOURS \* $RVCPUS`
+    echo "${RESERVE} minutes will be reserved for final output"
+  endif
+else
+  set TIME = "$1"
+  shift
+endif
+
+# Program name
+if (! $?CODE_def) then
+# No rocstar; must be rocstar_flo or rocstar_flu 
+  if ("$PARAMS_def[2]" == "Rocflo") then
+    set Program_def = "rocstar_flo" 
+  else
+    set Program_def = "rocstar_flu" 
+  endif
+else
+  set Program_def = $CODE_def
+endif
+if ("$INTERACTIVE" == "y") then
+  echo -n "Enter program name (default = ${Program_def}): "
+  set Program = "$<"
+  if ("$Program" == "") then
+    set Program = "$Program_def"
+  endif
+else
+  set Program = "$1"
+  shift
+endif
+if (! -e $GENX_DIR/bin/$Program) then
+  if (! -e $Program) then
+    echo ""
+    echo "WARNING: I cannot find $Program or $GENX_DIR/bin/$Program"
+    echo ""
+  endif
+endif
+
+# Select verbosity of Roccom (through optional environment variable)
+if (! $?ROCCOM_VERBOSITY) then
+  set Verbose = 0
+else
+  set Verbose = $ROCCOM_VERBOSITY
+endif
+if ($Verbose > 0) then
+  set VERBOSE = "-v $Verbose"
+else
+  set VERBOSE = ""
+endif
+
+# Read the control file to get reasonable default for the
+# choice of solvers, etc.
+
+# Fluids solver
+#set FLUIDS_def = "o"
+set FLUIDS_def = $PARAMS_def[2]
+if ("$INTERACTIVE" == "y") then
+  echo -n "Which fluid solver? (Rocflo = o, Rocflu = u, default = ${FLUIDS_def}): "
+  set FLUIDS = "$<"
+  if ("$FLUIDS" == "") then
+    set FLUIDS = "$FLUIDS_def"
+  endif
+else
+  set FLUIDS = "$1"
+  shift
+endif
+if ("$FLUIDS" == "o") then
+  set FLUIDS = "Rocflo"
+else if ("$FLUIDS" == "u") then
+  set FLUIDS = "Rocflu"
+endif
+
+# Fluids only
+if ("$INTERACTIVE" == "y") then
+  set FluidAlone_def = $PARAMS_def[1]
+  if ("$FluidAlone_def" == "FluidAlone") then
+    set FluidAlone_def = "y"
+  else
+    set FluidAlone_def = "n"
+  endif
+  echo -n "Is this run fluids only? (${FluidAlone_def}): "
+  set FLUIDS_ONLY = "$<"
+  if ("$FLUIDS_ONLY" == "") then
+    set FLUIDS_ONLY = "$FluidAlone_def"
+  endif
+else
+  set FLUIDS_ONLY = "$1"
+  shift
+endif
+if ("$FLUIDS_ONLY" == "y" || "$FLUIDS_ONLY" == "Y") then
+  set DUMMYFRAC = "-dummysolid"
+  set COUPLING = "FluidAlone"
+else
+  set DUMMYFRAC = ""
+  set COUPLING = "FullyCoupled"
+endif
+
+# Solids solver
+#set SOLIDS_def = "f"
+set SOLIDS_def = $PARAMS_def[3]
+if ("$INTERACTIVE" == "y") then
+  if ("$FLUIDS_ONLY" == "n") then
+    echo -n "Which solid solver? (Rocfrac = f, Rocsolid = s, default = ${SOLIDS_def}): "
+    set SOLIDS = "$<"
+    if ("$SOLIDS" == "") then
+      set SOLIDS = "$SOLIDS_def"
+    endif
+  else
+    set SOLIDS = "$SOLIDS_def"
+  endif
+else
+  set SOLIDS = "$1"
+  shift
+endif
+if ("$SOLIDS" == "f") then
+  set SOLIDS = "Rocfrac"
+else if ("$SOLIDS" == "s") then
+  set SOLIDS = "Rocsolid"
+endif
+
+# Solids only mode
+if ("$INTERACTIVE" == "y") then
+  if ("$FLUIDS_ONLY" == "n") then
+    set SolidAlone_def = $PARAMS_def[1]
+    if ("$SolidAlone_def" == "SolidAlone") then
+      set SolidAlone_def = "y"
+    else
+      set SolidAlone_def = "n"
+    endif
+    echo -n "Is this run solids only? (${SolidAlone_def}): "
+    set SOLIDS_ONLY = "$<"
+    if ("$SOLIDS_ONLY" == "") then
+      set SOLIDS_ONLY = "$SolidAlone_def"
+    endif
+  else
+    set SOLIDS_ONLY = "n"
+  endif
+else
+  set SOLIDS_ONLY = "$1"
+  shift
+endif
+if ("$SOLIDS_ONLY" == "y" || "$SOLIDS_ONLY" == "Y") then
+  set COUPLING = "SolidAlone"
+endif
+
+#set BURN_def = "a"
+set BURN_def = "$PARAMS_def[4]"
+if ("$INTERACTIVE" == "y") then
+  echo  "Which combustion module? (RocburnAPN = a, RocburnPY = p,"
+  echo -n "RocburnZN = z, default = ${BURN_def}): "
+  set BURN = "$<"
+  if ("$BURN" == "") then
+    set BURN = "$BURN_def"
+  endif
+else
+  set BURN = "$1"
+  shift
+endif
+if ("$BURN" == "a") then
+  set BURN = "RocburnAPN"
+else if ("$BURN" == "p") then
+  set BURN = "RocburnPY"
+else if ("$BURN" == "z") then
+  set BURN = "RocburnZN"
+endif
+if ("$INTERACTIVE" == "y") then
+#  set Time_step_def = "1.0e-06  1."
+  set Time_step_def = "`head -5 $GEN30_RUN_DIR/RocstarControl.txt | tail -n 1`"
+  echo -n "Enter system time step (${Time_step_def}): "
+  set Time_step = ($<)
+  if ("$Time_step" == "") then
+    set Time_step = ($Time_step_def)
+  endif
+  if ($#Time_step < 2) then
+    set Time_step = ($Time_step  1.)
+  endif
+  if ($#Time_step > 2) then
+    set Time_step = ($Time_step[1]  $Time_step[2])
+  endif
+  echo "Using Time_step  zoom_factor = $Time_step"
+  set Zoom_factor = $Time_step[2]
+else
+# The step size and zoom factor are required
+
+  set Time_step = ($1 $2)
+  set Zoom_factor = "$2"
+  shift
+  shift
+endif
+
+if ("$INTERACTIVE" == "y") then
+#  set Max_PC_iters_def = 1
+  set Max_PC_iters_def = (`head -3 $GEN30_RUN_DIR/RocstarControl.txt | tail -n 1 | sed -e 's/,/ /'`)
+  if ("$FLUIDS_ONLY" == "y" || "$SOLIDS_ONLY" == "y") then
+    set Max_PC_iters = 1
+  else
+    echo -n "Enter number of P-C iterations (default = $Max_PC_iters_def[1]): "
+    set Max_PC_iters = "$<"
+    if ("$Max_PC_iters" == "") then
+      set Max_PC_iters = $Max_PC_iters_def[1]
+    endif
+  endif
+else
+  set Max_PC_iters = "$1"
+  shift
+endif
+
+if ("$INTERACTIVE" == "y") then
+  set End_time_def = (`head -2 $GEN30_RUN_DIR/RocstarControl.txt | tail -n 1`)
+  echo -n "Enter physical problem end time (${End_time_def[2]}): "
+  set End_time = "$<"
+  if ("$End_time" == "") then
+    set End_time = "$End_time_def[2]"
+  endif
+else
+  set End_time = "$1"
+  shift
+endif
+
+#set Output_interval_def = "1.0e-03"
+set Output_interval_def = "`head -6 $GEN30_RUN_DIR/RocstarControl.txt | tail -n 1`"
+if ("$INTERACTIVE" == "y") then
+  echo -n "Enter output interval (${Output_interval_def}): "
+  set Output_interval = "$<"
+  if ("$Output_interval" == "") then
+    set Output_interval = "$Output_interval_def"
+  endif
+  set CHECK = (`echo $Output_interval | grep -i e`)
+  if ("$CHECK" != "") then
+#   Handle scientific notation
+    echo -n "Cannot parse ${Output_interval}, please use decimal notation: "
+    set Output_interval = "$<"
+  endif
+else
+  set Output_interval = "$1"
+  shift
+endif
+
+#-----------------------------------------------------------------------
+
+else
+
+# Rocman3 format:
+
+#.......................................................................
+
+# CouplingScheme   =  "SolidFluidSPC" 
+#                     "SolidFluidBurnSPC"
+#                     "FluidSolidISS"
+#                     "FluidAlone"
+#                     "FluidBurnAloneAlone"
+#                     "SolidAlone"
+# FluidModule      =  "Rocflo" 
+# SolidModule      =  "Rocsolid" 
+# #BurnModule       =  "RocburnAPN" 
+# OutputModule     =  "Rocout" 
+# 
+# InitialTime     = 0 
+# MaximumTime     = 2.0 
+# MaxNumPredCorrCycles = 1 
+# MaxNumTimeSteps      = 10000000 
+# 
+# TolerTract = 0.001 
+# TolerMass = 0.001 
+# TolerVelo = 0.001 
+# TolerDisp = 0.001 
+# 
+# CurrentTimeStep =    5.0e-04 
+# ZoomFactor = 1.0
+#
+# OutputIntervalTime = 9.0e-01 
+# 
+# MaxWallTime = 4704000 
+# 
+# ProfileDir = "TimingDir"
+
+#.......................................................................
+
+# Rocpanda I/O servers
+set IOSERVS_def = 0
+set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep OutputModule`)
+if ($#PARAMS_def > 2) then
+  set IOMODE_def = "$PARAMS_def[3]"
+else
+  set IOMODE_def = '"'Rocout'"'
+endif
+if ("$INTERACTIVE" == "y") then
+  if ("$IOMODE_def" == "Rocpanda" || "$IOMODE_def" == '"'Rocpanda'"') then
+    if (-e $GEN30_RUN_DIR/Rocman/RocpandaControl.txt) then
+      set IOMODE_SERVS = (`head -2 $GEN30_RUN_DIR/Rocman/RocpandaControl.txt | tail -n 1`)
+      set IOSERVS_def = $IOMODE_SERVS[2]
+    endif
+    echo -n "Enter number of Rocpanda servers (default = ${IOSERVS_def}): "
+    set IOSERVS = "$<"
+    if ("$IOSERVS" == "") then
+      set IOSERVS = $IOSERVS_def
+    endif
+  else
+    set IOSERVS = $IOSERVS_def
+  endif
+  set IOMODE = $IOMODE_def
+  if ($IOSERVS == 0) then
+    echo -n "Enter output module (o = Rocout, p = Rocpanda, default = ${IOMODE_def}): "
+    set IOMODE = "$<"
+    if ("$IOMODE" == "") then
+      set IOMODE = $IOMODE_def
+    else if ("$IOMODE" == "p") then
+      set IOMODE = '"'Rocpanda'"'
+      echo -n "Enter number of Rocpanda servers (default = 1): "
+      set IOSERVS = "$<"
+      if ("$IOSERVS" == "") then
+        set IOSERVS = "1"
+      endif
+    else if ("$IOMODE" == "o") then
+      set IOMODE = '"'Rocout'"'
+    else if ("$IOMODE" != '"'Rocout'"' && "$IOMODE" != "Rocout" && \
+             "$IOMODE" != '"'Rocpanda'"' && "$IOMODE" != "Rocpanda") then
+      echo "ERROR: No output module named $IOMODE exists in Rocstar v.3"
+      goto EXIT
+    endif
+  endif
+else
+  set IOSERVS = "$1"
+  shift
+  set IOMODE = $IOMODE_def
+  if ("$IOMODE" == '"'Rocin'"' || "$IOMODE" == "Rocin") then
+    set IOMODE = '"'Rocout'"'
+  endif
+endif
+if ($IOSERVS == 0) then
+  set IOMODE = '"'Rocout'"'
+endif
+set PANDA_BUF_def = 460
+set PANDA_BUF = "$PANDA_BUF_def"
+
+# Determine the total number of virtual processes
+@ VCPUS = $VCCPUS + $IOSERVS
+
+# Physical CPUs (may not equal virtual CPUs for charm runs)
+@ PCPUS_default = $VCPUS
+if ("$INTERACTIVE" == "y") then
+  echo -n "Enter total number of physical CPUs (${PCPUS_default}): "
+  set PCPUS = "$<"
+  if ("$PCPUS" == "") then
+    set PCPUS = "$PCPUS_default"
+  endif
+else
+  set PCPUS = "$1"
+  shift
+endif
+
+# Wall clock time limit in minutes
+if (! $?RESERVE) then
+  set RESERVE = 15
+endif
+
+@ TIME_def = $RESERVE + 15
+if ("$INTERACTIVE" == "y") then
+  set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep MaxWallTime`)
+  if ($#PARAMS_def > 2) then
+    set TIME_SECS = "$PARAMS_def[3]"
+  else
+    set TIME_SECS = 1000000
+  endif
+  set TIME_SECS = `echo $TIME_SECS | sed -e 's/\..*//'`
+  @ TIME_SECS = $TIME_SECS + 60
+  if ("$HOST" == "turing2" && $?USE_LOCALDISKS) then
+    @ TIME_def = `expr $TIME_SECS / 60 + $RESERVE`
+    set TIME_FACT = 60
+    set CPUS_FACT = 60
+    set MATH_FACT = 1000
+    set RVCPUS = `expr $VCCPUS / $CPUS_FACT`
+    if ($TIME_def > 60) then
+      set RHOURS = 1
+    else
+      set RHOURS = 0
+    endif
+    @ DENOM = `expr $TIME_FACT \* $CPUS_FACT - $RHOURS \* $RVCPUS \* $CPUS_FACT` 
+    @ TIME_def = `expr $TIME_def \* $TIME_FACT \* $CPUS_FACT \* $MATH_FACT`
+    @ TIME_def = `expr $TIME_def / $DENOM`
+    @ TIME_def = `expr $TIME_def / $MATH_FACT`
+    @ RES_EST = `expr $TIME_def - $TIME_SECS / 60`
+    if ($RES_EST < 15) then
+      set RES_EST = 15
+      @ TIME_def = `expr $TIME_SECS / 60 + $RESERVE`
+    endif
+  else
+    @ TIME_def = `expr $TIME_SECS / 60 + $RESERVE`
+    set RES_EST = $RESERVE
+  endif
+  echo "${RES_EST} minutes will be reserved for final output"
+  echo -n "Enter total wall clock time limit in minutes (${TIME_def}): "
+  set TIME = "$<"
+  if ("$TIME" == "") then
+    set TIME = $TIME_def
+  endif
+  if ("$HOST" == "turing2" && $?USE_LOCALDISKS) then
+#   Reserve enough time to transfer output from local disk to NFS
+    set RHOURS = `expr $TIME / $TIME_FACT`
+    @ RESERVE = `expr $RESERVE + $RHOURS \* $RVCPUS`
+    echo "${RESERVE} minutes will be reserved for final output"
+  endif
+else
+  set TIME = "$1"
+  shift
+endif
+
+# Program name
+if (! $?CODE_def) then
+# No rocstar; must be rocstar_flo or rocstar_flu 
+  set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep FluidModule`)
+  if ("$PARAMS_def[3]" == '"'Rocflo'"' || "$PARAMS_def[3]" == "Rocflo") then
+    set Program_def = "rocstar_flo" 
+  else
+    set Program_def = "rocstar_flu" 
+  endif
+else
+  set Program_def = $CODE_def
+endif
+if ("$INTERACTIVE" == "y") then
+  echo -n "Enter program name (default = ${Program_def}): "
+  set Program = "$<"
+  if ("$Program" == "") then
+    set Program = "$Program_def"
+  endif
+else
+  set Program = "$1"
+  shift
+endif
+if (! -e $GENX_DIR/bin/$Program) then
+  if (! -e $Program) then
+    echo ""
+    echo "WARNING: I cannot find $Program or $GENX_DIR/bin/$Program"
+    echo ""
+  endif
+endif
+
+# Select verbosity of Roccom (through optional environment variable)
+if (! $?ROCCOM_VERBOSITY) then
+  set Verbose = 0
+else
+  set Verbose = $ROCCOM_VERBOSITY
+endif
+if ($Verbose > 0) then
+  set VERBOSE = "-v $Verbose"
+else
+  set VERBOSE = ""
+endif
+
+# Read the control file to get reasonable default for the
+# choice of solvers, etc.
+
+# Fluids solver
+set FLUIDS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep FluidModule`)
+if ("$INTERACTIVE" == "y") then
+  echo -n "Which fluid solver? (Rocflo = o, Rocflu = u, default = ${FLUIDS_def[3]}): "
+  set FLUIDS = "$<"
+  if ("$FLUIDS" == "") then
+    set FLUIDS = "$FLUIDS_def[3]"
+  endif
+else
+  set FLUIDS = "$1"
+  shift
+endif
+if ("$FLUIDS" == "o" || "$FLUIDS" == "Rocflo") then
+  set FLUIDS = '"'Rocflo'"'
+else if ("$FLUIDS" == "u" || "$FLUIDS" == "Rocflu") then
+  set FLUIDS = '"'Rocflu'"'
+endif
+
+# Coupling mode
+
+set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep CouplingScheme`)
+if ("$INTERACTIVE" == "y") then
+  echo "Enter the desired coupling mode.  Choose from:"
+  echo "SolidFluidSPC SolidFluidBurnSPC SolidFluidBurnEnergySPC"
+  echo "FluidSolidISS FluidBurnAlone FluidAlone"
+  echo -n "SolidAlone (default = ${PARAMS_def[3]}): "
+  set COUPLING = "$<"
+  if ("$COUPLING" == "") then
+    set COUPLING = $PARAMS_def[3]
+  endif
+else
+  set COUPLING = $PARAMS_def[3]
+endif
+
+# Fluids only
+if ("$INTERACTIVE" == "y") then
+  set FluidAlone_def = $COUPLING
+  if ("$FluidAlone_def" == '"'FluidAlone'"' || \
+      "$FluidAlone_def" == "FluidAlone" || \
+      "$FluidAlone_def" == '"'FluidBurnAlone'"' || \
+      "$FluidAlone_def" == "FluidBurnAlone") then
+    set FluidAlone_def = "y"
+  else
+    set FluidAlone_def = "n"
+  endif
+#  echo -n "Is this run fluids only? (${FluidAlone_def}): "
+#  set FLUIDS_ONLY = "$<"
+#  if ("$FLUIDS_ONLY" == "") then
+    set FLUIDS_ONLY = "$FluidAlone_def"
+#  endif
+else
+  set FLUIDS_ONLY = "$1"
+  shift
+endif
+
+# Solids solver
+#set SOLIDS_def = "f"
+set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep SolidModule`)
+if ($#PARAMS_def >= 3) then
+  set SOLIDS_def = $PARAMS_def[3]
+else
+  set SOLIDS_def = "Rocfrac"
+endif
+if ("$INTERACTIVE" == "y") then
+  if ("$FLUIDS_ONLY" == "n") then
+    echo -n "Which solid solver? (Rocfrac = f, Rocsolid = s, default = ${SOLIDS_def}): "
+    set SOLIDS = "$<"
+    if ("$SOLIDS" == "") then
+      set SOLIDS = "$SOLIDS_def"
+    endif
+  else
+    set SOLIDS = "$SOLIDS_def"
+  endif
+else
+  set SOLIDS = "$1"
+  shift
+endif
+if ("$SOLIDS" == "f" || "$SOLIDS" == "Rocfrac") then
+  set SOLIDS = '"'Rocfrac'"'
+else if ("$SOLIDS" == "s" || "$SOLIDS" == "Rocsolid") then
+  set SOLIDS = '"'Rocsolid'"'
+endif
+
+set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep CouplingScheme`)
+# Solids only mode
+if ("$INTERACTIVE" == "y") then
+  if ("$FLUIDS_ONLY" == "n") then
+    if ($#PARAMS_def >= 3) then
+      set SolidAlone_def = $PARAMS_def[3]
+    else
+      set SolidAlone_def = "n"
+    endif
+    if ("$SolidAlone_def" == '"'SolidAlone'"' || \
+        "$SolidAlone_def" == "SolidAlone") then
+      set SolidAlone_def = "y"
+    else
+      set SolidAlone_def = "n"
+    endif
+#    echo -n "Is this run solids only? (${SolidAlone_def}): "
+#    set SOLIDS_ONLY = "$<"
+#    if ("$SOLIDS_ONLY" == "") then
+      set SOLIDS_ONLY = "$SolidAlone_def"
+#    endif
+  else
+    set SOLIDS_ONLY = "n"
+  endif
+else
+  set SOLIDS_ONLY = "$1"
+  shift
+endif
+
+#set BURN_def = "a"
+set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep BurnModule`)
+if ($#PARAMS_def >= 3) then
+  set BURN_def = "$PARAMS_def[3]"
+else
+  set BURN_def = '"'RocburnAPN'"'
+endif
+if ("$INTERACTIVE" == "y") then
+  echo  "Which combustion module? (RocburnAPN = a, RocburnPY = p,"
+  echo -n "RocburnZN = z, default = ${BURN_def}): "
+  set BURN = "$<"
+  if ("$BURN" == "") then
+    set BURN = "$BURN_def"
+  endif
+else
+  set BURN = "$1"
+  shift
+endif
+if ("$BURN" == "a" || "$BURN" == "RocburnAPN") then
+  set BURN = '"'RocburnAPN'"'
+else if ("$BURN" == "p" || "$BURN" == "RocburnPY") then
+  set BURN = '"'RocburnPY'"'
+else if ("$BURN" == "z" || "$BURN" == "RocburnZN") then
+  set BURN = '"'RocburnZN'"'
+endif
+
+if ("$INTERACTIVE" == "y") then
+set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep CurrentTimeStep`)
+  if ($#PARAMS_def >= 3) then
+    set Time_step_def = "$PARAMS_def[3]"
+  else
+    set Time_step_def = "1.0e-05"
+  endif
+  echo -n "Enter system time step (${Time_step_def}): "
+  set Time_step = ($<)
+  if ("$Time_step" == "") then
+    set Time_step = "$Time_step_def"
+    echo "Using Time_step = $Time_step"
+  endif
+  set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep ZoomFactor`)
+  if ($#PARAMS_def >= 3) then
+    set Zoom_factor_def = "$PARAMS_def[3]"
+  else
+    set Zoom_factor_def = 1.0
+  endif
+  echo -n "Enter zoom factor (default = ${Zoom_factor_def}): "
+  set Zoom_factor = ($<)
+  if ("$Zoom_factor" == "") then
+    set Zoom_factor = "$Zoom_factor_def"
+    echo "Using Zoom_factor = $Zoom_factor_def"
+  endif
+else
+# The step size and zoom factor are required
+
+  set Time_step = "$1"
+  shift
+  set Zoom_factor = "$2"
+  shift
+endif
+
+if ("$INTERACTIVE" == "y") then
+#  set Max_PC_iters_def = 1
+  set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep MaxNumPredCorrCycles`)
+  if ($#PARAMS_def >= 3) then
+    set Max_PC_iters_def = ($PARAMS_def[3])
+  else
+    set Max_PC_iters_def = 1
+  endif
+  if ("$FLUIDS_ONLY" == "y" || "$SOLIDS_ONLY" == "y") then
+    set Max_PC_iters = 1
+  else
+    echo -n "Enter number of P-C iterations (default = $Max_PC_iters_def): "
+    set Max_PC_iters = "$<"
+    if ("$Max_PC_iters" == "") then
+      set Max_PC_iters = $Max_PC_iters_def
+    endif
+  endif
+else
+  set Max_PC_iters = "$1"
+  shift
+endif
+
+if ("$INTERACTIVE" == "y") then
+  set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep MaximumTime`)
+  if ($#PARAMS_def >= 3) then
+    set End_time_def = "$PARAMS_def[3]"
+  else
+    set End_time_def = "120."
+  endif
+  echo -n "Enter physical problem end time (${End_time_def}): "
+  set End_time = "$<"
+  if ("$End_time" == "") then
+    set End_time = "$End_time_def"
+  endif
+else
+  set End_time = "$1"
+  shift
+endif
+
+set PARAMS_def = (`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep OutputIntervalTime`)
+if ("$INTERACTIVE" == "y") then
+  if ($#PARAMS_def >= 3) then
+    set Output_interval_def = "$PARAMS_def[3]"
+  else
+    set Output_interval_def = "0.001000"
+  endif
+  echo -n "Enter output interval (${Output_interval_def}): "
+  set Output_interval = "$<"
+  if ("$Output_interval" == "") then
+    set Output_interval = "$Output_interval_def"
+  endif
+  set CHECK = (`echo $Output_interval | grep -i e`)
+  if ("$CHECK" != "") then
+#   Handle scientific notation
+    echo -n "Cannot parse ${Output_interval}, please use decimal notation: "
+    set Output_interval = "$<"
+  endif
+else
+  set Output_interval = "$1"
+  shift
+endif
+
+#-----------------------------------------------------------------------
+
+endif
+# Rocman format
+
+if (! $?PC_TOLS) then
+  set PC_tols = (0.001 0.001 0.001 0.001)
+else
+  set PC_tols = (`echo $PC_TOLS | sed -e 's/,//'`)
+endif
+set TolerTract = $PC_tols[1]
+set TolerMass = $PC_tols[2]
+set TolerVelo = $PC_tols[3]
+set TolerDisp = $PC_tols[4]
+
+set Jobname_def = "$Problem"
+if ("$INTERACTIVE" == "y") then
+  echo -n "Enter job name (${Jobname_def}): "
+  set Jobname = "$<"
+  if ("$Jobname" == "") then
+    set Jobname = "$Jobname_def"
+  endif
+else
+  set Jobname = "$1"
+  shift
+endif
+
+# Ensure that Jobname has less than 16 characters for pstat greps
+#set Jobname = "`echo $Jobname | cut -c -15`"
+
+if ("$INTERACTIVE" == "y") then
+  if ("$LLNL" == "y") then
+#    if ("$HOST" == "up") then
+#      set Jobname = "`echo $Jobname | cut -c -15`"
+#    else
+      set Jobname = "`echo $Jobname | cut -c -16`"
+#    endif
+    set Jid = (`\pstat -c $HOST -u $LOGNAME | grep $Jobname | sort -k 5 | tail -n 1`)
+    if ("$Jid" == "") then
+      set Jid = ("0")
+    endif
+  else if ("$HOST" == "cobalt" || "$HOST" == "turing2") then
+    set Jobname = "`echo $Jobname | cut -c -10`"
+    set Jid = (`\qstat -u $LOGNAME | grep $LOGNAME | grep $Jobname | tail -n 1 | sed -e 's/\..*//'`)
+    if ("$Jid" == "") then
+      set Jid = ("0")
+    endif
+  else
+    set Jid = ("0")
+  endif
+else
+  set Jid = ("0")
+endif
+if ("$INTERACTIVE" == "y") then
+  echo -n "Enter restart mode (new run = 0, restart now = 1, dependent = job ID; default = ${Jid[1]}): "
+  set JID = "$<"
+  if ("$JID" == "") then
+    set JID = ($Jid[1])
+  endif
+  if ("$JID" == "0") then
+    echo "Starting a new run from time t = 0"
+  else
+    if (-e ${GEN30_RUN_DIR}/Restart.txt) then
+      if ($JID == 1) then
+        set DUMP = (`tail -n 1 ${GEN30_RUN_DIR}/Restart.txt`)
+        if ("$#DUMP" != 2) then
+          set RESTART_TIME = "0."
+          echo "WARNING: No dump times for t > 0 in ${GEN30_RUN_DIR}/Restart.txt." 
+          echo "WARNING: Starting a new run from time t = 0"
+        else
+          set RESTART_TIME = "$DUMP[2]"
+          echo "This run will restart at time $RESTART_TIME"
+        endif
+      else
+        set RESTART_TIME = "0."
+        echo "This dependent job is a restart"
+      endif
+    else
+      set RESTART_TIME = "0."
+      if ($JID == 1) then
+        echo "WARNING: No ${GEN30_RUN_DIR}/Restart.txt file found.  Starting a new run from time t = 0"
+      else
+        echo "This dependent job is a restart"
+      endif
+    endif
+  endif
+else
+  set JID = "$1"
+  if ($#argv > 1) then
+    shift
+  endif
+endif
+
+if ("$INTERACTIVE" == "y") then
+  if ("$LLNL" == "y" || "$HOST" == "cobalt" || "$HOST" == "turing2") then
+    set Jobs = 1
+    echo -n "How many identical jobs to submit (${Jobs}): "
+    set JOBS = "$<"
+    if ("$JOBS" == "") then
+      set JOBS = "$Jobs"
+    endif
+  else
+    set JOBS = "1"
+  endif
+else
+  set JOBS = "1"
+endif
+
+set jcount = 0
+
+#.......................................................................
+
+LOOP:
+
+@ jcount++
+
+set NODES = `expr $PCPUS / $TPN`
+set EXTRA = `expr $NODES \* $TPN`
+if ("$EXTRA" != "$PCPUS") then
+  @ NODES = $NODES + 1
+endif 
+set FILE = "pjob_${PCPUS}p"
+set JOBNAME = "$Jobname"
+
+if ("$TPN" > "$PCPUS") then
+   set TPN = "$PCPUS"
+endif
+
+if ("$LLNL" == "y") then
+  if ($jcount > 1) then
+#   Find the job ID of the last submitted job
+LP1:
+#   Pause to ensure that the previously submitted job appears
+    sleep 5
+    set Jid = (`\pstat -c $HOST -u $LOGNAME | grep $Jobname | sort -k 5 | tail -n 1`)
+    if ($#Jid < 1) then
+      echo "pstat returned nothing matching $Jobname -- waiting ..."
+      goto LP1
+    endif
+    set JID = "$Jid[1]"
+  endif
+endif
+if ("$HOST" == "cobalt" || "$HOST" == "turing2") then
+  if ($jcount > 1) then
+#   Find the job ID of the last submitted job
+LP2:
+#   Pause to ensure that the previously submitted job appears
+    sleep 5
+    set Jid = (`\qstat -u $LOGNAME | grep $LOGNAME | grep $Jobname | tail -n 1`)
+    if ($#Jid < 1) then
+      echo "qstat returned nothing matching $Jobname -- waiting ..."
+      goto LP2
+    endif
+    set JID = `echo $Jid[1] | sed -e 's/\..*//'`
+  endif
+endif
+
+# Set code wall time, add reserve for final output and overhead
+set DAYS = 0
+set HOURS = 0
+set MINUTES = `expr $TIME - 1`
+set LIM_MINUTES = `expr $DAYS \* 1440 + $HOURS \* 60 + $MINUTES`
+set MAXSECONDS = `expr $LIM_MINUTES \* 60 - $RESERVE \* 60`
+
+# Allow series of runs in one batch job
+if ($?PJ_NRUNS) then
+# Batch job time limit is multiple of run time limit
+  set NRUNS = $PJ_NRUNS
+else
+  set NRUNS = 1
+endif
+# Shorten run time limit in seconds by factor NRUNS
+set MAXSECONDS = `expr $MAXSECONDS / $NRUNS`
+
+########################################################################
+########################################################################
+#
+# Write to the batch job script file.  The header is very
+# machine-dependent.
+#
+########################################################################
+########################################################################
+
+# Check the definitions of directories carefully below.  You
+# will be shown the script before it is submitted, so you will
+# have a chance to try again.
+#
+if ("$LLNL" == "y") then
+# LLNL
+
+  cat <<WHOA >! $FILE
+#!/bin/csh -f 
+#PSUB -r ${JOBNAME}${PCPUS}     # Job name 
+#PSUB -ln $NODES        # Number of nodes 
+#PSUB -g ${PCPUS}us@dist # Number of tasks [protocol][@layout]
+#PSUB -tM ${LIM_MINUTES}m # Wall time limit (minutes)
+#PSUB -b illinois       # Bank to use 
+#PSUB -pool pbatch      # Constrain to pdebug or pbatch node pool
+#PSUB -c ${HOST}        # Constrain to this machine
+#PSUB -eo               # Combine stderr and stdout
+#PSUB -nr               # No rerun after machine failure
+WHOA
+
+  if ("$HOST" == "alc" || "$HOST" == "atlas" || "$HOST" == "thunder" || "$HOST" == "zeus") then
+    cat <<WHOA >> $FILE
+#PSUB -ro               # Write stdout as the job runs
+WHOA
+  endif
+
+  cat <<WHOA >> $FILE
+#PSUB -mb               # Send mail at job startup
+#PSUB -me               # Send mail at job completion
+WHOA
+
+## Limit the size of core files (this option is now accepted only on uP)
+#if (! $?AIX_DEBUG && "$HOST" == "up") then
+#  cat <<WHOA >> $FILE
+##PSUB -lc 1kb           # Limit core file size
+#WHOA
+#endif
+
+  if ($JID > 1) then
+    echo "#PSUB -d $JID"
+    echo "#PSUB -d $JID" >> $FILE
+  endif
+
+  cat <<WHOA >> $FILE
+set JOBID = "\${PSUB_JOBID}"
+echo "Request \${JOBID}"  # Display request ID 
+echo "Beginning at"
+set echo
+date
+set START_SECS = \`date +%s\`
+echo ""
+if ("$HOST" == "up") then
+#  set jobname = "\`echo ${JOBNAME}${PCPUS} | cut -c -15\`"
+  set jobname = "\`echo ${JOBNAME}${PCPUS} | cut -c -16\`"
+else
+  set jobname = "\`echo ${JOBNAME}${PCPUS} | cut -c -16\`"
+endif
+#set jobname = "\$PSUB_REQNAME"
+set SCREEN_DUMP = ${OUTDIR}/\${jobname}.o\${JOBID}
+echo ""
+WHOA
+  if ("$HOST" == "frost" || "$HOST" == "up") then
+    cat <<WHOA >> $FILE
+# Help prevent /var/tmp from filling up
+if (\$?LOADL_STEP_ID) then
+  setenv TMPDIR /var/tmp/\$LOADL_STEP_ID
+endif
+
+# If not compiled with LLNL_COMPILE_SINGLE_TREADED set to TRUE, use:
+#setenv MP_SINGLE_THREAD "y"
+unsetenv MP_SINGLE_THREAD 
+
+# Use large pages (up)
+setenv LDR_CNTRL "LARGE_PAGE_DATA=Y"
+
+#unsetenv MPI_TIMEOUT
+#setenv MP_INFOLEVEL 4
+#setenv MP_S_CHECK_PARITY "y"
+setenv MP_WAIT_MODE "yield"
+setenv TERM "vt102"
+
+WHOA
+if ($?AIX_DEBUG) then
+  cat <<WHOA >> $FILE
+unsetenv MP_COREFILE_FORMAT
+setenv MP_COREFILE_SIGTERM "yes"
+WHOA
+endif
+  endif
+
+else
+# Non LLNL systems
+
+  cat <<WHOA >! $FILE
+#!/bin/csh -f 
+WHOA
+  if ("$HOST" == "datastar") then
+    cat <<WHOA >> $FILE
+#@environment = COPY_ALL;\ 
+#AIXTHREAD_COND_DEBUG=OFF;\ 
+#AIXTHREAD_MUTEX_DEBUG=OFF;\ 
+#AIXTHREAD_RWLOCK_DEBUG=OFF;\ 
+#AIXTHREAD_SCOPE=S;\ 
+#MP_ADAPTER_USE=dedicated;\ 
+#MP_CPU_USE=unique;\ 
+#MP_CSS_INTERRUPT=no;\ 
+#MP_EAGER_LIMIT=64K;\ 
+#MP_EUIDEVELOP=min;\ 
+#MP_LABELIO=yes;\ 
+#MP_POLLING_INTERVAL=100000;\ 
+#MP_PULSE=0;\ 
+#MP_SHARED_MEMORY=yes;\ 
+#MP_SINGLE_THREAD=yes;\ 
+#RT_GRQ=ON;\ 
+#SPINLOOPTIME=0;\ 
+#YIELDLOOPTIME=0 
+
+#@ node_usage = not_shared
+#@ network.MPI = sn_all,shared,US
+WHOA
+  else if ("$HOST" == "copper") then
+    cat <<WHOA >> $FILE
+#@ node_usage = shared
+#@ resources = ConsumableCpus(1) ConsumableMemory(600 mb)
+WHOA
+  endif
+  if ("$HOST" == "datastar" || "$HOST" == "copper") then
+    cat <<WHOA >> $FILE
+#@ wall_clock_limit = 00:${LIM_MINUTES}:00
+#@ class = $CLASS
+
+#@ node = $NODES
+#@ total_tasks = $PCPUS
+
+#@ job_type = parallel
+
+#@ notify_user = ${LOGNAME}
+#@ notification = always
+
+#@ output = ${JOBNAME}${PCPUS}.o\$(jobid)
+#@ error = ${JOBNAME}${PCPUS}.o\$(jobid)
+#@ initialdir = ${OUTDIR}
+#@ queue
+
+set JOBID = "\${LOADL_STEP_ID}"
+echo "Request \${JOBID}"  # Display request ID 
+echo "Beginning at"
+set echo
+date
+echo ""
+set jobname = "\`echo ${JOBNAME}${PCPUS} | cut -c -15\`"
+set SCREEN_DUMP = ${OUTDIR}/\${jobname}.o\${JOBID}
+echo ""
+WHOA
+
+  else if ("$HOST" == "tungsten") then
+    cat <<WHOA >> $FILE
+#BSUB -n $PCPUS                 # Number of physical CPUS to use
+#BSUB -W ${LIM_MINUTES}          # Wallclock time limit (minutes)
+#BSUB -P nkb                    # Project account string
+#BSUB -J ${JOBNAME}${PCPUS}     # Name the job to identify it in bjobs
+#BSUB -o ${JOBNAME}${PCPUS}.o%J  # Name the screen dump; suffix is Job ID
+#BSUB -B                        # Send mail when job starts
+#BSUB -N                        # Send mail when job stops
+#BSUB -C 1                      # Limit core file size
+
+set JOBID = "\${LSB_JOBID}"
+echo "Request \${JOBID}"  # Display request ID 
+echo "Beginning at"
+set echo
+date
+echo ""
+set jobname = "\`echo ${JOBNAME}${PCPUS} | cut -c -15\`"
+set SCREEN_DUMP = ${OUTDIR}/\${jobname}.o\${JOBID}
+echo ""
+WHOA
+
+  else if ("$HOST" == "turing2") then
+#   Convert LIM_MINUTES (Job time limit in minutes) to hh:mm:ss format for PBS
+    set LIM_HOURS = `expr $LIM_MINUTES / 60`
+    if ("$LIM_HOURS" < 10) then
+      set LIM_HOURS = "0${LIM_HOURS}"
+    endif
+    set LIM_MINUTES = `expr $LIM_MINUTES % 60`
+    if ("$LIM_MINUTES" < 10) then
+      set LIM_MINUTES = "0${LIM_MINUTES}"
+    endif
+# For turing2, determine which version of mpirun we will use
+    if ("$NET" != "" && "$NET" != ":myr" && "$NET" != ":myr2") then
+      echo "ERROR: Invalid value of NETWORK environment variable"
+      goto EXIT
+    endif
+    cat <<WHOA >> $FILE
+# Number of nodes to use, which network, and processes (CPUs) per node
+#PBS -l nodes=${NODES}${NET}:ppn=$TPN
+# Wall clock limit hh:mm:ss
+#PBS -l walltime=${LIM_HOURS}:${LIM_MINUTES}:00
+# Name the job to identify it in qstat output
+#PBS -N ${JOBNAME}${PCPUS}
+# Merge std err into std out.
+#PBS -j oe
+# Run in this batch queue
+#PBS -q $CLASS
+# Send mail at beginning and end
+#PBS -m be
+WHOA
+if ("$INTERACTIVE" != "y") then
+# Allow specification of full path to screen dump file -- optional
+# final argument for non-interactive mode to help Roctest.
+# Create the directory to hold the dump, if it does not exist
+  if ($NARGS > 18) then
+    set DUMP_DIR = "$1:h"
+    if ("$DUMP_DIR" != "$1") then
+      if (! -d $DUMP_DIR) then
+        mkdir -p $DUMP_DIR
+      endif
+    endif
+    cat <<WHOA >> $FILE
+#PBS -o $1
+WHOA
+  endif
+endif
+# Handle dependent jobs
+    if ("$JID" > 1) then
+      echo "#PBS -W depend=afterany:$JID" >> $FILE
+    endif
+    cat <<WHOA >> $FILE
+set JOBID = \`echo \${PBS_JOBID} | sed -e 's/\..*//'\`
+echo "Request \$JOBID"
+echo "Beginning at"
+set echo
+date
+set START_SECS = \`date +%s\`
+echo ""
+set jobname = "\`echo ${JOBNAME}${PCPUS} | cut -c -15\`"
+set SCREEN_DUMP = /usr/spool/PBS/spool/\${JOBID}.turi.OU
+echo ""
+WHOA
+
+  else
+#   Generic (old turing)
+    set SUBMIT_DATE = `date +"%D" | sed -e 's/\///g'`
+    set SUBMIT_TIME = `date +"%T" | sed -e 's/://g'`
+    set SUBMIT_STR  = "${SUBMIT_DATE}_${SUBMIT_TIME}"
+    set SCREEN_DUMP = ${JOBNAME}${PCPUS}.o$SUBMIT_STR
+    set CONF = conf.${PCPUS}_$SUBMIT_STR
+    cat <<WHOA >> $FILE
+set JOBID = ${SUBMIT_STR}
+echo "Request \${JOBID}"
+echo "Beginning at"
+set echo
+date
+echo ""
+WHOA
+
+  endif
+# Non LLNL
+endif
+# Machine
+
+########################################################################
+########################################################################
+#
+# The head of the batch job file has now been written.
+# The section below should be much less machine-dependent.
+#
+########################################################################
+########################################################################
+
+if (! $?NSTEPS_MAX) then
+  set NSTEPS_MAX = 10000000
+endif
+
+cat <<WHOA >> $FILE
+
+unset noclobber
+
+set PROGRAM = "$Program"
+set PROBLEM = "$Problem"
+set END_TIME = "$End_time"
+set STEPS_MAX = "$NSTEPS_MAX"
+set TIME_STEP = "$Time_step"
+set OUTPUT_INTERVAL = "$Output_interval"
+set MAX_PC_ITERS = "$Max_PC_iters"
+set TOLS = "$PC_tols"
+
+@ NCPUS = $VCCPUS
+# Add zeros to NCPUS, if needed, to make nicer file names
+if ($VCCPUS < 100) then
+  set NCPUS = "0\${NCPUS}"
+endif
+if ($VCCPUS < 10) then
+  set NCPUS = "0\${NCPUS}"
+endif
+
+set GEN3_BIN  = ${GENX_DIR}/bin
+
+if ( \$?G30D ) then
+# User specified file system though environment variable
+  set GPFS = "\${G30D}/\${PROBLEM}"
+else
+# Default script generated file system name
+  set GPFS = "${GP}/${LOGNAME}/gen3-data/\${PROBLEM}"
+endif
+
+if ("$GEN30_RUN_DIR" == "") then
+# Script generated run directory name
+  set GEN3_RUN_DIR = \${GPFS}/\${NCPUS}procs
+else
+# User specified GEN3.0 run directory name
+  set GEN3_RUN_DIR = $GEN30_RUN_DIR
+endif
+
+set GEN3_TIMING_DATA = \${GEN3_RUN_DIR}_timing_${HOST}
+
+# Define working directories
+
+set GEN3_IN_DIR = "\$GEN3_RUN_DIR"
+
+#setenv MP_STDOUTMODE "0"  # Let's hear from process 0 only
+
+# Create timing data directory, if needed
+if (! -d \$GEN3_TIMING_DATA) then
+  mkdir -p \$GEN3_TIMING_DATA
+endif
+
+# Go to the input directory
+cd \${GEN3_IN_DIR}
+
+# Clear out any old charmrun machine files or node lists
+rm -f machinefile nodelist
+
+# Create Rocout and Modout directories, if needed
+if (-d Rocman) then
+  if (! -d Rocman/Modout) then
+    mkdir -p Rocman/Modout
+  endif
+endif
+if (-d $FLUIDS) then
+  if (! -d ${FLUIDS}/Rocout) then
+    mkdir -p ${FLUIDS}/Rocout
+  endif
+  if (! -d ${FLUIDS}/Modout) then
+    mkdir -p ${FLUIDS}/Modout
+  endif
+endif
+if (-d $SOLIDS) then
+  if (! -d ${SOLIDS}/Rocout) then
+    mkdir -p ${SOLIDS}/Rocout
+  endif
+  if (! -d ${SOLIDS}/Modout) then
+    mkdir -p ${SOLIDS}/Modout
+  endif
+endif
+if (-d $BURN) then
+  if (! -d ${BURN}/Rocout) then
+    mkdir -p ${BURN}/Rocout
+  endif
+  if (! -d ${BURN}/Modout) then
+    mkdir -p ${BURN}/Modout
+  endif
+endif
+
+# Get the last output dump time from the GENX restart info file
+if (-e Restart.txt) then
+  if ($JID != 0) then
+    set DUMP = (\`tail -n 1 Restart.txt\`)
+    if ("\$#DUMP" != 2) then
+      set RESTART_TIME = "0."
+    else
+      set RESTART_TIME = "\$DUMP[2]"
+    endif
+  else
+    set RESTART_TIME = "0."
+  endif
+else
+  set RESTART_TIME = "0."
+endif
+
+set FLUIDS_PREFIX = (\`head -1 ${FLUIDS}/${FLUIDS}Control.txt\`)
+
+if ("$SOLIDS" == "Rocfrac") then
+  set FRAC_FORMAT = (\`grep "Structure of" Rocfrac/RocfracControl.txt\`)
+  if ("\$FRAC_FORMAT" == "") then
+    set ROCFRAC_PREFIX = (\`head -2 Rocfrac/RocfracControl.txt | tail -n 1\`)
+  else
+    set ROCFRAC_PREFIX = (\`head -11 Rocfrac/RocfracControl.txt | tail -n 1\`)
+  endif
+else
+  set ROCFRAC_PREFIX = ""
+endif
+
+if ("\$RESTART_TIME" == "0.") then
+# 
+# Save the output from the previous run
+#
+# Get previous Job ID from existing screen dumps
+#
+  cd ${CURDIR}
+#
+  set DUMPS = (\`grep -l \$PROBLEM *${PCPUS}.o*\`)
+  if ("\$DUMPS" != "") then
+    set OLD_JOB = "\`ls -rt \$DUMPS | tail -n 1\`"
+    if ("\${OLD_JOB}" != "") then
+      set OLD_JOB = "\`echo \$OLD_JOB | sed -e 's/..*${PCPUS}.o//'\`"
+      if ("\${OLD_JOB}" == "\${JOBID}") then
+#       The current job is the last one; use the next to last
+        set OLD_JOB = "\`ls -rt \$DUMPS | tail -n 2 | head -1\`"
+      endif
+    endif
+  else
+    set OLD_JOB = ""
+  endif
+  if ("\$OLD_JOB" == "") then
+#   There could be valuable data here, even if we cannot find a dump.
+#   Tag it with the date and time of the current run.
+    set SUBMIT_DATE = \`date +"%D" | sed -e 's/\///g'\`
+    set SUBMIT_TIME = \`date +"%T" | sed -e 's/://g'\`
+    set SUBMIT_STR  = "\${SUBMIT_DATE}_\${SUBMIT_TIME}"
+    set OLD_JOB = "\${SUBMIT_STR}"
+  else
+    set OLD_JOB = "\`echo \$OLD_JOB | sed -e 's/..*${PCPUS}.o//'\`"
+  endif
+  cd \${GEN3_IN_DIR}
+
+  if (! -d Control_\${OLD_JOB}) then
+    mkdir Control_\${OLD_JOB}
+  else
+    echo "WARNING: Directory Control_\${OLD_JOB} already exists"
+    set SUBMIT_DATE = \`date +"%D" | sed -e 's/\///g'\`
+    set SUBMIT_TIME = \`date +"%T" | sed -e 's/://g'\`
+    set SUBMIT_STR  = "\${SUBMIT_DATE}_\${SUBMIT_TIME}"
+    set OLD_JOB = "\${SUBMIT_STR}"
+    echo "WARNING: Saving old data in directories tagged by \${OLD_JOB}"
+    mkdir -p Control_\${OLD_JOB}
+  endif
+  cp RocstarControl.txt Control_\${OLD_JOB}
+  if (-e Restart.txt) then
+    cp Restart.txt Control_\${OLD_JOB}
+  endif
+  if ("\$OLD_JOB" != "0") then
+    foreach Rocdir (Rocman $FLUIDS $BURN $SOLIDS)
+      if (-d \$Rocdir) then
+        cd \$Rocdir
+        cp \${Rocdir}Control.txt ../Control_\${OLD_JOB}
+        if (! -d Rocout_\${OLD_JOB}) then
+          mv Rocout Rocout_\${OLD_JOB}
+          mkdir Rocout
+        endif
+        if (! -d Modout_\${OLD_JOB}) then
+          mv Modout Modout_\${OLD_JOB}
+          mkdir Modout
+        endif
+        if ("\$Rocdir" == "$FLUIDS") then
+          cp Modin/\${FLUIDS_PREFIX}.inp ../Control_\${OLD_JOB}
+          cp Modin/\${FLUIDS_PREFIX}.bc ../Control_\${OLD_JOB}
+          if (-e Modin/\${FLUIDS_PREFIX}.plag_injcpdf) then
+            cp Modin/\${FLUIDS_PREFIX}.plag_injcpdf ../Control_\${OLD_JOB}
+          endif
+        endif
+        cd ..
+      endif
+    end
+    if (-d \${GEN3_RUN_DIR}_timing_${HOST}) then
+#     Save the old run's timing data files in a tagged directory
+      mv \${GEN3_RUN_DIR}_timing_${HOST} \${GEN3_RUN_DIR}_timing_\${OLD_JOB}
+      mkdir \${GEN3_RUN_DIR}_timing_${HOST}
+    endif
+  endif
+endif
+#
+
+# If necessary, link the program to the run directory
+
+if (-e \${GEN3_BIN}/\${PROGRAM}) then
+  ln -sf \${GEN3_BIN}/\${PROGRAM} \${PROGRAM}
+endif
+
+# Edit the (original) input files to specify output directories, etc.
+
+# Get the next remeshing time (do this before editing RocstarControl.txt)
+# Just find the smallest multiple of the remeshing interval > RUN_TIME
+# and make that the new END_TIME.  The hard part is interpreting RUN_TIME.
+
+cd Rocflu/Rocout
+set RUN_TIME = \`ls fluid_in_??.??????.txt | tail -n 1 | sed -e 's/fluid_in_//' | sed -e 's/\.txt//'\`
+if ("\$RUN_TIME" == "") then
+  set RUN_TIME = "00.000000"
+endif
+echo ""
+echo "This job will start at dump time stamp \$RUN_TIME"
+echo ""
+cd \$GEN3_IN_DIR
+
+set RUN_EXP = \`echo \$RUN_TIME | sed -e 's/\..*//'\`
+set RUN_MAN = \`echo \$RUN_TIME | sed -e 's/...//'\`
+switch (\$RUN_EXP)
+case 00:
+  set RUN_TIME_DEC = "0.000000"
+  breaksw
+case 06:
+  set SECS = \`echo \$RUN_MAN | sed -e 's/...\$//'\`
+  set RUN_TIME_DEC = "0.000\${SECS}"
+  breaksw
+case 07:
+  set SECS = \`echo \$RUN_MAN | sed -e 's/..\$//'\`
+  set RUN_TIME_DEC = "0.00\${SECS}"
+  breaksw
+case 08:
+  set SECS = \`echo \$RUN_MAN | sed -e 's/.\$//'\`
+  set RUN_TIME_DEC = "0.0\${SECS}"
+  breaksw
+case 09:
+  set RUN_TIME_DEC = "0.\${RUN_MAN}"
+  breaksw
+case 10:
+  set SECS = \`echo \$RUN_MAN | sed -e 's/.....\$//'\`
+  set LEFT = \`echo \$RUN_MAN | sed -e 's/.//'\`
+  set RUN_TIME_DEC = "\${SECS}.\${LEFT}0"
+  breaksw
+case 11:
+  set SECS = \`echo \$RUN_MAN | sed -e 's/....\$//'\`
+  set LEFT = \`echo \$RUN_MAN | sed -e 's/..//'\`
+  set RUN_TIME_DEC = "\${SECS}.\${LEFT}00"
+  breaksw
+case 12:
+  set SECS = \`echo \$RUN_MAN | sed -e 's/...\$//'\`
+  set LEFT = \`echo \$RUN_MAN | sed -e 's/...//'\`
+  set RUN_TIME_DEC = "\${SECS}.\${LEFT}000"
+  breaksw
+default:
+  echo "Exponents equal to \$RUN_EXP are not supported"
+  goto EXIT_PJ
+  breaksw
+endsw
+WHOA
+
+echo ""
+if (! $?PJ_REMESH_PATH) then
+  if ("$HOST" != "turing2") then
+    set PJ_REMESH_PATH_def = $HOME/gen3_$HOST/genx_remesh/bin
+  else
+    if (-d $HOME/gen3_test/genx_remesh/bin) then
+      set PJ_REMESH_PATH_def = $HOME/gen3_test/genx_remesh/bin
+    else
+      set PJ_REMESH_PATH_def = $HOME/rocstar-build/bin
+    endif
+  endif
+  echo -n "Enter path to remeshing tools (default ${PJ_REMESH_PATH_def}): "
+  setenv PJ_REMESH_PATH "$<"
+  if ("$PJ_REMESH_PATH" == "") then
+    setenv PJ_REMESH_PATH $PJ_REMESH_PATH_def
+  endif
+endif
+set STARAFT = "`echo $Problem | grep StarAft`"
+set ACM = "`echo $Problem | grep ACM`"
+if (! $?PJ_REMESH_DT) then
+  if ("$STARAFT" != "") then
+    set PJ_REMESH_DT_def = 0.100000
+  else if ("$ACM" != "") then
+    set PJ_REMESH_DT_def = 0.001000
+  else
+    set PJ_REMESH_DT_def = 0.500000
+  endif
+  echo -n "Enter remeshing time interval (default ${PJ_REMESH_DT_def}): "
+  setenv PJ_REMESH_DT "$<"
+  if ("$PJ_REMESH_DT" == "") then
+    setenv PJ_REMESH_DT $PJ_REMESH_DT_def
+  endif
+endif
+echo "Using remeshing time interval $PJ_REMESH_DT"
+if (! $?PJ_RESTART_DT) then
+  set PJ_RESTART_DT_def = $PJ_REMESH_DT
+  echo -n "Enter restart time interval (default ${PJ_RESTART_DT_def}): "
+  setenv PJ_RESTART_DT "$<"
+  if ("$PJ_RESTART_DT" == "") then
+    setenv PJ_RESTART_DT $PJ_RESTART_DT_def
+  endif
+endif
+echo "Using restart time interval $PJ_RESTART_DT"
+if (! $?PJ_RSIZING) then
+  if ("$STARAFT" != "") then
+    set PJ_RSIZING_def = "1.0"
+  else
+    set PJ_RSIZING_def = "1.0"
+  endif
+  echo -n "Enter surface mesh scale factor (default ${PJ_RSIZING_def}): "
+  setenv PJ_RSIZING "$<" 
+  if ("$PJ_RSIZING" == "") then
+    setenv PJ_RSIZING $PJ_RSIZING_def
+  endif
+endif
+echo "Using surface mesh scale factor = $PJ_RSIZING"
+if (! $?PJ_VSIZING) then
+  if ("$STARAFT" != "") then
+    set PJ_VSIZING_def = "0.2"
+  else
+    set PJ_VSIZING_def = "0.2"
+  endif
+  echo -n "Enter volume mesh scale factor boost (default ${PJ_VSIZING_def}): "
+  setenv PJ_VSIZING "$<"
+  if ("$PJ_VSIZING" == "") then
+    setenv PJ_VSIZING $PJ_VSIZING_def
+  endif
+endif
+echo "Using volume mesh scale factor boost = $PJ_VSIZING"
+echo ""
+
+# More remeshing settings
+set PJ_MOP = "3"
+set PJ_PROP = "1"
+set PJ_SURF = "2"
+cat <<WHOA >> $FILE
+set MOP = "$PJ_MOP"
+set PROP = "$PJ_PROP"
+set SURF = "$PJ_SURF"
+if ("\$MOP" != "") then
+  set MMOP = "-mmop \$MOP"
+else
+  set MMOP = ""
+endif
+if ("\$PROP" != "") then
+  set MPROP = "-mprop \$PROP"
+else
+  set MPROP = ""
+endif
+if ("\$SURF" != "") then
+  set RSURF = "-l \$SURF"
+else
+  set RSURF = ""
+endif
+set REMESH_DT = $PJ_REMESH_DT
+set RESTART_DT = $PJ_RESTART_DT
+
+#set NREMESH = \`echo "scale=6; (\$RUN_TIME_DEC + (\$REMESH_DT / 4)) / \$REMESH_DT" | bc -l\`
+set NREMESH = \`echo "scale=6; (\$RUN_TIME_DEC + 0.000001) / \$REMESH_DT" | bc -l\`
+# Round down to integer
+set NREMESH = \`echo \$NREMESH | sed -e 's/\..*/.000/'\`
+set LAST_SCHED_REMESH = \`echo "scale=6; \$NREMESH * \$REMESH_DT" | bc -l\`
+set NEW_END_TIME = \`echo "scale=6; \$LAST_SCHED_REMESH + \$REMESH_DT" | bc -l\`
+
+# NEW_END_TIME now has the desired value; we want to remesh then.
+# For systems prone to crashes and hangs,
+# advance the end time by RESTART_DT -- too simple.  If we stopped
+# at the wall clock limit, it is an odd time, and we do not want to
+# produce lots of extra dumps.  So determine last scheduled output dump
+# and add RESTART_DT.  Assume RESTART_DT >= OUTPUT_INTERVAL
+#                             REMESH_DT >= OUTPUT_INTERVVAL
+#                             REMESH_DT >= RESTART_DT
+
+#set NDUMPS = \`echo "scale=6; (\$RUN_TIME_DEC + (\$OUTPUT_INTERVAL / 4)) / \$OUTPUT_INTERVAL" | bc -l\`
+set NDUMPS = \`echo "scale=6; (\$RUN_TIME_DEC + 0.000001) / \$OUTPUT_INTERVAL" | bc -l\`
+# Round down to integer
+set NDUMPS = \`echo \$NDUMPS | sed -e 's/\..*/.000/'\` 
+set LAST_SCHED_DUMP = \`echo "scale=6; \$NDUMPS * \$OUTPUT_INTERVAL" | bc -l\`
+set ADV_END_TIME = \`echo "scale=6; \$LAST_SCHED_DUMP + \$RESTART_DT" | bc -l\`
+
+# Stop at the lesser of ADV_END_TIME and NEW_END_TIME
+set DIFFERENCE = \`echo "scale=6; \$NEW_END_TIME - \$ADV_END_TIME" | bc -l\`
+set NEGATIVE = \`echo \$DIFFERENCE | grep '-'\`
+if ("\$NEGATIVE" != "") then
+  set ADV_END_TIME = \$NEW_END_TIME
+endif 
+
+# Reset the run's end time to the next remesh/restart time (assume we
+# do not want to end the run before that).
+
+echo ""
+echo "Setting the end time to \$ADV_END_TIME"
+set END_TIME = \$ADV_END_TIME
+echo ""
+
+# Put the correct number of steps to take, output time interval,
+# run time limit, timing data directory etc. into 
+# RocstarControl.txt
+
+set Rocman_format = (\`cat $GEN30_RUN_DIR/RocstarControl.txt | grep -v '^#' | grep CouplingScheme\`)
+if (\$#Rocman_format == 0) then
+# Old Rocman format
+
+  $EX RocstarControl.txt << STP
+1,8d
+0a
+$COUPLING $FLUIDS $SOLIDS $BURN $IOMODE
+\${RESTART_TIME}, \${END_TIME}
+\${MAX_PC_ITERS}, \${STEPS_MAX}
+\${TOLS}
+\${TIME_STEP}
+\${OUTPUT_INTERVAL}
+$MAXSECONDS
+\${GEN3_TIMING_DATA}/
+.
+wq
+STP
+
+else
+
+# Rocman3 format
+  $EX RocstarControl.txt << STP
+%d
+0a
+CouplingScheme   =  $COUPLING
+FluidModule      =  $FLUIDS
+SolidModule      =  $SOLIDS
+BurnModule       =  $BURN
+OutputModule     =  $IOMODE
+
+InitialTime      =  \${RESTART_TIME}
+MaximumTime      =  \${END_TIME}
+MaxNumPredCorrCycles = \${MAX_PC_ITERS}
+MaxNumTimeSteps      = \${STEPS_MAX}
+
+TolerTract = $TolerTract
+TolerMass = $TolerMass
+TolerVelo = $TolerVelo
+TolerDisp = $TolerDisp
+
+CurrentTimeStep =    \${TIME_STEP}
+OutputIntervalTime = \${OUTPUT_INTERVAL}
+ZoomFactor = ${Zoom_factor}
+MaxWallTime = $MAXSECONDS
+ProfileDir = "\${GEN3_TIMING_DATA}/"
+
+.
+wq
+STP
+
+endif
+# Rocman format
+
+echo ""
+echo "Task 0: cat RocstarControl.txt"
+cat RocstarControl.txt
+echo ""
+
+if (-e Rocmop/RocmopControl.txt) then
+  echo ""
+  echo "Task 0: cat Rocmop/RocmopControl.txt"
+  cat Rocmop/RocmopControl.txt
+  echo ""
+endif
+
+if ("$IOSERVS" > 0) then
+  cat <<STP >! Rocman/RocpandaControl.txt 
+C ${VCCPUS}
+S ${IOSERVS}
+M 1
+D . d
+B ${PANDA_BUF}
+STP
+  echo ""
+  echo "Task 0: cat Rocman/RocpandaControl.txt"
+  cat Rocman/RocpandaControl.txt
+  echo ""
+endif
+
+foreach Rocdir (Rocman $FLUIDS $BURN $SOLIDS)
+  if (-d \$Rocdir) then
+    echo ""
+    echo "Task 0: cat \${Rocdir}/\${Rocdir}Control.txt"
+    cat \${Rocdir}/\${Rocdir}Control.txt
+    echo ""
+    if ("\$Rocdir" == "$FLUIDS") then
+      echo ""
+      echo "Task 0: cat \${Rocdir}/Modin/\${FLUIDS_PREFIX}.inp"
+      cat \${Rocdir}/Modin/\${FLUIDS_PREFIX}.inp
+      echo ""
+      echo ""
+      echo "Task 0: cat \${Rocdir}/Modin/\${FLUIDS_PREFIX}.bc"
+      cat \${Rocdir}/Modin/\${FLUIDS_PREFIX}.bc
+      echo ""
+    endif
+  endif
+end
+
+# Run the code
+date
+
+WHOA
+
+cat <<WHOA >> $FILE
+set REMESH_PATH = $PJ_REMESH_PATH
+
+# Handle separate file systems
+set ON_GPFS = (\`echo \$GEN3_IN_DIR | grep gup1 \`)
+if ("\$ON_GPFS" != "") then
+  set REM_DIR = \$G300/\$PROBLEM/\${NCPUS}procs
+  set ROCOUT = \$REM_DIR/Rocflu/Rocout
+  mkdir -p \$ROCOUT
+  mkdir -p \$GEN3_IN_DIR/Rocrem
+else
+  set REM_DIR = \$GEN3_IN_DIR
+endif
+
+echo ""
+echo "Running \${PROGRAM}"
+echo ""
+set ij = 0
+LOOPij:
+  @ ij++
+  cd \$GEN3_IN_DIR/Rocflu/Rocout
+  set RUN_TIME = \`ls fluid_in_??.??????.txt | tail -n 1 | sed -e 's/fluid_in_//' | sed -e 's/\.txt//'\`
+  if ("\$RUN_TIME" == "") then
+    set RUN_TIME = "00.000000"
+  endif
+  cd \$GEN3_IN_DIR
+
+# Optionally trigger remeshing by "touching" a file REMESH_NOW
+# in the Rocstar run directory.
+
+  if (-e REMESH_NOW) then
+    if (! -e Restart.txt) then
+      set RESTART = "n"
+    else
+      set NRESTART_TIMES = (\`wc -l Restart.txt\`)
+      if (\$NRESTART_TIMES[1] > 1) then
+        set RESTART = "y"
+      else
+        set RESTART = "n"
+      endif
+    endif
+    @ LINES = $VCPUS + 150
+    @ LINESM = \$LINES - 15
+    if ("\$ON_GPFS" != "") then
+#      rm -f Rocrem/serial_remesh_fem_vp0_0.dat
+      rm -f Rocrem/serial_fem_\${RUN_TIME}_vp0_0.dat
+    endif
+    goto ATTEMPT_REMESH
+  endif
+
+  echo "Starting \$PROGRAM from time \$RUN_TIME "
+  echo ""
+WHOA
+
+########################################################################
+########################################################################
+#
+# Machine-dependent section to run parallel code
+#
+########################################################################
+########################################################################
+
+  if ("$HOST" == "zeus" || "$HOST" == "alc" || "$HOST" == "atlas") then
+    cat <<WHOA >> $FILE
+  if ($VCPUS == $PCPUS) then
+    srun -c 1 -n $PCPUS \${PROGRAM} ${VERBOSE}
+  else
+    srun -l /bin/hostname | sort -n | awk '{print \$2}' > machinefile        
+    $HOME/bin/charmnodes machinefile > nodelist
+    set CRNODES = (\`wc -l nodelist\`)        
+    set CRNNODES = \$CRNODES[1]
+    @ CRNNODES--
+    set CRNCPUS = \`expr \$CRNNODES \\* $TPN\`        
+    $HOME/charm_${HOST}/bin/charmrun \${PROGRAM} ${VERBOSE} +p\${CRNCPUS}
+  endif
+WHOA
+  else if ("$HOST" == "up" || "$HOST" == "datastar") then
+    cat <<WHOA >> $FILE
+  if ($VCPUS == $PCPUS) then
+    \${PROGRAM} ${VERBOSE}
+  else
+    \${PROGRAM} +vp $VCPUS ${VERBOSE}
+  endif
+WHOA
+  else if ("$HOST" == "turing2") then
+    cat <<WHOA >> $FILE
+  echo "Running \${PROGRAM} on the following nodes:"
+  cat \${PBS_NODEFILE}
+  echo ""
+  if ($VCPUS == $PCPUS) then
+    rjq $PCPUS \${PROGRAM} ${VERBOSE}
+  else
+    rjq $PCPUS \${PROGRAM} +vp $VCPUS ${VERBOSE}
+  endif
+WHOA
+  else
+    echo "I do not know how to run parallel code on $HOST"
+    exit
+  endif
+
+########################################################################
+########################################################################
+#
+# End of machine-dependent section to run parallel code
+#
+########################################################################
+########################################################################
+
+    cat <<WHOA >> $FILE
+
+  if (! -e Restart.txt) then
+    set RESTART = "n"
+  else
+    set NRESTART_TIMES = (\`wc -l Restart.txt\`)
+    if (\$NRESTART_TIMES[1] > 1) then
+      set RESTART = "y"
+    else
+      set RESTART = "n"
+    endif
+  endif
+
+# First check the screen dump to see whether the run crashed
+# right away due to a machine glitch.  Look for an indication
+# of a successful system time step.
+
+  if (\$ij < 100) then
+    @ LINES = $VCPUS + 150
+    @ LINESM = \$LINES - 15
+    if (! -e "\$SCREEN_DUMP") then
+      echo "Could not find screen dump file \${SCREEN_DUMP}. Quitting."
+      goto EXIT_PJ
+    endif
+    set TOOK_STEPS = "\`tail -n \$LINES \${SCREEN_DUMP} | head -\$LINESM | egrep '(ROCSTAR: Success: predictor-corrector converged at time|Directed to remesh)'\`"
+    if ("\${TOOK_STEPS}" == "") then
+
+#     The run may have crashed due to a machine glitch; try it again
+#     Note that if the input data is causing a problem, the run is going
+#     to fail over and over.
+
+      if (\$ij < 4) then 
+        echo "The run appears to have crashed before completing a system"
+        echo "time step on attempt \${ij}."
+
+#       Try to ensure that the dataset is OK.  Remeshing a second time
+#       at the same dump will fail because it will not find the required files.
+
+        if (-e Rocflu/Rocout/fluid_\${RUN_TIME}_0000.hdf) then
+          goto LOOPij
+        else
+          echo "Could not find Rocflu/Rocout/fluid_\${RUN_TIME}_0000.hdf."
+          echo "Quitting in order to avoid multiple remeshing of the same dump."
+          goto EXIT_PJ
+        endif
+      else
+        echo "It looks like we could not take a system time step.  Quitting."
+        goto EXIT_PJ
+      endif
+#     ij < 4
+    endif
+#   TOOK_STEPS = ""
+  endif
+# ij < 100
+
+# If we get past the previous test, the run must have completed
+# at least one system time step.  It may have stopped because:
+#
+# 1) Reached end time = desired remeshing time
+# 2) Fluid time step below threashold
+# 3) Negative positive-definite fluid quantity
+# 4) Negative volume in fluid
+# 5) Face sum greater than minimum face area
+# 6) Job time limit reached
+# 7) Some other reason
+#
+# For situations 1-5, try to remesh; for situations 6+, quit.
+# Look at the screen dump for items 1-5.
+
+ATTEMPT_REMESH:
+  if (\$ij < 100 && "\$RESTART" == "y") then
+#   Check the screen dump for shutdown due to fluid time step below DTMINLIM
+    set NEEDS_REMESH = "\`tail -n \$LINES \${SCREEN_DUMP} | head -\$LINESM | egrep '( MaximumTime = |Shutting down|Negative positive-definite|Negative volume|face sum greater|Directed to remesh)'\`"
+
+###
+#   Allow frequent restarts without remeshing, intended to avoid crashes
+#   due to the communication system running out of memory.
+#
+    set MAXTIME_REACHED = (\`echo "\$NEEDS_REMESH" | grep ' MaximumTime = '\`)
+    if ("\$MAXTIME_REACHED" != "" && ! -e REMESH_NOW) then
+
+#     We have reached the desired stopping time, but may not want to remesh.
+#     Remesh only if the end time exceeds the remesh time.
+#     Assume we stopped at ADV_END_TIME.  Did we reach NEW_END_TIME?
+#     Compare real numbers ADV_END_TIME and NEW_END_TIME
+
+      set TIME_DIFF = \`echo "scale=6; \$ADV_END_TIME + (\$RESTART_DT / 4) - \$NEW_END_TIME" | bc -l\`
+      set NEG_TIME = \`echo \$TIME_DIFF | grep '-'\`
+
+      if ("\$NEG_TIME" != "") then
+#       We have a ways to go yet
+#       Reset the wall clock time limit in RocstarControl.txt
+        set NOW_SECS = \`date +%s\`
+        @ ELAPSED_SECS = \$NOW_SECS - \$START_SECS
+        @ MAXSECS = $MAXSECONDS - \$ELAPSED_SECS
+#       Advance ADV_END_TIME
+        set ADV_END_TIME = \`echo "scale=6; \$ADV_END_TIME + \$RESTART_DT" | bc -l\`
+#       Stop at NEW_END TIME if ADV_END_TIME is now greater
+        set TIME_DIFF = \`echo "scale=6; \$ADV_END_TIME - (\$RESTART_DT / 4) - \$NEW_END_TIME" | bc -l\`
+        set NEG_TIME = \`echo \$TIME_DIFF | grep '-'\`
+        if ("\$NEG_TIME" == "") then
+          set ADV_END_TIME = \$NEW_END_TIME
+        endif
+        $EX RocstarControl.txt << STP
+%d
+0a
+CouplingScheme   =  $COUPLING
+FluidModule      =  $FLUIDS
+SolidModule      =  $SOLIDS
+BurnModule       =  $BURN
+OutputModule     =  $IOMODE
+
+InitialTime      =  1.0
+MaximumTime      =  \${ADV_END_TIME}
+MaxNumPredCorrCycles = \${MAX_PC_ITERS}
+MaxNumTimeSteps      = \${STEPS_MAX}
+
+TolerTract = $TolerTract
+TolerMass = $TolerMass
+TolerVelo = $TolerVelo
+TolerDisp = $TolerDisp
+
+CurrentTimeStep =    \${TIME_STEP}
+OutputIntervalTime = \${OUTPUT_INTERVAL}
+ZoomFactor = ${Zoom_factor}
+MaxWallTime = \${MAXSECS}
+ProfileDir = "\${GEN3_TIMING_DATA}/"
+
+.
+wq
+STP
+        echo ""
+        echo "Here is the edited RocstarControl.txt"
+        cat RocstarControl.txt
+        echo ""
+        @ ij--
+        goto LOOPij
+      endif
+#     NEG_TIME != ""
+    endif
+#   MAXTIME_REACHED != "" and ! -e REMESH_NOW
+#
+###
+
+    if ("\$NEEDS_REMESH" != "" || -e REMESH_NOW) then
+#     Try to remesh
+      if (-e \$REMESH_PATH/fem1xfer) then
+#       Make sure remeshing tools exist
+        cd \$GEN3_IN_DIR/Rocflu/Rocout
+#       Get time when remesh would occur (latest dump or remesh restart files)
+        set REMESH_TIME = \`ls fluid_in_??.??????.txt | tail -n 1 | sed -e 's/fluid_in_//' | sed -e 's/\.txt//'\` 
+        if ("\$REMESH_TIME" == "\$RUN_TIME") then
+#         Uh, oh.  We started this run at the latest existing dump/remesh
+#         Determine whether it is a regular dump or a remesh set
+          if (-e remesh_vol_\${REMESH_TIME}_00001.hdf) then
+#           The latest output is a remesh set.  Cannot remesh this.           
+            echo "Cannot make progress by remeshing at \${RUN_TIME}"
+#           Consider reducing output dump interval (one time only)
+            cd \$GEN3_IN_DIR
+            set DUMP_INTERVAL = (\`cat RocstarControl.txt | grep -v '^#' | grep OutputIntervalTime\`)
+            set CURRENT_INTERVAL = "\$DUMP_INTERVAL[3]"
+            if ("\$CURRENT_INTERVAL" == "\$OUTPUT_INTERVAL") then
+#             Reduce the output dump interval by a factor of 10
+              set CURRENT_INTERVAL = \`echo "scale=6; \$CURRENT_INTERVAL / 10" | bc -l\`
+              echo "Reducing the output interval to \$CURRENT_INTERVAL"
+
+#             Also reset the wall clock time limit
+              set NOW_SECS = \`date +%s\`
+              @ ELAPSED_SECS = \$NOW_SECS - \$START_SECS
+              @ MAXSECS = $MAXSECONDS - \$ELAPSED_SECS
+              $EX RocstarControl.txt << STP
+%d
+0a
+CouplingScheme   =  $COUPLING
+FluidModule      =  $FLUIDS
+SolidModule      =  $SOLIDS
+BurnModule       =  $BURN
+OutputModule     =  $IOMODE
+
+InitialTime      =  1.0
+MaximumTime      =  \${ADV_END_TIME}
+MaxNumPredCorrCycles = \${MAX_PC_ITERS}
+MaxNumTimeSteps      = \${STEPS_MAX}
+
+TolerTract = $TolerTract
+TolerMass = $TolerMass
+TolerVelo = $TolerVelo
+TolerDisp = $TolerDisp
+
+CurrentTimeStep =    \${TIME_STEP}
+OutputIntervalTime = \${CURRENT_INTERVAL}
+ZoomFactor = ${Zoom_factor}
+MaxWallTime = \${MAXSECS}
+ProfileDir = "\${GEN3_TIMING_DATA}/"
+
+.
+wq
+STP
+              echo ""
+              echo "Here is the edited RocstarControl.txt"
+              cat RocstarControl.txt
+              echo ""
+              goto LOOPij
+            else
+#           CURRENT_INTERVAL = OUTPUT_INTERVAL
+              echo "Stopping because we already tried reducing the output interval to \$CURRENT_INTERVAL"
+              goto EXIT_PJ
+            endif
+#           CURRENT_INTERVAL = OUTPUT_INTERVAL
+          else
+#         -e remesh_vol_REMESH_TIME_00001.hdf
+#           A remesh restart dump was NOT detected, so should have normal dump
+            echo "It looks like we have not remeshed successfully at \$REMESH_TIME"
+            echo ""
+          endif
+#         -e remesh_vol_REMESH_TIME_00001.hdf
+        endif
+#       REMESH_TIME = RUN_TIME
+
+#       Make sure there is a dump to remesh
+        if (! -e fluid_\${REMESH_TIME}_0000.hdf) then
+          echo "Could not find fluid_\${REMESH_TIME}_0000.hdf; cannot remesh; quitting"
+          goto EXIT_PJ
+        endif
+#       ! -e fluid_REMESH_TIME_0000.hdf
+
+        cd \$GEN3_IN_DIR
+
+#       Proceed with remeshing
+
+        echo "Iteration \$ij : attempting to remesh at time \$REMESH_TIME"
+        set RSIZING = $PJ_RSIZING
+        set VSIZING = $PJ_VSIZING
+WHOA
+
+########################################################################
+########################################################################
+#
+# Machine-dependent section to prep serial remeshing
+#
+########################################################################
+########################################################################
+
+        if ("$HOST" == "alc" || "$HOST" == "zeus" || "$HOST" == "atlas") then
+          cat <<WHOA >> $FILE
+# Prepare the nodelist, and determine the number of physical CPUs.
+
+        srun -l /bin/hostname | sort -n | awk '{print \$2}' >  machinefile
+        $HOME/bin/charmnodes machinefile > nodelist
+
+        set CRNODES = (\`wc -l nodelist\`)
+        set CRNNODES = \$CRNODES[1]
+        @ CRNNODES--
+        set CRNCPUS = \`expr \$CRNNODES \\* $TPN\`
+#       REMPROCS = PCPUS has been failing lately
+#        set REMPROCS = \`expr \$CRNNODES \\* 2\`
+        set REMPROCS = \$CRNNODES
+WHOA
+        else if ("$HOST" == "up") then
+          cat <<WHOA >> $FILE
+        set CRNCPUS = $PCPUS
+        set REMPROCS = $PCPUS
+WHOA
+        else if ("$HOST" == "turing2") then
+          cat <<WHOA >> $FILE
+        set CRNCPUS = $PCPUS
+#        set REMPROCS = \`expr $PCPUS / 2\`
+#        if (\$REMPROCS == 0) then
+#          set REMPROCS = 1
+#        endif
+        set REMPROCS = $PCPUS
+WHOA
+        endif
+
+########################################################################
+########################################################################
+#
+# End of machine-dependent section to prep serial remeshing
+#
+########################################################################
+########################################################################
+
+        cat <<WHOA >> $FILE
+
+#       Enable keeping the serial remesh file by touching KEEP_SERIAL_MESH
+#       Other circumstances under which we would like to skip serial remeshing:
+#
+#       1) Using zeus with alc or up, and zeus was too busy during the previous
+#          batch job to run the remeshing job, but it ran later (or was by hand)
+#
+#       When not to keep it -- last attempt generated a mesh that was bad
+#
+#       How to distinguish -- look in last job screen dump for WAITED TOO LONG
+#       In this case, REMESH_NOW would be present, but REMESH_SERIAL should
+#       have been removed by successful completion of the serial job.
+
+#        if (-e REMESH_NOW && ! -e \$REM_DIR/REMESH_SERIAL && -e \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat) then
+#        if (-e REMESH_NOW && ! -e \$REM_DIR/REMESH_SERIAL && -e \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat) then
+        if (-e REMESH_NOW && ! -e \$REM_DIR/REMESH_SERIAL && (-e \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat || -e \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat)) then
+          set PREV_JOB = (\`\ls -rt $GENX_DIR/${JOBNAME}${PCPUS}.o*\`)
+#          if (\$#PREV_JOB > 1) then
+#            @ PREV_SCREEN_DUMP = \$#PREV_JOB - 1
+#            set PREV_SCR_DMP = \$PREV_JOB[\$PREV_SCREEN_DUMP]
+#            if (-e \$PREV_SCR_DMP) then
+#              set TOO_LONG = (\`tail -n 50 \$PREV_SCR_DMP | grep 'WAITED TOO LONG TO SEE REMESH_SERIAL'\`)
+#            else
+#              set TOO_LONG = ""
+#            endif
+#            if ("\$TOO_LONG" != "") then
+              touch KEEP_SERIAL_MESH
+              if ("\$ON_GPFS" != "") then
+#                cp \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat Rocrem/serial_remesh_fem_vp0_0.dat
+                cp \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat
+              endif
+#             ON_GPFS != ""
+#            endif
+#            TOO_LONG != ""
+#          endif
+#          -e PREV_SCR_DMP
+#        endif
+#        #PREV_JOB > 1
+        endif
+#       -e REMESH_NOW && ! -e REMESH_SERIAL ...
+       
+#        if (! -e KEEP_SERIAL_MESH || ! -e \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat) then
+#        if (! -e KEEP_SERIAL_MESH || ! -e \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat) then
+        if (! -e KEEP_SERIAL_MESH || (! -e \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat && ! -e \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat)) then
+
+#          rm -f \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat \$REM_DIR/Rocrem/parallel_remesh_fem_*.dat
+#          rm -f \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat \$REM_DIR/Rocrem/parallel_fem_\${REMESH_TIME}_*.dat
+          rm -f \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat \$REM_DIR/Rocrem/parallel_remesh_fem_*.dat \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat \$REM_DIR/Rocrem/parallel_fem_\${REMESH_TIME}_*.dat
+          if ("\$ON_GPFS" != "") then
+#            rm -f Rocrem/serial_remesh_fem_vp0_0.dat
+            rm -f Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat
+          endif
+#         ON_GPFS != ""
+
+#         In case this job runs out of time, etc. 
+
+          touch REMESH_NOW
+
+WHOA
+if ("$HOST" == "alc") then
+  cat <<WHOA >> $FILE
+#         Try to maximize available memory on ALC
+          set MALLOC_TRIM_THRESHOLD_ = ""
+          set MALLOC_MMAP_MAX_ = ""
+WHOA
+endif
+# HOST is alc
+
+cat <<WHOA >> $FILE
+
+          set irem_fail = 0
+RETRY_SERIAL_REMESH:
+          if ((\$CRNCPUS < 100 && "$HOST" == "alc") || "$HOST" == "zeus" || "$HOST" == "atlas" || "$HOST" == "turing2") then
+#           Not a huge mesh for alc, maybe StarAft, < 2M elements
+#           Make sure we have enough time to remesh
+
+            set NOW_SECS = \`date +%s\`
+            @ ELAPSED_SECS = \$NOW_SECS - \$START_SECS
+            @ MAXSECS = $MAXSECONDS - \$ELAPSED_SECS
+#            @ REMESH_WCT = \`expr 28 \* \$CRNCPUS \`
+            @ REMESH_WCT = \`expr 15 \* \$CRNCPUS \`
+            if ( \$MAXSECS < \$REMESH_WCT ) then
+              echo "Not enough time left in batch job to remesh.  Quitting."
+              touch REMESH_NOW
+              goto EXIT_PJ
+            endif
+#           MAXSECS < REMESH_WCT
+WHOA
+
+########################################################################
+########################################################################
+#
+# Machine-dependent section to perform serial remeshing locally
+#
+########################################################################
+########################################################################
+
+if ("$HOST" == "zeus" || "$HOST" == "alc" || "$HOST" == "atlas") then
+  cat <<WHOA >> $FILE
+            $HOME/charm_${HOST}/bin/charmrun \$REMESH_PATH/Rocrem -q1 -t -y -srel \$RSIZING -svol \$VSIZING -g1 \$MMOP \$MPROP \$RSURF -v2 -w1 +vp$VCPUS Rocflu \$REMESH_TIME +p1
+
+WHOA
+else if ("$HOST" == "turing2") then
+  cat <<WHOA >> $FILE
+
+            rjq 1 \$REMESH_PATH/Rocrem -q1 -t -y -srel \$RSIZING -svol \$VSIZING -g1 \$MMOP \$MPROP \$RSURF -v2 -w1 +vp$VCPUS Rocflu \$REMESH_TIME
+
+WHOA
+endif
+# HOST is zeus or alc or atlas
+
+########################################################################
+########################################################################
+#
+# End of machine-dependent section to perform serial remeshing locally
+#
+########################################################################
+########################################################################
+
+  cat <<WHOA >> $FILE
+          else
+#         CRNCPUS < 100
+
+# For larger meshes on alc, or any mesh on up, perform serial remshing stage
+# using a script to submit a batch job on zeus or atlas
+
+# Before submitting this batch job, make sure there are not any in the queue
+# or running on zeus/atlas already
+
+            if (\$?RS_USE_ATLAS) then
+              set ALREADY_ON_ZEUS = (\`ssh atlas /usr/bin/pstat | grep Rem_\$PROBLEM \`)
+            else
+              set ALREADY_ON_ZEUS = (\`ssh zeus /usr/bin/pstat | grep Rem_\$PROBLEM \`)
+            endif
+#           RS_USE_ATLAS
+            if ("\$ALREADY_ON_ZEUS" == "") then
+#             There is no serial remeshing job for this problem on zeus
+              rm -f \$REM_DIR/REMESH_SERIAL
+
+#             If this data set is on GPFS, always copy the requied files to
+#             an NFS file system.  Make sure there are no older files
+#             at the same dump time.
+              if ("\$ON_GPFS" != "") then
+                set HAVE_FLUID_FILES = (\`ls \$ROCOUT/fluid_\${REMESH_TIME}_0000.hdf \`)
+                if ("\$HAVE_FLUID_FILES" != "") then
+                  rm -f \$ROCOUT/ifluid*_\${REMESH_TIME}*.*
+                endif
+                cp Rocflu/Rocout/ifluid*_\${REMESH_TIME}*.* \$ROCOUT
+#               So that remeshing scripts find the right output dump ...
+                touch \$ROCOUT/fluid_\${REMESH_TIME}_0000.hdf
+              endif
+#             ON_GPFS != ""
+              if (\$?RS_USE_ATLAS) then
+                ssh atlas "remesh_serial $VCPUS \$PROBLEM \$RSIZING \$VSIZING \$SURF \$PROP"
+              else
+                ssh zeus "remesh_serial $VCPUS \$PROBLEM \$RSIZING \$VSIZING \$SURF \$PROP"
+              endif
+#             RS_USE_ATLAS
+            else
+#           ALREADY_ON_ZEUS
+              echo "Detected existing serial remeshing job:"
+              echo "\$ALREADY_ON_ZEUS"
+            endif
+#           ALREADY_ON_ZEUS
+
+# Wait for that job to start by looking for file REMESH_SERIAL to appear
+
+#           Make sure we have enough time to wait for the remeshing job
+
+            set NOW_SECS = \`date +%s\`
+            @ ELAPSED_SECS = \$NOW_SECS - \$START_SECS
+            @ MAXSECS = $MAXSECONDS - \$ELAPSED_SECS
+#            @ REMESH_WCT = "8400"
+#            @ REMESH_WCT = \`expr $PCPUS \* 32\`
+            @ REMESH_WCT = \`expr $PCPUS \* 18\`
+            if ( \$MAXSECS < \$REMESH_WCT ) then
+              echo "Not enough time left in batch job to wait.  Quitting."
+              touch REMESH_NOW
+              goto EXIT_PJ
+            endif
+#           MAXSECS < REMESH_WCT
+
+            set iwait = 0
+            while (! -e \$REM_DIR/REMESH_SERIAL)
+              @ iwait++
+              if (\$iwait > 40) then
+                echo ""
+                echo "WAITED TOO LONG TO SEE REMESH_SERIAL"
+                touch REMESH_NOW
+                date
+                goto EXIT_PJ
+              endif
+#             iwait < 40
+              sleep 30
+            end
+#           while
+
+# If we get here, the job must have created the file; wait for it to go away
+
+#           Make sure we have enough time to wait for the remeshing job
+
+            set NOW_SECS = \`date +%s\`
+            @ ELAPSED_SECS = \$NOW_SECS - \$START_SECS
+            @ MAXSECS = $MAXSECONDS - \$ELAPSED_SECS
+#            @ REMESH_WCT = "7200"
+#            @ REMESH_WCT = \`expr $PCPUS \* 28\`
+            @ REMESH_WCT = \`expr $PCPUS \* 15\`
+            if ( \$MAXSECS < \$REMESH_WCT ) then
+              echo "Not enough time left in batch job to wait.  Quitting."
+              touch REMESH_NOW
+              goto EXIT_PJ
+            endif
+#           MAXSECS < REMESH_WCT
+
+            set iwait = 0
+            while (-e \$REM_DIR/REMESH_SERIAL)
+              @ iwait++
+              if (\$iwait > 90) then
+                echo ""
+                echo "WAITED TOO LONG FOR REMESH_SERIAL TO VANISH"
+                touch REMESH_NOW
+                date
+                goto EXIT_PJ
+              endif
+#             iwait > 90
+              sleep 60
+            end
+#           while
+          endif
+#         CRNCPUS < 100
+
+#=======================================================================
+
+# If we get here, serial remeshing should have completed.  Check status.
+
+#          if (! -e \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat) then
+#          if (! -e \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat) then
+          if (! -e \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat && ! -e \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat) then
+            echo ""
+#            echo "Serial mesh file \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat not found"
+#            echo "Serial mesh file \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat not found"
+            echo "Serial mesh file \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat or \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat not found"
+            if (\$irem_fail < 3) then
+              @ irem_fail++
+              echo "Retrying"
+              echo ""
+              goto RETRY_SERIAL_REMESH
+            endif
+#           irem_fail < 3
+            echo "Serial remeshing failed even after \$irem_fail tries"
+            echo "at time \${REMESH_TIME}. Quitting"
+            touch REMESH_NOW
+            goto EXIT_PJ
+          else
+#         ! -e serial_fem_REMESH_TIME_vp0_0.dat
+#           On up, copy the serial remesh file to GPFS
+            if ("\$ON_GPFS" != "") then
+#              cp \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat Rocrem/serial_remesh_fem_vp0_0.dat
+              cp \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat
+            endif
+#           ON_GPFS != ""
+#           In case the latter stages fail
+            touch KEEP_SERIAL_MESH
+          endif
+#         ! -e serial_fem_REMESH_TIME_vp0_0.dat
+
+        endif
+#       KEEP_SERIAL_MESH
+
+#       Partition separately.  It used to fail more often otherwise.
+
+        rm -f \$REM_DIR/Rocrem/parallel_remesh_fem_*.dat
+        rm -f \$REM_DIR/Rocrem/parallel_fem_*.dat
+        rm -f Rocflu/Rocout/remesh_vol_\${REMESH_TIME}_?????.hdf
+        rm -f Rocflu/Rocout/remesh_surf_\${REMESH_TIME}_?????.hdf
+
+        set irem_fail = 0
+
+RETRY_PARTITION:
+
+        cd Rocrem
+
+#       Make sure we have enough time to remesh
+
+        set NOW_SECS = \`date +%s\`
+        @ ELAPSED_SECS = \$NOW_SECS - \$START_SECS
+        @ MAXSECS = $MAXSECONDS - \$ELAPSED_SECS
+#        @ REMESH_WCT = "1800"
+#        @ REMESH_WCT = \`expr $PCPUS \* 8\`
+        @ REMESH_WCT = \`expr $PCPUS \* 5\`
+        if ( \$MAXSECS < \$REMESH_WCT ) then
+          echo "Not enough time left in batch job to partition and"
+          echo "transfer the solution.  Quitting."
+          cd \$GEN3_IN_DIR
+          touch REMESH_NOW
+          goto EXIT_PJ
+        endif
+#       MAXSECS < REMESH_WCT
+WHOA
+
+########################################################################
+########################################################################
+#
+# Machine-dependent section to perform partitioning
+#
+########################################################################
+########################################################################
+
+if ("$HOST" == "zeus" || "$HOST" == "atlas") then
+  cat <<WHOA >>$FILE
+#       Serial on zeus/atlas (partition) or use geompartition
+#        $HOME/charm_${HOST}/bin/charmrun \${REMESH_PATH}/partition \$REMESH_TIME +vp$VCPUS +p1
+        $HOME/charm_${HOST}/bin/charmrun \${REMESH_PATH}/partition \$REMESH_TIME +vp$VCPUS +p\$REMPROCS ++batch 32
+#        $HOME/charm_${HOST}/bin/charmrun \${REMESH_PATH}/geompartition \$REMESH_TIME +vp$VCPUS +p$VCPUS ++batch 32
+WHOA
+
+else if ("$HOST" == "alc") then
+  cat <<WHOA >>$FILE
+#       On REMPROCS for alc
+        if (\$?MPI_USE_LIBELAN) then
+          set FMR_USE_LIBELAN = \$MPI_USE_LIBELAN
+        else
+          set FMR_USE_LIBELAN = 1
+        endif
+        setenv MPI_USE_LIBELAN 0
+        $HOME/charm_${HOST}/bin/charmrun \${REMESH_PATH}/partition \$REMESH_TIME +vp$VCPUS +p\$REMPROCS
+        setenv MPI_USE_LIBELAN \$FMR_USE_LIBELAN
+#        set MALLOC_TRIM_THRESHOLD_ = '-1'
+#        set MALLOC_MMAP_MAX_ = "0"
+WHOA
+
+else if ("$HOST" == "turing2") then
+  cat <<WHOA >>$FILE
+        rjq \$REMPROCS \${REMESH_PATH}/partition \$REMESH_TIME +vp$VCPUS
+#        rjq \$REMPROCS \${REMESH_PATH}/geompartition \$REMESH_TIME +vp$VCPUS
+WHOA
+
+else if ("$HOST" == "up") then
+# up
+  cat <<WHOA >>$FILE
+#        if (! -e serial_remesh_fem_vp0_0.dat) then
+#          cp \$REM_DIR/Rocrem/serial_remesh_fem_vp0_0.dat serial_remesh_fem_vp0_0.dat
+        if (! -e serial_fem_\${REMESH_TIME}_vp0_0.dat) then
+          cp \$REM_DIR/Rocrem/serial_fem_\${REMESH_TIME}_vp0_0.dat serial_fem_\${REMESH_TIME}_vp0_0.dat
+        endif
+# Note that stand-alone partitioning on uP has not worked
+#        \${REMESH_PATH}/partition \$REMESH_TIME +vp$VCPUS +p\$REMPROCS
+#        \${REMESH_PATH}/geompartition \$REMESH_TIME +vp$VCPUS +p\$REMPROCS
+WHOA
+
+endif
+# HOST is zeus/atlas
+  cat <<WHOA >>$FILE
+        cd \$GEN3_IN_DIR
+WHOA
+
+########################################################################
+########################################################################
+#
+# End of machine-dependent section to perform partitioning
+#
+########################################################################
+########################################################################
+
+if ("$HOST" == "zeus" || "$HOST" == "atlas" || "$HOST" == "alc" || "$HOST" == "turing2") then
+  cat <<WHOA >>$FILE
+
+#       Check whether partitioning succeeded
+
+#        set PAR_FILES = (\`\ls Rocrem/parallel_fem*.dat | wc -l\`)
+        set PAR_FILES = (\`\ls Rocrem/parallel_remesh_fem*.dat Rocrem/parallel_fem*.dat | wc -l\`)
+        set NPAR_FILES = \$PAR_FILES[1]
+        if (\$NPAR_FILES != $VCPUS) then
+          echo "Partitioning produced \$NPAR_FILES files, not ${VCPUS}."
+          if (\$irem_fail < 3) then
+            @ irem_fail++
+            echo "Retrying"
+            goto RETRY_PARTITION
+          endif
+#         irem_fail < 3
+          echo "Partitioning failed even after \$irem_fail tries"
+          echo "at time \${REMESH_TIME}. Quitting"
+          touch REMESH_NOW KEEP_SERIAL_MESH
+          goto EXIT_PJ
+        endif
+#       NPAR_FILES != VCPUS
+WHOA
+endif
+# HOST is zeus, atlas, alc, or turing2
+cat <<WHOA >>$FILE
+
+#       Do collision detection on fewer procs than are in the batch job.
+#       The -q0 argument makes it read in the partitioned mesh from
+#       the parallel_fem*.dat files.
+
+        set irem_fail = 0
+RETRY_FEM1XFER:
+
+WHOA
+
+########################################################################
+########################################################################
+#
+# Machine-dependent section to perform data transfer
+#
+########################################################################
+########################################################################
+
+if ("$HOST" == "zeus" || "$HOST" == "alc" || "$HOST" == "atlas") then
+  cat <<WHOA >>$FILE
+        if (\$?MPI_USE_LIBELAN) then
+          set FMR_USE_LIBELAN = \$MPI_USE_LIBELAN
+        else
+          set FMR_USE_LIBELAN = 1
+        endif
+        setenv MPI_USE_LIBELAN 0
+        $HOME/charm_${HOST}/bin/charmrun \$REMESH_PATH/fem1xfer \$MMOP \$MPROP \$RSURF -q0 -g1 -v2 -w1 -y +vp$VCPUS Rocflu \$REMESH_TIME +p\$REMPROCS
+        setenv MPI_USE_LIBELAN \$FMR_USE_LIBELAN
+WHOA
+
+else if ("$HOST" == "turing2") then
+# turing MacOS
+  cat <<WHOA >>$FILE
+        rjq \$REMPROCS \$REMESH_PATH/fem1xfer \$MMOP \$MPROP \$RSURF -q0 -g1 -v2 -w1 -y +vp$VCPUS Rocflu \$REMESH_TIME +p\$REMPROCS
+WHOA
+
+else if ("$HOST" == "up") then
+# up
+  cat <<WHOA >>$FILE
+#        \$REMESH_PATH/fem1xfer \$MMOP \$MPROP \$RSURF -q0 -g1 -v2 -w1 -y +vp$VCPUS Rocflu \$REMESH_TIME +p\$REMPROCS
+        \$REMESH_PATH/fem1xfer \$MMOP \$MPROP \$RSURF -q1 -g1 -v2 -w1 -y +vp$VCPUS Rocflu \$REMESH_TIME +p\$REMPROCS
+WHOA
+
+endif
+# HOST is zeus or alc or atlas
+
+########################################################################
+########################################################################
+#
+# End of machine-dependent section to perform data transfer
+#
+########################################################################
+########################################################################
+
+cat <<WHOA >>$FILE
+
+#       Check whether remeshing appears to have succeeded
+        set NVOL_FILES = (\`\ls Rocflu/Rocout/remesh_vol_\${REMESH_TIME}_*.hdf | wc -l\`)
+        if ("\$NVOL_FILES[1]" == $VCPUS) then
+#         Remeshing probably succeeded.
+          rm -f REMESH_NOW KEEP_SERIAL_MESH
+#         Reset the wall clock time limit in RocstarControl.txt
+          set NOW_SECS = \`date +%s\`
+          @ ELAPSED_SECS = \$NOW_SECS - \$START_SECS
+          @ MAXSECS = $MAXSECONDS - \$ELAPSED_SECS
+#         Advance NEW_END_TIME only if we remeshed at the scheduled time
+          set SCHED = (\`echo "\$NEEDS_REMESH" | grep MaximumTime\`)
+          if ("\$SCHED" != "") then
+            set NDUMPS = \`echo "scale=6; (\$NEW_END_TIME + (\$OUTPUT_INTERVAL / 4)) / \$OUTPUT_INTERVAL" | bc -l\`
+#            Round down to integer
+            set NDUMPS = \`echo \$NDUMPS | sed -e 's/\..*/.000/'\` 
+            set LAST_SCHED_DUMP = \`echo "scale=6; \$NDUMPS * \$OUTPUT_INTERVAL" | bc -l\`
+            set ADV_END_TIME = \`echo "scale=6; \$LAST_SCHED_DUMP + \$RESTART_DT" | bc -l\`
+            set NEW_END_TIME = \`echo "scale=6; \$NEW_END_TIME + \$REMESH_DT" | bc -l\`
+          endif
+#         SCHED != ""
+
+#         Edit the Rocstar control file very carefully
+
+          $EX RocstarControl.txt << STP
+%d
+0a
+CouplingScheme   =  $COUPLING
+FluidModule      =  $FLUIDS
+SolidModule      =  $SOLIDS
+BurnModule       =  $BURN
+OutputModule     =  $IOMODE
+
+InitialTime      =  1.0
+MaximumTime      =  \${ADV_END_TIME}
+MaxNumPredCorrCycles = \${MAX_PC_ITERS}
+MaxNumTimeSteps      = \${STEPS_MAX}
+
+TolerTract = $TolerTract
+TolerMass = $TolerMass
+TolerVelo = $TolerVelo
+TolerDisp = $TolerDisp
+
+CurrentTimeStep =    \${TIME_STEP}
+OutputIntervalTime = \${OUTPUT_INTERVAL}
+ZoomFactor = ${Zoom_factor}
+MaxWallTime = \${MAXSECS}
+ProfileDir = "\${GEN3_TIMING_DATA}/"
+
+.
+wq
+STP
+          echo ""
+          echo "Here is the edited RocstarControl.txt"
+          cat RocstarControl.txt
+          echo ""
+#         Prepare the Rocburn Rocout directory
+          cd RocburnAPN
+#         This rm will fail unless Rocout is already a link
+          rm -f Rocout
+          if (-e Rocout) then
+#           Try to rename Rocout.  If that fails, remove it as a last resort.
+            if (! -e Rocout.remesh_00.000000) then
+              mv Rocout Rocout.remesh_00.000000
+            else
+#           ! -e Rocout.remesh_00.000000
+              if ("\${RUN_TIME}" != "\${REMESH_TIME}") then
+                if (! -e Rocout.remesh_\${RUN_TIME}) then
+                  mv Rocout Rocout.remesh_\${RUN_TIME}
+                else
+#               ! -e Rocout.remesh_RUN_TIME
+                  echo "Cannot rename Rocout.  Quitting"
+                  date
+                  goto EXIT_PJ
+                endif
+#               ! -e Rocout.remesh_RUN_TIME
+              else
+#             RUN_TIME != REMESH_TIME
+                echo "Cannot rename Rocout.  Quitting"
+                date
+                goto EXIT_PJ
+              endif
+#             RUN_TIME != REMESH_TIME
+            endif
+#           ! -e Rocout.remesh_00.000000
+          endif
+#         -e Rocout
+          mkdir Rocout.remesh_\${REMESH_TIME}
+          ln -s Rocout.remesh_\${REMESH_TIME} Rocout
+          cd \$GEN3_IN_DIR
+          if (\$MAXSECS > $RESERVE) then
+            rm -f REMESH_NOW KEEP_SERIAL_MESH
+            goto LOOPij
+          else
+#         MAXSECS > RESERVE
+            echo "Not enough time left in this batch job to restart Rocstar."
+          endif
+#         MAXSECS > RESERVE
+        else
+#       NVOL_FILES = VCPUS
+          echo ""
+          echo "fem1xfer appears to have failed on iteration \$ij"
+          if (\$irem_fail < 3) then
+            @ irem_fail++
+            echo "Retrying"
+            goto RETRY_FEM1XFER
+          endif
+#         irem_fail < 3
+          echo "at time \${REMESH_TIME}. Quitting."
+          touch REMESH_NOW KEEP_SERIAL_MESH
+        endif
+#       NVOL_FILES = VCPUS
+      else
+#     fem1xfer
+        echo "Quitting because there is no \$REMESH_PATH/fem1xfer"
+      endif
+#     fem1xfer exists
+    endif
+#   NEEDS_REMESH != "" or -e REMESH_NOW
+  endif
+# ij < 100 and RESTART = y
+WHOA
+
+  cat <<WHOA >> $FILE 
+
+EXIT_PJ:
+echo ""
+echo "Batch job script exited at:"
+
+date
+
+exit
+WHOA
+
+#-----------------------------------------------------------------------
+
+if ($jcount == 1) then
+  if ("$INTERACTIVE" == "y") then
+    echo ""
+    echo -n "Do you wish to view the job script? (n): "
+    set VIEW = "$<"
+    if ("$VIEW" == "y") then
+      echo ""
+      echo "Here is the batch file for $PCPUS processors:"
+      echo ""
+      cat $FILE
+    endif
+
+    echo ""
+    echo -n "Do you wish to submit the job(s)? (y/n/e[xempt]/[e]x[pedite]/i[nteractive]): "
+    set SUBMIT = "$<"
+    if ("$SUBMIT" == "") then
+      set SUBMIT = "y"
+    endif
+  else
+    set SUBMIT = "y"
+  endif
+# INTERACTIVE = y
+endif
+# jcount = 1
+
+if ("$SUBMIT" == y) then
+  if ("$LLNL" == "y") then
+# Work around MOAB bug for Chaos 4 on zeus/atlas/up
+    echo "submit $FILE"
+    submit $FILE
+  else if ("$HOST" == "datastar" || "$HOST" == "copper") then
+    echo "llsubmit $FILE"
+    llsubmit $FILE
+  else if ("$HOST" == "tungsten") then
+# Might work for little q as well
+    echo "bsub < $FILE"
+    bsub < $FILE
+  else if ("$HOST" == "cobalt") then
+    echo "qsub $FILE"
+    qsub $FILE
+  else if ("$HOST" == "turing2") then
+    echo "qsub $FILE"
+    qsub $FILE
+  else
+    echo ""
+    echo "ERROR: I do not know how to submit a job on $HOST"
+    echo ""
+  endif
+else
+# SUBMIT = y
+  if ("$SUBMIT" == "e" || "$SUBMIT" == "x" || "$SUBMIT" == "i") then
+    if ("$LLNL" == "y") then
+      echo ""
+      if ("$SUBMIT" == "e") then
+#        echo "psub -exempt "TOOLONG,CPU&TIME,CPUS>MAX" -p 1.0 $FILE"
+#        psub -exempt "TOOLONG,CPU&TIME,CPUS>MAX" -p 1.0 $FILE
+# EXEMPT IS BROKEN BY CONVERSION TO MOAB:
+        echo "psub -exempt 'TOOLONG,CPU&TIME,CPUS>MAX' $FILE"
+        psub -exempt 'TOOLONG,CPU&TIME,CPUS>MAX' $FILE
+      else if ("$SUBMIT" == "x") then
+# Change bank to illdat
+        echo "Changing the SU bank in $FILE from illinois to illdat"
+        $EX $FILE <<STP
+/illinois
+s/illinois/illdat
+wq
+STP
+        echo "submit -expedite $FILE"
+        submit -expedite $FILE
+      endif
+    else if ("$HOST" == "datastar") then
+      echo ""
+      echo "editing $FILE to change priority to high"
+      echo ""
+      ex $FILE <<END
+/class =
+d
+i
+#@ class = high
+.
+wq
+END
+      echo ""
+      echo "llsubmit $FILE"
+      llsubmit $FILE
+    else if ("$HOST" == "turing2" && "$SUBMIT" == "i") then
+      chmod u+x $FILE
+      echo "Type $FILE below to execute the job script."
+#      echo "As with non-interactive batch jobs,"
+#      echo "the screen dump is redirected to ${JOBNAME}${PCPUS}.o<jobid>"
+      echo "qsub -I -lnodes=${NODES}${NET}:ppn=$TPN"
+      qsub -I -lnodes=${NODES}${NET}:ppn=$TPN
+    else
+      echo ""
+      echo "WARNING: I do not know how to expedite a job on $HOST"
+      if ("$HOST" == "copper") then
+        echo "llsubmit $FILE"
+        llsubmit $FILE
+      else
+        echo ""
+        echo "ERROR: $FILE not sumbitted"
+      endif
+    endif
+#   LLNL = y | HOST
+  else
+# SUBMIT = e, x, or i
+    echo "$FILE not submitted"
+  endif
+# SUBMIT = e, x, or i
+endif
+# SUBMIT = y
+
+if ($jcount < $JOBS) then
+  goto LOOP
+endif
+
+EXIT:
+exit

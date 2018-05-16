@@ -1,0 +1,53 @@
+! File with boundary conditions
+! This file is designed to work only if all blocks are the same. This
+! can be achieved by partitioning (makeflo) with splitaxis 0
+
+# BC_SLIPW
+BLOCK     0  0   ! applies to block ... (0 0 = to all)
+PATCH     3  3   ! applies to patch ... (0 0 = to all patches of BLOCK)
+EXTRAPOL  0      ! order of extrapolation to dummy cells (0 or 1)
+COUPLED   2      ! 2 means not interacting
+MAXCHANGE 0.2    ! 
+#
+
+!This is the interating surface between the fluid and solid
+# BC_SLIPW
+BLOCK     0  0   ! applies to block ... (0 0 = to all)
+PATCH     4  4   ! applies to patch ... (0 0 = to all patches of BLOCK)
+EXTRAPOL  0      ! order of extrapolation to dummy cells (0 or 1)
+COUPLED   0      ! 0 means interacting, but not burning
+MAXCHANGE 0.2    ! 
+#
+
+# BC_SLIPW
+BLOCK     0  0   ! applies to block ... (0 0 = to all)
+PATCH     5  6   ! applies to patch ... (0 0 = to all patches of BLOCK)
+EXTRAPOL  0      ! order of extrapolation to dummy cells (0 or 1)
+COUPLED   2      ! 2 means not interacting
+MAXCHANGE 0.2    ! 
+#
+
+! ----------------
+
+# BC_INFLOW
+BLOCK     0  0   ! applies to block ... (0 0 = to all)
+PATCH     0  0   ! applies to patch ... (0 0 = to all patches of BLOCK)
+TYPE      0      ! supersonic inflow
+DISTRIB   0      ! single value (=0) or distribution (=1)
+PTOT      4.447033332E+10  ! for shock Mach number M1 = 2.5
+TTOT      8.249991182E+03
+MACH      1.196974774E+00
+
+BETAH     0.0
+BETAV     0.0
+#
+
+! ----------------
+
+# BC_OUTFLOW
+BLOCK     0  0 ! applies to block ... (0 0 = to all)
+PATCH     0  0   ! applies to patch ... (0 0 = to all patches of BLOCK)
+TYPE      0      ! supersonic outflow
+DISTRIB   0      ! single value (=0) or distribution (=1)
+PRESS     2.584E+9  ! static pressure [Pa]
+#

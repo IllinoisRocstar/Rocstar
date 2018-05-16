@@ -1,0 +1,131 @@
+-------------------------------------------------------------
+Version 1.94 9/16/2004 by olawlor
+Minor update to ckhashtable.h for gcc 3.4.2.
+
+-------------------------------------------------------------
+Version 1.93 8/14/2004 by olawlor
+Tightened mesh quality criterion, to be *stricter*, not looser,
+than Rocflo's quality criterion.
+
+-------------------------------------------------------------
+Version 1.92 7/6/2004 by olawlor
+Added a warning when fabricating an external boundary condition.
+Missing external boundary conditions often indicate a 
+slightly non-conformal or non-matching block-block interface.
+
+Also added printouts for mesh quality, with a warning if 
+Rocflo's mesh quality bounds are violated.
+
+-------------------------------------------------------------
+Version 1.91 2/18/2004 by olawlor
+Added gridgen binary mesh formats .grds and .grdd.
+
+-------------------------------------------------------------
+Version 1.9 12/16/2002 by olawlor
+Changed RocfloMP boundary condition definition file extension
+to ".bcmp".  This allows Rocflo and RocfloMP boundary condition
+files to coexist, because now they have different extensions.
+
+-------------------------------------------------------------
+Version 1.891 10/11/2002 by olawlor
+
+Fixed output filename in write.cpp.  This caused HDF output
+files to overwrite one another.
+
+-------------------------------------------------------------
+Version 1.89 7/31/2002 by olawlor
+
+New CkHashtable from Charm++ archive-- fixes bus error
+on Origin2000.
+
+-------------------------------------------------------------
+Version 1.88 7/11/2002 by olawlor
+
+Integrated Jiri's new .grda mesh format routines, which store
+the RocfloMP mesh all in one big file.
+
+-------------------------------------------------------------
+Version 1.87 5/7/2002 by olawlor
+
+Changed definition of type 2 boundary conditions yet again--
+now one of *every* pair of faces *will* be made type 2, not
+just those that are on the boundary or smaller.
+
+-------------------------------------------------------------
+Version 1.86 4/29/2002 by olawlor
+
+Added -2D and -top options to makemblock (need some easy way to 
+add these to makeflo, too).  These decrease the memory usage
+when solving a 2D problem/solving a topology-only problem.
+
+-------------------------------------------------------------
+Version 1.84 03/21/2002 by olawlor
+
+Now properly handle .inp files that contain block names with 
+spaces.  Previously this would derail the input routines--
+fscanf(in,"%s",str) is a silent killer!
+
+-------------------------------------------------------------
+Version 1.83 03/20/2002 by olawlor
+	-Now automatically determine the quantization to use. 
+A very fine quantization results in a large scale factor. With
+a large mesh this causes the integer coordinates in a "hashableVector3d" 
+to saturate to 0xffffffff, because floating-point to integer conversions
+do *NOT* wrap around (unlike, say, integer-to-char conversions).
+Since all nodes hash to 0xfffffff, every node in the mesh is adjacent.
+
+Using a coarse quantization avoids this problem, but might mistakenly 
+lump together distinct nodes.  A reasonable point in the trade-off
+is now reached automatically (see the "Encountered large node coordinates:
+quantizing to xxx" status messages).
+
+
+	-Floating point to integer quantization is now shifted to
+only map to positive integers (see the "originMapsTo" global in 
+"adj.cpp").  This is needed because CkHashtable (stupidly) silently
+uses a special negative value (-17) of the first integer of the
+hashtable key to indicate "empty key".  Without this origin shift,
+nodes which happened to have a quantized X grid value of -17 were
+ignored by the hashtable, since their key was indistinguishable from
+the empty key.
+
+
+	-Fixed a bug in the patching algorithm.  If two faces
+build their patches using different search directions, they can
+arrive at different patchings for the same interface (see figure).
+Since faces' search directions are determined by their blocks' 
+coordinate systems, different blocks could thus disagree about the
+layout of their common interface.
+
+
+  (search horiz)              (search vert)
++----------------+          +----------+-----+
+|0--->           |          |0         |1    |
+|                |          ||         |v    |
++----------+-----+          ||         +-----|
+|1--->     |XXXXX|          |v         |XXXXX|
+|          |XXXXX|          |          |XXXXX|
++----------+-----+          |          +-----+
+|2--->           |          |          |2    |
+|                |          |          |v    |
+|                |          |          |     |
++----------------+          +----------------+
+
+Figure showing different patchings for same face.
+XXXX is a pre-existing exterior patch.  Left figure
+shows patches found by a horizontal-first search;
+right figure shows a vertical-first search.
+
+This bug has been eliminated by adding common patches to
+*both* faces the first time the patch is found (see face::buildPatches).
+Thus whichever block does its search first will determine the
+patches that constitute the interface, and hence no disagreement
+is possible.  This has the added benefit of being slightly more 
+efficient.
+
+
+------------------------------------------------------------
+Makeflo was originally written in the summer of 2001 by
+Orion Sky Lawlor, olawlor@acm.org, of the Center for 
+Simulation of Advanced Rockets (CSAR).  See 
+	http://www.csar.uiuc.edu/

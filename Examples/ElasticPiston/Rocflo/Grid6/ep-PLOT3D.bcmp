@@ -1,0 +1,49 @@
+# Boundary condition types for fluid dynamics
+# Center for Simulation of Advanced Rockets
+# University of Illinois at Urbana-Champaign
+#
+# This file is line-oriented.  
+# A '#' begins a comment line.  
+# Other lines define a boundary condition, with the format:
+#  <gridgen bc number> <rocfloMP bc number> <coupled flag>
+#
+###################################################
+#Gridgen type 2-- "solid surface"
+2  60  0
+
+##################################################
+# Gridgen type 5-- "inflow"
+# This was an ignition boundary, now mapped to solid surface
+5  60  1
+
+##################################################
+# Gridgen type 6-- "outflow"
+# This is a supersonic/subsonic exit
+6  20  0
+
+##################################################
+# Gridgen type 8-- "generic #1"
+# Currently used to model fuel face at head end. Change
+# these BC to be whatever type is desired to either allow
+# burning or inhibit this fuel surface. Currently set to:
+# SOLID BOUNDARY INHIBITED
+8  60  1
+
+##################################################
+# Gridgen type 4-- "plume region"
+4  80  0
+
+##################################################
+# Gridgen type 9-- "generic #2"
+# Internal block BC
+9  30  0
+
+##################################################
+# Gridgen type 10-- "generic #3"
+# Internal Communication BC
+10  30  0
+
+################################################
+# Unspecified condition (default)
+0  999  0
+

@@ -1,0 +1,56 @@
+** Structure of Control File
+** ---------------------------
+**
+** Lines with '**' in the 1st two columns indicate comments
+** Lines with '*' in the 1st column indicates keyword 
+**
+** PREFIX: 
+** Directory name containing Mesh input files
+**
+*PREFIX
+sss
+**
+** SCALE FACTOR: set this parameter equal to the factor that is used 
+**   to scale the time increment computed by Rocfrac. Default setting 
+**   is 1.0. 
+**
+*DYNAMIC, SCALE FACTOR = 0.5
+**
+** Select the 8-node mixed-enhanced hex element
+**
+*ELEMENT,TYPE=V3D8ME
+**
+**
+** ELASTIC 
+** Young's Modulus, Poisson's Ratio, Density, Expansion Coeffs
+**
+**
+** HYPERELASTIC, ARRUDA-BOYCE or NEOHOOKINC
+** Young's Modulus, Poisson's Ratio, Density, Expansion Coeffs
+**
+*ELASTIC, NLGEOM = NO
+1
+110.e9  0.33  8970.  0.0
+**
+** Boundary Conditions
+**
+** FOR ALE:
+** Uncomment next two lines and set Scale Factor = 0.25
+**ALE
+**0.3 
+*BOUNDARY
+4
+1 0 0 0  0. 0. 0.
+2 0 1 1  0. 0. 0.
+3 1 1 0  0. 0. 0.
+4 0 1 0  0. 0. 0.
+*BOUNDARYMM
+4
+1 0 0 0  0. 0. 0.
+2 0 1 1  0. 0. 0.
+3 1 1 0  0. 0. 0.
+4 0 1 0  0. 0. 0.
+*END
+*MESHSOFT (Choices: TetMesh, Patran, Ansys)
+Patran
+*END

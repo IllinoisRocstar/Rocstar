@@ -1,0 +1,29 @@
+.391		a_p   		IN rb = a_p*(P/Pref)^n,  rb in cm/sec and P in atm
+0.46100   	n_p 		IN rb = a_p*(P/Pref)^n,  rb in cm/sec and P in atm
+34		Pref	 	IN rb = a_p*(P/Pref)^n,  atm
+180000.0   	Ac		Condensed_phase_prefactor,(cm/s)
+24000.0  	eg_ru		Gas_phase_activation_temperature,_eg_ru_(K)
+12500.0   	ec_ru		Condensed_phase_activation_temperature,_[ec_ru]_(K)
+1.72e-3		alfac		Condensed_phase_thermal_diffusivity,_alfac_(cm^2/s)
+0.350   	C		Specific_heat_(gas_and_condensed_phases),_C_(cal/g-K)
+2.00e-4		lamg		Gas_phase_thermal_conductivity,_lamg_(cal/cm-s-K)
+3.00E-6		delt		Time_step,_delt_(s);_WATCH_STABILITY
+2		igrid		Grid_control_distribution,_igrid;_1=EXP;_2=BL
+100		numx		number of points in propellant depth
+-0.200 		xmax		Maximum_x_location,_xmax_(m);_MUST_BE_NEGATIVE
+1.010   	beta		Grid_stretching_parameter,_beta
+2855.0   	Tstar0		adiabatic flame temperature, Tstar0    (K)
+300.00   	To		cold temperature,            To        (K)
+835.00   	Tignition	ignition temperature,        Tignition (K)
+300.00   	Tsurf		surface  temperature,        Tsurf     (K)
+560.08   	film_cons	constant in film coefficient [ W/ (m^2 K) ]
+0		ixsymm		axisymmetric initial burning, use x_surf_burn
+0.18000   	x_surf_burn	last surface x location burning from the onset
+1.00000E+8	press_max	maximum pressure allowed to be passed in [Pa]
+100.00   	press_min	minimum pressure allowed to be passed in [Pa]
+100.0000   	rb_max		maximum burn rate allowed [m/sec]
+-1.00000E-9	rb_min		minimum burn rate allowed [m/sec]
+10000.   	Tf_max		maximum gas temperature allowed [K]
+290.00   	Tf_min		minimum gas temperature allowed [K]
+0		TABUSE		1 USE a table algorithm, 0 USE analytical results
+RBRNtable.dat	TABNAME		name of the file w/ table

@@ -1,0 +1,21 @@
+Verbose = 0
+
+InterpolationOrder = 1
+
+TractionMode = 1
+P_ambient = 1.02E+05
+
+Rhoc = 1702.68
+Pressure = 6.8d6
+BurnRate = 0.01
+
+RFC_verb = 1
+RFC_order = 2
+RFC_iteration = 100
+RFC_tolerance = 1.0E-06
+
+Face-offsetting = F
+
+AsyncInput = F
+AsyncOutput = F
+

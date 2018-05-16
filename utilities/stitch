@@ -1,0 +1,69 @@
+#!/bin/csh
+#
+# stitch file1, file2, ...
+#
+# Purpose: Stitch together multiple Gridgen PLT format 
+#          structured mesh files for makeflo
+#
+# Suggested usage: stitch *.grd
+#
+# Written by Robert Fiedler, revised 1/5/06.
+#........................................................
+
+if ($#argv < 2) then
+  echo 'Usage: stitch file1, file2, ..., OR'
+  echo 'Usage: stitch *.grd'
+  exit
+endif
+
+echo -n "Enter name of stitched *.grd file: " 
+set SFILE = "$<"
+echo ""
+
+# Make sure stitched file does not already exist
+if (-e $SFILE) then
+  echo "Stitched file $SFILE already exists; quitting"
+  exit
+endif
+
+echo "Files to be stitched are: $argv"
+echo ""
+
+# Loop over the *.grd files
+set SBLOCKS = 0
+foreach FILE ($argv)
+
+# New total block number
+
+  set BLOCKS = `head -1 $FILE`
+  echo "FILE $FILE has $BLOCKS blocks"
+  echo ""
+  set SBLOCKS = `expr $SBLOCKS + $BLOCKS` 
+
+# Accumulate block dimensions
+
+  set BLOCKSP1 = `expr $BLOCKS + 1`
+  echo "The block dimensions are"
+  head -${BLOCKSP1} $FILE | tail -n $BLOCKS
+  echo ""
+  echo ""
+  head -${BLOCKSP1} $FILE | tail -n $BLOCKS >> BLOCKS.$$
+
+# Accumulate coordinates
+
+  set LINES = (`wc -l $FILE`)
+  set COORDS = `expr $LINES[1] - $BLOCKSP1`
+  tail -n $COORDS $FILE >> COORDS.$$
+
+end
+
+# Assemble stitched file
+echo "Assembling all $SBLOCKS blocks into file $SFILE"
+echo ""
+echo $SBLOCKS > $SFILE
+cat BLOCKS.$$ >> $SFILE
+cat COORDS.$$ >> $SFILE
+
+rm -f BLOCKS.$$ COORDS.$$
+
+exit

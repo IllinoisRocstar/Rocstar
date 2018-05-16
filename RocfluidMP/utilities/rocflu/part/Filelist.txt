@@ -1,0 +1,42 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.2 2005/05/03 03:11:15 haselbac Exp $
+#
+# Purpose: Filelist for rflupart utility.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2005 by the University of Illinois
+#
+################################################################################
+
+SRCCXX+=	main.C
+
+SRCF90+=	RFLU_ModCENTAUR.F90\
+		RFLU_ModCOBALT.F90\
+		RFLU_ModGAMBIT.F90\
+		RFLU_ModMESH3D.F90\
+		RFLU_ModPartitionRegion.F90\
+		RFLU_ModPartitionRegionUtils.F90\
+		RFLU_ModVGRIDns.F90\
+		RFLU_PrintHeader.F90\
+		RFLU_ReadConvGridWrapper.F90\
+		RFLU_USER_EnforcePatchCoords.F90\
+		RFLU_WriteVersionString.F90\
+		BuildVersionString.F90\
+                rflupart.F90
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Filelist.txt,v $
+# Revision 1.2  2005/05/03 03:11:15  haselbac
+# Added compilation of main.C, removed main.F90
+#
+# Revision 1.1  2005/04/15 15:09:04  haselbac
+# Initial revision
+#
+################################################################################

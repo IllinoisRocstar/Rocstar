@@ -1,0 +1,174 @@
+                     ===========================
+                       Structure of RocfluidMP
+                       
+                           quick overview
+                     ===========================
+
+
+1) Directories:
+---------------
+
+calcs = validation, verification and application examples; data for the
+        structured code are placed in subdirectories "rocflo", those for
+        the unstructured code in "rocflu"
+
+docs = requirements, user & developers manuals, description of code versions
+
+libflo = library specific to Rocflo base solver
+
+libfloflu = library of routines common to Rocflo and Rocflu base solver;
+            main program (main.F90)
+
+libflu = library specific to Rocflu base solver
+
+makelinks = script to create symbolic links to F90 modules
+
+modflo = F90 modules specific to Rocflo
+
+modfloflu = F90 modules common to both solvers
+
+modflu = F90 modules specific to Rocflu
+
+rocflo = routines of Rocflo base solver
+
+rocflu = routines of Rocflu base solver
+
+rocpart = modeling of discrete particles
+
+rocrad = modeling of radiation
+
+rocsmoke = modeling of continuum particles
+
+rocspecies = modeling of real gases and chemical species
+
+rocturb = modeling of turbulence
+
+utilities = pre- and post-processors, validation and verification code, and
+            other useful programs
+
+
+2) Files:
+---------
+
+Makefile = main makefile; used to compile rocflo/rocflu, add physical
+           libraries and to compile utility programs
+
+Makefile.* = machine dependent makefiles
+
+TEMPLATE.F90 = template to be used when writing a new routine
+
+
+3) Executables:
+---------------
+
+All executables are stored in the directory $HOME/bin:
+
+rflomp = Rocflo code
+
+rflump = Rocflu code
+
+rfloprep = Rocflo pre-processor (generation of initial solution)
+
+rflopost = Rocflo post-processor (interface to Tecplot)
+
+rflo2dto3d = generation of 3-D structured grids from 2-D data
+
+To generate the executables, type 
+
+gmake RFLO=1 
+
+to make Rocflo, or 
+
+gmake RFLU=1 
+
+to make Rocflu. If you want the postprocessing module to be compiled also,
+add 'POST=1' to the above commands. The flag 'DEBUG=1' will instruct the 
+Makefiles to compile the codes with debugging options. Additional flags 
+can be used - see the User's manual.
+
+
+4) Naming conventions:
+----------------------
+
+- F90 modules are named Mod*
+
+- Routines and F90 modules which are NOT common to both codes have one of
+  the prefixes (same as the compile options and directives):
+
+  RFLO_* = routines for Rocflo
+  RFLU_* = for Rocflu
+  PLAG_* = Lagrangian particles
+  PEUL_* = Eulerian particles
+  TURB_* = turbulence
+  SPEC_* = species
+  RADI_* = radiation
+  
+  In case of the physical modules, "S" in front of the prefix indicates routines
+  specific to the structured code, "U" to the unstructured code (i.e., URADI_*)
+
+- File names start with lower case letter (except F90 modules and files
+  with a prefix)
+
+- Function and subroutine names start with capital letter; "_" only allowed for
+  the prefix
+
+- Names of variables start with lower case letters
+
+- Intrinsic functions and F90 keywords are written in all upper case letters
+
+
+5) Data structures:
+-------------------
+
+ModGlobal.F90 = global variables (the only one allowed global variable "global")
+
+ModDataTypes.F90 = declaration of precision of real variables; length of strings
+
+ModDataStruct.F90 = definition of the main derived data type (block for Rocflo,
+                    domain for Rocflu); this variable is always LOCAL and has
+                    to be passed via parameter list
+
+ModGrid.F90 = variables related to the grid (dimensions, coordinates, face
+              vectors, volumes, grid speeds, cell centroids)
+
+ModMixture.F90 = variables related to the gas mixture (conservative, transport,
+                 gas, and dependent variables)
+
+ModParameters.F90 = definitions of integer parameters (such as pointers to
+                    equations, user options, etc.)
+
+ModError.F90 = error function, error messages, tree of called subroutines and
+               definitions of error codes
+
+RFLO_ModInterfaces.F90 = explicit interfaces to subroutines and functions
+                         called from Rocflo
+
+RFLU_ModInterfaces.F90 = explicit interfaces to subroutines and functions
+                         called from Rocflu
+
+ModPartEul.F90 = variables pertinent to Eulerian particles
+
+ModPartLag.F90 = variables pertinent to Lagrangian particles
+
+ModRadiation.F90 = variables pertinent to radiation
+
+ModSpecies.F90 = variables pertinent to real gas and chemical species
+
+ModTurbulence.F90 = variables pertinent to turbulence
+
+-------------------------------------------------------------------------------
+
+$Log: README,v $
+Revision 1.5  2002/09/17 22:51:22  jferry
+Removed Fast Eulerian particle type
+
+Revision 1.4  2002/06/10 17:59:20  jblazek
+Added V&V into utilities directory.
+
+Revision 1.3  2002/06/05 18:28:29  haselbac
+Added some comments about compilation, requested by Mark
+
+Revision 1.2  2002/02/11 18:46:48  jblazek
+Added quick overview of RocfluidMP structure.
+
+-------------------------------------------------------------------------------

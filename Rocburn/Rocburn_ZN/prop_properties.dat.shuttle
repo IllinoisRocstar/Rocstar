@@ -1,0 +1,27 @@
+3          Combustion model (1= WSB, 2=ZN dynamic, 3=a*P^n)
+0.251677   a in rb=a*P^n,  rb in cm/sec and P in atm
+0.350      n in rb=a*P^n,  rb in cm/sec and P in atm
+8.00e10    Condensed_phase_prefactor,_Ac_(1/s)
+1.66e-3    Gas_phase_prefactor,_Bg_(cal^2/cm^3-atm^2-g-s-K^2)
+29000.0    Condensed_phase_activation_energy,_Ec_(cal/mol)
+0.00       Condensed_phase_chemical_release,_Qc_(cal/g)
+700.0      Gas_phase_chemical_heat_release,_Qg_(cal/g)
+1.00e-3    Condensed_phase_thermal_diffusivity,_alfac_(cm^2/s)
+0.350      Specific_heat_(gas_and_condensed_phases),_C_(cal/g-K)
+1.770      Condensed_phase_density,_rhoc_(g/cm^3)
+2.00e-4    Gas_phase_thermal_conductivity,_lamg_(cal/cm-s-K)
+25.49      Gas_phase_molecular_weight,_MW_(g/mol)
+100.0      Condensed_phase_absorption_coefficient,_Ka_(1/cm)
+1.0e-6     Time_step,_delt_(s);_WATCH_STABILITY
+2          Grid_control_distribution,_igrid;_1=exponential;_2=boundary_layer
+-0.200     Maximum_x_location,_xmax_(cm);_MUST_BE_NEGATIVE
+1.010      Grid_stretching_parameter,_beta
+1.0e-4     Surface_temperature_tolerance_for_convergence,_tol_Ts(K)
+200        Maximum_#_of_iterations,_itermax
+1          Type_of_temp_initialization,_Tinittype;_1=I&W;_2=Tinit.dat
+Rocburn_Out/  
+3389.0     adiabatic flame temperature, Tf_adiabatic (K)
+
+a, n, and density are for Space Shuttle propellant.
+Solid Propellant Properties for NAWC Motor #13 and can NOT be used for
+Shuttle Simulation. Combustion mode #3 should be used.

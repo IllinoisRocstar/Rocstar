@@ -1,0 +1,157 @@
+#!/bin/csh
+#
+# Extract the head-end pressure from HDF output dumps
+# using program reader_hep.f90
+#
+# This version automatically determines which dumps have
+# no entry in file hep.txt, and processes only those dumps.
+#
+# Program reader_hep.f is used to read the HDF files and
+# write out the pressure in block_0001.
+#
+# Program prog.f is used to read hep.txt and slide the time
+# values so that the peak aligns with the one in the experimental
+# data.
+#
+# One may plot the results using gnuplot:
+#
+# gnuplot> plot [0:1] [0:4000000] "hep_slid.txt" with lines, "motor13.txt" with lines
+#
+# Written by R. Fiedler, revised 3/27/02.
+#
+
+set prefix = "flo_"
+if (-e ${prefix}00.000000_000.hdf && -e ${prefix}00.000000_0000.hdf) then
+  echo "I see both Rocpanda and non-Rocpanda format output file names."
+  echo -n "Which set should I analyze (_000 or _0000)? "
+  set suffix = "$<"
+else
+  if (-e ${prefix}00.000000_000.hdf) then
+    set suffix = "_000"  # use this with panda
+  else
+    if (-e ${prefix}00.000000_0000.hdf) then
+      set suffix = "_0000"  # use this if no panda
+    else
+      echo "No ${prefix} data set found"
+      exit
+    endif
+  endif
+endif
+
+set iexp = 6
+set imant1 = 1
+if (-e hep.txt) then
+  echo "Pressure history file hep.txt exists"
+  echo -n "Should I append to it or start over (a/n)? "
+  set ans = "$<"
+  if ("$ans" == a) then
+    set line = (`tail -n 1 hep.txt`)
+# Times in file should already be in integer microseconds
+    set tstart = `echo $line[1] | sed -e 's/0*//' | sed -e 's/\.//'`
+    echo "last out_time in hep.txt is $tstart"
+
+# Skip most files from earlier times than tstart
+    set tstart = `echo $tstart | sed -e 's/E...//'`
+    set imant1 = $tstart
+    if ($tstart > 1000) then
+      @ iexp++
+      set imant1 = `echo $imant1 | sed -e 's/...$//'`
+    endif
+    if ($tstart > 10000) then
+      @ iexp++
+      set imant1 = `echo $imant1 | sed -e 's/.$//'`
+    endif
+    if ($tstart > 100000) then
+      @ iexp++
+      set imant1 = `echo $imant1 | sed -e 's/.$//'`
+    endif
+    if ($tstart > 1000000) then
+      @ iexp++
+      set imant1 = `echo $imant1 | sed -e 's/.$//'`
+    endif
+  else
+    rm -f hep.txt
+    set tstart = -1
+  endif
+else
+  set tstart = -1
+endif
+
+LOOP_EXP:
+  set imant = $imant1
+LOOP_MANT:
+    set icount = 0
+    if ($iexp < 10) then
+       set pad = "0"
+    else
+       set pad = ""
+    endif 
+    foreach file (`ls ${prefix}${pad}${iexp}.${imant}?????${suffix}.hdf`)
+
+    @ icount++
+
+  set time1 = `echo $file | sed -e "s/$prefix//"`
+  set otime = `echo $time1 | sed -e "s/${suffix}.hdf//"`
+# Convert to integer microseconds
+  #set otime = `echo $otime | sed -e "s/^0*//"`
+#  echo "time is $otime"
+  set expo = `echo $otime | sed -e "s/\..*//"`
+  set expo = `echo $expo | sed -e "s/^0*//"`
+#  echo "expo is $expo"
+  set mant = `echo $otime | sed -e "s/...//"`
+#  echo "mant is $mant"
+  set otime = $mant
+  if ($expo > 9) then
+#   Add any required trailing zeros
+    @ i = $expo - 9
+LOOP1:
+    set otime = "${otime}0"
+    @ i--
+    if ($i > 0) then
+      goto LOOP1
+    endif
+  else if ($expo < 9) then
+#   Clip (9 - expo) digits and round
+    @ i = 9 - $expo
+LOOP2:
+    set clip = `echo $otime | sed -e 's/.$//'`
+    set digit = `echo $otime | sed -e "s/$clip//"`
+    set otime = $clip
+    @ i--
+    if ($i > 0) then
+      goto LOOP2
+    endif
+    if ($digit > 4) then
+      @ otime++
+    endif
+  endif
+  if ("$otime" > "$tstart") then
+    echo "Time in microseconds is $otime"
+    echo "Reading $file"
+    reader_hep.x << END > /dev/null
+$file
+END
+  else
+    echo "Skipping $otime"
+  endif
+end
+
+  @ imant++
+  if ($imant < 10 && $icount > 0) then
+    goto LOOP_MANT
+  endif
+@ iexp++
+if ($iexp < 11) then
+  set imant1 = 1
+  goto LOOP_EXP
+endif
+
+# Slide the initial time so that the peak lines up with the data
+
+echo ""
+echo "Creating hep_slid.txt"
+if (-e hep_slid.txt) rm hep_slid.txt
+shifter.x > hep_slid.txt
+echo ""
+exit
+

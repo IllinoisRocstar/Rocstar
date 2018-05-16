@@ -1,0 +1,607 @@
+#!/bin/csh
+#
+# mftp_hdf <suffix>
+#
+# New version for all machines.
+#
+# We want it to do:
+#
+# For each selected snapshot ...
+#
+#   Tar up each snapshot (fluid_??.??????.${TSUF}, 
+#   ifluid_b_??.???????.${TSUF}, etc.).
+#
+#   Move the tar files to a remote system (optional)
+#   Delete the local copy of the tar files (optional)
+#
+# End loop over snapshots
+#
+# This version archives each group of files (e.g, fluid_*)
+# at one output time as a separate tar file.
+#
+# This version supports commas in hdf file names, e.g.,
+# fluid_09.380000_1,536.hdf.
+#
+# This version lets you specify the number of zeros required
+# in output dump times.  The default is 3, so it searches for
+# fluid_??.???000_0000.hdf to get the dump times.  If for example
+# the regular dumps are spaced more closely in time, you can do:
+#
+# % setenv "ZEROS .00"
+#
+# to allow one more non-zero character.  Note that the ZEROS
+# string must have 3 characters, and that the "." acts as a wildcard.
+#
+# Another new environment variable is COMPRESS, which you
+# can set to have this script create compressed tar files.  It's not
+# set by default, because the hdf output dumps do not compress
+# very much, despite the extra amount of time that takes.
+#
+# On the remote system, you need not have already created the directory tree
+# under the directory named what you will enter here for the
+# "remote directory":
+#
+# REMOTE_DIR: {Rocflo OR Rocflu}/Rocout${SUFFIX} 
+#             {Rocfrac OR Rocsolid}/Rocout${SUFFIX} 
+#             {RocburnAPN OR RocburnPY}/Rocout${SUFFIX}
+#
+# You must invoke this script in the GENx run directory:
+#
+# DIR: {Rocflo OR Rocflu}/Rocout${SUFFIX}
+#      {Rocfrac OR Rocsolid}/Rocout${SUFFIX}
+#      {RocburnAPN OR RocburnPY}/Rocout${SUFFIX}
+#
+# If you have more than one type of fluid, solid, or burn
+# directory, it will only go into one of them -- e.g., it will
+# not try to save files for both Rocflo and Rocflu.
+#
+# This version supports fluids-only runs, provided the Rocfrac
+# or Rocsolid Rocout${SUFFIX} directory does not exist or is empty.
+#
+# Written by Robert Fiedler, revised 5/9/06.
+#
+#...............................................................................
+
+# Set the number of 0's required at the end of the output dump times
+if (! $?ZEROS) then
+  setenv ZEROS "000"
+endif
+
+# Decide whether to compress the archives
+if ($?COMPRESS) then
+  set TSUF = "tgz"
+  set TOPTS = "czvf"
+else
+  set TSUF = "tar"
+  set TOPTS = "cvf"
+endif
+set TAR = "tar"
+
+set DIR = `pwd`
+
+if ($#argv == 1) then
+  set SUFFIX = "_$1"
+else
+  echo -n "Enter suffix (no underscore; default is none): "
+  set SUFFIX = "$<"
+  if ("$SUFFIX" != "") then
+    set SUFFIX = "_$SUFFIX"
+  endif
+endif
+echo -n 'Should I transfer the archives to a remote system (y/n, default=n)? '
+set XFER = "$<"
+if ("$XFER" == "") then
+  set XFER = "n"
+endif
+if ("$XFER" == "y") then
+  echo -n "Enter the name of the remote system (default=cu.ncsa.uiuc.edu): "
+  set REMOTE_SYS = "$<"
+  if ("$REMOTE_SYS" == "") then
+    set REMOTE_SYS = cu.ncsa.uiuc.edu
+  endif
+  echo -n "Enter the remote directory (default=/scratch/users/$USER/GEN3): "
+  set REMOTE_SCR = "$<"
+  if ("$REMOTE_SCR" == "") then
+    set REMOTE_SCR = /scratch/users/$USER/GEN3
+  endif
+endif
+
+# Guess scratch dir name
+
+set NNNPROCS = $DIR:t
+set PROBLEM = $DIR:h
+set SCRATCH = $PROBLEM:h
+set PROBLEM = $PROBLEM:t
+set SCRATCH_DIR_def = "`echo $SCRATCH/$PROBLEM/$NNNPROCS | sed -e 's/gen3-data/GEN3/'`" 
+echo -n "Enter local dir to hold archives (default=$SCRATCH_DIR_def): "
+set SCRATCH_DIR = "$<"
+if ("$SCRATCH_DIR" == "") then
+  set SCRATCH_DIR = $SCRATCH_DIR_def
+endif
+if (-d Rocflo) then
+  set FLUIDS = Rocflo
+else if (-d Rocflu) then
+  set FLUIDS = Rocflu
+else
+  echo "I cannot find a fluids directory"
+  goto EXIT
+endif
+set FDIR = "$FLUIDS/Rocout${SUFFIX}"
+if (! -d $FDIR) then
+  echo ""
+  echo "Cannot find $FLUIDS/Rocout${SUFFIX} directory"
+  echo ""
+  goto EXIT
+else
+  echo ""
+  echo "Fluids directory is $FDIR"
+endif
+
+if (-d Rocfrac) then
+  set SOLIDS = Rocfrac
+else if (-d Rocsolid) then
+  set SOLIDS = Rocsolid
+else
+  echo "Cannot find a solids directory"
+  set SOLIDS = ""
+endif
+set SDIR = "$SOLIDS/Rocout${SUFFIX}"
+if ("$SOLIDS" != "") then
+  if (! -d $SDIR) then
+    echo ""
+    echo "Cannot find $SOLIDS/Rocout${SUFFIX} directory"
+    echo ""
+  else
+    echo ""
+    echo "Solids directory is $SDIR"
+  endif
+endif
+
+if (-d RocburnAPN) then
+  set BURN = RocburnAPN
+else if (-d RocburnPY) then
+  set BURN = RocburnPY
+else
+  echo "Cannot find a Rocburn directory"
+  goto EXIT
+endif
+set BDIR = "$BURN/Rocout${SUFFIX}"
+if (! -d $BDIR) then
+  echo ""
+  echo "Cannot find $BURN/Rocout${SUFFIX} directory"
+  echo ""
+  goto EXIT
+else
+  echo ""
+  echo "Burn directory is $BDIR"
+endif
+echo ""
+
+mkdir -p $SCRATCH_DIR/$FDIR
+if (-d $SDIR) then
+  mkdir -p $SCRATCH_DIR/$SDIR
+endif
+mkdir -p $SCRATCH_DIR/$BDIR
+
+# Create a script that does the work.
+
+set SCRIPT = $HOME/archive${SUFFIX}.$$
+echo "#\!/bin/csh" > $SCRIPT
+echo "unalias cd" >> $SCRIPT
+echo "cd $DIR" >> $SCRIPT
+
+if ("$XFER" == "y") then
+
+  set REMOTE_DIR = "${REMOTE_SCR}/$PROBLEM/$NNNPROCS"
+# Try to create the remote directory in stages
+  echo ""
+  echo -n "Should I create remote dir $REMOTE_DIR (y/n, default=n): "
+  set CREATE_REMOTE_DIR = "$<"
+  if ("$CREATE_REMOTE_DIR" == "") then
+    set CREATE_REMOTE_DIR = "n"
+  endif
+  if ("$CREATE_REMOTE_DIR" == "y") then
+    echo "echo Trying to create the remote directories" >> $SCRIPT
+    echo "" >> $SCRIPT
+    echo "ssh $REMOTE_SYS << STP" >> $SCRIPT
+    echo "cd $REMOTE_SCR" >> $SCRIPT
+#   Might allow user to chose name other than SCR/PROBLEM/NNNPROCS
+    echo "mkdir ${PROBLEM}" >> $SCRIPT
+    echo "cd ${PROBLEM}" >> $SCRIPT
+    echo "mkdir ${NNNPROCS}" >> $SCRIPT
+    echo "exit" >> $SCRIPT
+    echo "STP" >> $SCRIPT
+    echo "" >> $SCRIPT
+  endif
+
+endif
+
+# Save the top-level output files and control files
+if ("$SUFFIX" != "") then
+  echo "echo Saving the contents of Control$SUFFIX" >> $SCRIPT
+  if ("$XFER" == "y") then
+    echo "scp -r Control$SUFFIX ${REMOTE_SYS}:${REMOTE_DIR}" >> $SCRIPT
+   else
+    echo "cp -R Control$SUFFIX ${SCRATCH_DIR}" >> $SCRIPT
+  endif
+else
+  echo "echo Saving the top-level restart files" >> $SCRIPT
+  echo "mkdir -p Control" >> $SCRIPT
+  echo "cp *.txt Rocman/*.txt Rocman/Modout$SUFFIX/*.txt Rocmop/*.txt $FLUIDS/*.txt $BURN/*.txt Control" >> $SCRIPT
+  set FLUIDS_PREFIX = `head -1 $FLUIDS/${FLUIDS}Control.txt`
+  echo "cp $FLUIDS/Modin/${FLUIDS_PREFIX}.inp $FLUIDS/Modin/${FLUIDS_PREFIX}.bc Control" >> $SCRIPT 
+  if (-d "$SOLIDS") then
+    echo "cp $SOLIDS/*.txt Control" >> $SCRIPT
+  endif
+  if ("$XFER" == "y") then
+    echo "scp -r Control ${REMOTE_SYS}:${REMOTE_DIR}" >> $SCRIPT
+    echo "rm -rf Control" >> $SCRIPT
+  else
+    echo "cp -R Control ${SCRATCH_DIR}" >> $SCRIPT
+  endif
+endif
+echo "" >> $SCRIPT
+
+echo "echo Making the $FLUIDS Rocout and Modout directories" >> $SCRIPT
+if ("$XFER" == "y") then
+# Make the remote fluids Rocout and Modout directories
+  echo "ssh $REMOTE_SYS <<STP" >> $SCRIPT
+  echo "cd $REMOTE_DIR" >> $SCRIPT
+  echo "mkdir $FLUIDS" >> $SCRIPT
+  echo "cd $FLUIDS" >> $SCRIPT
+  echo "mkdir Rocout${SUFFIX}" >> $SCRIPT
+  echo "mkdir Modout${SUFFIX}" >> $SCRIPT
+  echo "exit" >> $SCRIPT
+  echo "STP" >> $SCRIPT
+  echo "" >> $SCRIPT
+else
+  echo "mkdir -p $SCRATCH_DIR/$FLUIDS/Rocout${SUFFIX}" >> $SCRIPT
+  echo "mkdir -p $SCRATCH_DIR/$FLUIDS/Modout${SUFFIX}" >> $SCRIPT
+endif
+
+# Save the fluids probe data and con data
+echo "echo Saving the contents of $FLUIDS/Modout$SUFFIX" >> $SCRIPT
+echo "cd $FLUIDS/Modout$SUFFIX" >> $SCRIPT
+if ("$XFER" == "y") then
+  echo "scp *prb* *fom* *con* ${REMOTE_SYS}:${REMOTE_DIR}/$FLUIDS/Modout$SUFFIX" >> $SCRIPT
+else
+  echo "cp *prb* *fom* *con* ${SCRATCH_DIR}/$FLUIDS/Modout$SUFFIX" >> $SCRIPT
+endif
+echo "" >> $SCRIPT
+echo "cd $DIR" >> $SCRIPT
+echo "" >> $SCRIPT
+
+echo "echo Making the $BURN Rocout directory" >> $SCRIPT
+if ("$XFER" == "y") then
+  echo "ssh $REMOTE_SYS mkdir $REMOTE_DIR/$BURN" >> $SCRIPT
+  echo "ssh $REMOTE_SYS mkdir $REMOTE_DIR/$BURN/Rocout${SUFFIX}" >> $SCRIPT
+else
+  echo "mkdir -p $SCRATCH_DIR/$BURN" >> $SCRIPT
+  echo "mkdir -p $SCRATCH_DIR/$BURN/Rocout${SUFFIX}" >> $SCRIPT
+endif
+echo "" >> $SCRIPT
+
+if ("$SOLIDS" != "") then
+  echo "echo Making the $SOLIDS Rocout directory" >> $SCRIPT
+  if ("$XFER" == "y") then
+    echo "ssh $REMOTE_SYS mkdir $REMOTE_DIR/$SOLIDS" >> $SCRIPT
+    echo "ssh $REMOTE_SYS mkdir $REMOTE_DIR/$SOLIDS/Rocout${SUFFIX}" >> $SCRIPT
+  else
+    echo "mkdir -p $SCRATCH_DIR/$SOLIDS" >> $SCRIPT
+    echo "mkdir -p $SCRATCH_DIR/$SOLIDS/Rocout${SUFFIX}" >> $SCRIPT
+  endif
+  echo "" >> $SCRIPT
+endif
+
+echo ""
+echo "Getting output dump times ... "
+#
+# Assume the directory has a huge number of files, so ls and
+# any pattern matching takes several minutes.  It can be much more
+# efficient to save the output of a plain ls to a file, and do
+# pattern matching in the file (grep) to get the desired  file names.
+#
+cd $FDIR
+set FFILES = $HOME/fluid_file_list_${SCRATCH_DIR:t}$SUFFIX
+if (-e $FFILES) then
+  echo -n "File list $FFILES exists.  Should I use it (y/n default=y): "
+  set RESPONSE = "$<"
+  if ("$RESPONSE" == "") then
+    set RESPONSE = y
+  endif
+  if ("$RESPONSE" == "n") then
+    ls > $FFILES
+  endif 
+else
+  echo "Getting list of fluid files ... "
+  ls > $FFILES
+endif
+echo ""
+echo "Note that the archive$SUFFIX script I will write and execute needs"
+echo "the file lists to run."
+
+# Are there fluid_plag files?  ifluid_b?  ifluid_nb?  ifluid_ni?
+
+set PLAG = "`grep -l fluid_plag $FFILES`"
+set IFLUID_B = "`grep -l '^ifluid_b_' $FFILES`"
+set IFLUID_NB = "`grep -l '^ifluid_nb_' $FFILES`"
+set IFLUID_NI = "`grep -l '^ifluid_ni_' $FFILES`"
+
+set PANDA = "y"
+#set optimes = (`grep '^fluid_..\....000_000\.hdf' $FFILES | sed -e 's/fluid_//' | sed -e 's/.....hdf//'`)
+set optimes = (`grep "^fluid_..\....${ZEROS}_000\.hdf" $FFILES | sed -e 's/fluid_//' | sed -e 's/.....hdf//'`)
+if ($#optimes == 0) then
+  echo ""
+  echo "No HDF dumps written by Rocpanda found.  Looking for Rocout output ..."
+  echo ""
+  set PANDA = "n"
+#  set optimes = (`grep '^fluid_..\....000_0000\.hdf' $FFILES | sed -e 's/fluid_//' | sed -e 's/......hdf//'`)
+  set optimes = (`grep "^fluid_..\....${ZEROS}_0000\.hdf" $FFILES | sed -e 's/fluid_//' | sed -e 's/......hdf//'`)
+  if ($#optimes == 0) then
+    echo ""
+    echo "No output dumps found"
+    echo ""
+    exit
+  else
+    set Files_per_dump = (`egrep "^fluid_${optimes[1]}_"'(....|.,...)'"\.hdf" $FFILES | wc -l`) 
+  endif
+else
+  set Files_per_dump = (`grep "^fluid_${optimes[1]}_...\.hdf" $FFILES | wc -l`) 
+endif
+set files_per_dump = $Files_per_dump[1]
+echo ""
+echo "There are $files_per_dump files per dump"
+if ($files_per_dump > 9999) then
+  echo ""
+  echo "This script can handle only up to 9999"
+  exit
+endif
+echo ""
+
+echo "Output times are:"
+echo ""
+set i = 1
+LOOP:
+  echo "$i   $optimes[$i]"
+  if ($i < $#optimes) then
+    @ i++
+    goto LOOP
+  endif
+#
+echo ""
+echo -n "Enter index of first time to archive (1): "
+set ifirst = "$<"
+if ("$ifirst" == "") then
+  set ifirst = 1
+endif
+echo -n "Enter index of last time to archive ($#optimes): "
+set ilast = "$<"
+if ("$ilast" == "") then
+  set ilast = $#optimes
+endif
+echo -n "Should I ask for verification to archive each dump (y/n default = n): "
+set VERIFY = "$<"
+if ("$VERIFY" == "") then
+  set VERIFY = "n"
+endif
+echo ""
+echo "VERIFY is $VERIFY"
+
+if ("$SOLIDS" != "") then
+  if (-d $DIR/$SDIR) then
+    cd $DIR/$SDIR
+    set SFILES = $HOME/solid_file_list_${SCRATCH_DIR:t}$SUFFIX
+    if (-e $SFILES) then
+      echo ""
+      echo -n "File list $SFILES exists.  Should I use it (y/n default=y): "
+      set RESPONSE = "$<"
+      if ("$RESPONSE" == "") then
+        set RESPONSE = y
+      endif
+      if ("$RESPONSE" == "n") then
+        echo ""
+        ls > $SFILES
+      endif 
+    else
+      echo ""
+      echo "Getting list of solid files ... "
+      ls > $SFILES
+    endif
+    if ("$PANDA" == "y") then
+      set SOLID = (`grep "^solid_${optimes[1]}_...\.hdf" $SFILES | wc -l`)
+    else
+#      set SOLID = (`grep "^solid_${optimes[1]}_....\.hdf" $SFILES | wc -l`)
+      set SOLID = (`egrep "^solid_${optimes[1]}_"'(....|.,...)'"\.hdf" $SFILES | wc -l`)
+    endif
+  endif
+  set ISOLID_B = "`grep -l '^isolid_b_' $SFILES`"
+  set ISOLID_NB = "`grep -l '^isolid_nb_' $SFILES`"
+  set ISOLID_NI = "`grep -l '^isolid_ni_' $SFILES`"
+endif
+
+if (-d $DIR/$BDIR) then
+  cd $DIR/$BDIR
+  set BFILES = $HOME/burn_file_list_${SCRATCH_DIR:t}$SUFFIX
+  if (-e $BFILES) then
+    echo ""
+    echo -n "File list $BFILES exists.  Should I use it (y/n default=y): "
+    set RESPONSE = "$<"
+    if ("$RESPONSE" == "") then
+      set RESPONSE = y
+    endif
+    if ("$RESPONSE" == "n") then
+      echo ""
+      ls > $BFILES
+    endif 
+  else
+    echo ""
+    echo "Getting list of burn files ... "
+    ls > $BFILES
+  endif
+  if ("$PANDA" == "y") then
+    set BURN = (`grep "^burn_${optimes[1]}_...\.hdf" $BFILES | wc -l`)
+  else
+#    set BURN = (`grep "^burn_${optimes[1]}_....\.hdf" $BFILES | wc -l`)
+    set BURN = (`egrep "^burn_${optimes[1]}_"'(....|.,...)'"\.hdf" $BFILES | wc -l`)
+  endif
+endif
+
+set i = $ifirst
+LOOP2:
+  echo ""
+  set optime = $optimes[$i]
+  if ("$VERIFY" == "n") then
+    set TRANSFER = "y"
+    echo "Archiving $optime"
+  else
+    echo -n "Should I archive dump $optime ? (y/n default = n): "
+    set TRANSFER = "$<"
+    if ("$TRANSFER" == "") then
+      set TRANSFER = "n"
+    endif
+  endif
+
+  if ("$TRANSFER" == "y") then
+
+    echo "cd $DIR/$FDIR"
+    cd $DIR/$FDIR
+    echo "cd $DIR/$FDIR" >> $SCRIPT
+    echo "" >> $SCRIPT
+    set SCRATCH = $SCRATCH_DIR/$FDIR
+
+    if ("$PANDA" == "y") then
+      echo $TAR $TOPTS ${SCRATCH}/fluid_${optime}.hdf.${TSUF} '`'grep "'"^f..'*'${optime}_0..'\'.hdf"'" $FFILES'`' fluid_in_${optime}.txt >> $SCRIPT
+      echo $TAR $TOPTS ${SCRATCH}/ifluid_${optime}.hdf.${TSUF} '`'grep "'"^if..'*'${optime}_0..'\'.hdf"'" $FFILES'`' ifluid_in_${optime}.txt >> $SCRIPT
+    else
+#      echo $TAR $TOPTS ${SCRATCH}/fluid_${optime}.hdf.${TSUF} '`'grep "'"^fluid_${optime}_0...'\'.hdf"'" $FFILES'`' fluid_in_${optime}.txt >> $SCRIPT
+      echo $TAR $TOPTS ${SCRATCH}/fluid_${optime}.hdf.${TSUF} '`'egrep "'"^fluid_${optime}_\(....\|.,...\)'\'.hdf"'" $FFILES'`' fluid_in_${optime}.txt >> $SCRIPT
+      if ("$PLAG" != "") then
+#        echo $TAR $TOPTS ${SCRATCH}/fluid_plag_${optime}.hdf.${TSUF} '`'grep "'"^fluid_plag_${optime}_0...'\'.hdf"'" $FFILES'`' >> $SCRIPT
+        echo $TAR $TOPTS ${SCRATCH}/fluid_plag_${optime}.hdf.${TSUF} '`'egrep "'"^fluid_plag_${optime}_\(....\|.,...\)'\'.hdf"'" $FFILES'`' >> $SCRIPT
+      endif
+      if ("$IFLUID_B" != "") then
+#        echo $TAR $TOPTS ${SCRATCH}/ifluid_b_${optime}.hdf.${TSUF} '`'grep "'"^ifluid_b_${optime}_0...'\'.hdf"'" $FFILES'`' ifluid_in_${optime}.txt >> $SCRIPT
+        echo $TAR $TOPTS ${SCRATCH}/ifluid_b_${optime}.hdf.${TSUF} '`'egrep "'"^ifluid_b_${optime}_\(....\|.,...\)'\'.hdf"'" $FFILES'`' ifluid_in_${optime}.txt >> $SCRIPT
+      endif
+      if ("$IFLUID_NB" != "") then
+#        echo $TAR $TOPTS ${SCRATCH}/ifluid_nb_${optime}.hdf.${TSUF} '`'grep "'"^ifluid_nb_${optime}_0...'\'.hdf"'" $FFILES'`' >> $SCRIPT
+        echo $TAR $TOPTS ${SCRATCH}/ifluid_nb_${optime}.hdf.${TSUF} '`'egrep "'"^ifluid_nb_${optime}_\(....\|.,...\)'\'.hdf"'" $FFILES'`' >> $SCRIPT
+      endif
+      if ("$IFLUID_NI" != "") then
+#        echo $TAR $TOPTS ${SCRATCH}/ifluid_ni_${optime}.hdf.${TSUF} '`'grep "'"^ifluid_ni_${optime}_0...'\'.hdf"'" $FFILES'`' >> $SCRIPT
+        echo $TAR $TOPTS ${SCRATCH}/ifluid_ni_${optime}.hdf.${TSUF} '`'egrep "'"^ifluid_ni_${optime}_\(....\|.,...\)'\'.hdf"'" $FFILES'`' >> $SCRIPT
+      endif
+    endif
+    echo "" >> $SCRIPT
+
+    if ("$XFER" == "y") then
+#     Transfer the new archives and delete from local disk
+      echo "scp ${SCRATCH}/"'*'".${TSUF} ${REMOTE_SYS}:${REMOTE_DIR}/$FDIR" >> $SCRIPT
+      echo "rm -f ${SCRATCH}/"'*'".${TSUF}" >> $SCRIPT
+      echo "" >> $SCRIPT
+    endif
+
+#   Solids
+    if ("$SOLIDS" != "") then
+      echo "cd $DIR/$SDIR"
+      cd $DIR/$SDIR
+      echo "cd $DIR/$SDIR" >> $SCRIPT
+      echo "" >> $SCRIPT
+      set SCRATCH = $SCRATCH_DIR/$SDIR
+
+      if ("$PANDA" == "y") then
+        echo $TAR $TOPTS ${SCRATCH}/solid_${optime}.hdf.${TSUF} '`'grep "'"^s..'*'${optime}_0..'\'.hdf"'" $SFILES'`' solid_in_${optime}.txt >> $SCRIPT
+        echo $TAR $TOPTS ${SCRATCH}/isolid_${optime}.hdf.${TSUF} '`'grep "'"^is..'*'${optime}_0..'\'.hdf"'" $SFILES'`' isolid_in_${optime}.txt >> $SCRIPT
+      else
+#        echo $TAR $TOPTS ${SCRATCH}/solid_${optime}.hdf.${TSUF} '`'grep "'"^s..'*'${optime}_0...'\'.hdf"'" $SFILES'`' solid_in_${optime}.txt >> $SCRIPT
+        echo $TAR $TOPTS ${SCRATCH}/solid_${optime}.hdf.${TSUF} '`'egrep "'"^s..'*'${optime}_\(....\|.,...\)'\'.hdf"'" $SFILES'`' solid_in_${optime}.txt >> $SCRIPT
+        if ("$ISOLID_B" != "") then
+#          echo $TAR $TOPTS ${SCRATCH}/isolid_b_${optime}.hdf.${TSUF} '`'grep "'"^isolid_b_${optime}_0...'\'.hdf"'" $SFILES'`' isolid_in_${optime}.txt >> $SCRIPT
+          echo $TAR $TOPTS ${SCRATCH}/isolid_b_${optime}.hdf.${TSUF} '`'egrep "'"^isolid_b_${optime}_\(....\|.,...\)'\'.hdf"'" $SFILES'`' isolid_in_${optime}.txt >> $SCRIPT
+        endif
+        if ("$ISOLID_NB" != "") then
+#          echo $TAR $TOPTS ${SCRATCH}/isolid_nb_${optime}.hdf.${TSUF} '`'grep "'"^isolid_nb_${optime}_0...'\'.hdf"'" $SFILES'`' >> $SCRIPT
+          echo $TAR $TOPTS ${SCRATCH}/isolid_nb_${optime}.hdf.${TSUF} '`'egrep "'"^isolid_nb_${optime}_\(....\|.,...\)'\'.hdf"'" $SFILES'`' >> $SCRIPT
+        endif
+        if ("$ISOLID_NI" != "") then
+#          echo $TAR $TOPTS ${SCRATCH}/isolid_ni_${optime}.hdf.${TSUF} '`'grep "'"^isolid_ni_${optime}_0...'\'.hdf"'" $SFILES'`' >> $SCRIPT
+          echo $TAR $TOPTS ${SCRATCH}/isolid_ni_${optime}.hdf.${TSUF} '`'egrep "'"^isolid_ni_${optime}_\(....\|.,...\)'\'.hdf"'" $SFILES'`' >> $SCRIPT
+        endif
+      endif
+      echo "" >> $SCRIPT
+
+      if ("$XFER" == "y") then
+#       Transfer the new archives and delete from local disk
+        echo "scp ${SCRATCH}/"'*'".${TSUF} ${REMOTE_SYS}:${REMOTE_DIR}/$SDIR" >> $SCRIPT
+        echo "rm -f ${SCRATCH}/"'*'".${TSUF}" >> $SCRIPT
+        echo "" >> $SCRIPT
+      endif
+
+    endif
+
+    if ("$BURN" != "") then
+      echo "cd $DIR/$BDIR"
+      cd $DIR/$BDIR
+      echo "cd $DIR/$BDIR" >> $SCRIPT
+      echo "" >> $SCRIPT
+      set SCRATCH = $SCRATCH_DIR/$BDIR
+
+      if ("$PANDA" == "y") then
+        echo $TAR $TOPTS ${SCRATCH}/burn_${optime}.hdf.${TSUF} '`'grep "'"^b..'*'${optime}_0..'\'.hdf"'" $BFILES'`' burn_in_${optime}.txt >> $SCRIPT
+        echo $TAR $TOPTS ${SCRATCH}/iburn_${optime}.hdf.${TSUF} '`'grep "'"^ib..'*'${optime}_0..'\'.hdf"'" $BFILES'`' iburn_in_${optime}.txt >> $SCRIPT
+      else
+#        echo $TAR $TOPTS ${SCRATCH}/burn_${optime}.hdf.${TSUF} '`'grep "'"^b..'*'${optime}_0...'\'.hdf"'" $BFILES'`' burn_in_${optime}.txt >> $SCRIPT
+        echo $TAR $TOPTS ${SCRATCH}/burn_${optime}.hdf.${TSUF} '`'egrep "'"^b..'*'${optime}_\(....\|.,...\)'\'.hdf"'" $BFILES'`' burn_in_${optime}.txt >> $SCRIPT
+#        echo $TAR $TOPTS ${SCRATCH}/iburn_${optime}.hdf.${TSUF} '`'grep "'"^ib..'*'${optime}_0...'\'.hdf"'" $BFILES'`' iburn_in_${optime}.txt >> $SCRIPT
+        echo $TAR $TOPTS ${SCRATCH}/iburn_${optime}.hdf.${TSUF} '`'egrep "'"^ib..'*'${optime}_\(....\|.,...\)'\'.hdf"'" $BFILES'`' iburn_in_${optime}.txt >> $SCRIPT
+      endif
+      echo "" >> $SCRIPT
+
+      if ("$XFER" == "y") then
+#       Transfer the new archives and delete from local disk
+        echo "scp ${SCRATCH}/"'*'".${TSUF} ${REMOTE_SYS}:${REMOTE_DIR}/$BDIR" >> $SCRIPT
+        echo "rm -f ${SCRATCH}/"'*'".${TSUF}" >> $SCRIPT
+        echo "" >> $SCRIPT
+      endif
+
+    endif
+
+  endif
+
+  if ($i < $ilast) then
+    @ i++
+    goto LOOP2
+  endif
+
+  echo "exit" >> $SCRIPT
+
+  echo ""
+  echo -n "Should I execute the script $SCRIPT ? (y/n default = y): "
+  set RESPONSE = "$<"
+  if ("$RESPONSE" == "") then
+    set RESPONSE = "y"
+  endif
+  if ("$RESPONSE" == "y") then
+
+# Invoke the script
+
+    echo ""
+    echo "Starting the script to archive the files"
+    echo ""
+    chmod u+x $SCRIPT
+    $SCRIPT
+
+  endif
+
+  echo ""
+  echo -n "Should I remove the script $SCRIPT ? (y/n default = y): "
+  set RESPONSE = "$<"
+  if ("$RESPONSE" == "") then
+    set RESPONSE = "y"
+  endif
+  if ("$RESPONSE" == "y") then
+    \rm -f $SCRIPT
+  endif
+
+EXIT:
+exit

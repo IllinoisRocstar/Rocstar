@@ -1,0 +1,32 @@
+///
+/// @page output_data Module Output
+/// @TODO Add more context to the Module Output page. Right now the powerpoint does not give it any useful information.
+///
+/// @section output_data Physics Module Output Data
+/// <b>Module native data resides in the directory named for the module in a subdirectory named Modout</b> \n
+/// <b>Probe files</b>: <casename>.prb_<probenum> <b>contains the following variables</b>: time, rho, u, v, w, p, T
+/// .
+/// \image html output_data.png
+/// <b>Rocstar format data</b> in Rocout \n
+/// <b> HDF4 files </b>:
+/// - Volume files: fluid_<timestamp>_<processor>.hdf
+/// - Surface files: ifluid_<type>_<timestamp>_<processor>.hdf
+/// - <type> = b (burning), nb (inert), ni (non-interface)
+/// - <timestamp>: xx.yyyyyy where the output time is y.yyyyy * 10^(xx-10)
+/// - Examples:
+/// | HDF                          | Type                   |
+/// | :-----------------           | :--------------------- |
+/// | fluid_07.800000_0000.hdf     | volume                 |
+/// | ifluid_b_07.800000_0000.hdf  | burning surface        | 
+/// | ifluid_nb_07.800000_0000.hdf | non-burning            | 
+/// | ifluid_ni 07.800000_0000.hdf | non-interacting        |
+/// \n
+/// - Similar solid, isolid and burn, iburn files
+///
+/// @subsection gnuplot_probe Using Gnuplot with Probe Files
+/// \image html gnuplot_shell.png
+/// \n
+/// \image html gnuplot_output.png    
+/// \n
+/// For more information about creating Gnuplots, check out the gnuplot documentation <a href="http://www.gnuplot.info/docs_4.6/gnuplot.pdf"> HERE </a> \n
+/// This page is adapted from the <a href="Section_10_RocstarIO.pdf" target="_blank"><b>Sample I/O</b></a> powerpoint.

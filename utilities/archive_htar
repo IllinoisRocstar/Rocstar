@@ -1,0 +1,903 @@
+#!/bin/csh
+#
+# archive_htar [SUFFIX]
+#
+# This version saves Rocstar 3 snapshots to mass storage using htar.
+#
+# Run this script in the Rocstar 3 top-level run directory,
+# e.g., .../016procs.
+#
+# The optional SUFFIX argument is appended to the Rocout directory
+# name (preceeded by an underscore).  
+#
+# This version supports simulations with remeshing!
+#
+# This version looks for Rocin control files in the <solver>/Rocout*
+# directory to determine which solvers were actually used.  This
+# may cause it to pause while the search is being done.
+#
+# This version automates saving all dumps in directories after
+# the first selected Rocout.remesh*, which is helpful for saving
+# a run with many remeshings, starting in the middle.
+#
+# Environment variables:
+#
+#   ZEROS -- string of 0's in the time stamp; default is '000'
+#            This can help weed out end-of-job dumps.
+#
+#   AT_END -- whether to look for ZEROS only at end of time stamp
+#
+#   SKIP_FLUIDS -- set this to avoid storing fluids data.
+#                  You might use this to save only burn or solid data.
+#
+#   SKIP_SOLIDS -- like SKIP_FLUIDS, but skips storing solids files
+#
+#   SKIP_BURN   -- like SKIP_FLUIDS, but skips storing burn files
+#
+# Written by Robert Fiedler, revised 1/1/08.
+#
+#.......................................................................
+
+if (! $?ZEROS) then
+   setenv ZEROS "000"
+endif
+if (! $?AT_END) then
+   setenv AT_END "y"
+endif
+set TOPTS = "cvf"
+#set TOPTS = "cvPf"
+
+# Set the name of the mass storage system and the home directory
+# for saving Rocstar 3 dumps there based on the local system name.
+
+if (! $?HOST) then
+  set HOST = `hostname`
+endif
+switch ($HOST)
+case alc*:
+case thunder*:
+case mcr*:
+case frost*:
+case up*:
+case zeus*:
+  set REMOTE_SYS = storage
+  set REMOTE_SCR = /users/u43/rfiedler
+  set HTAR = htar
+  breaksw
+case copper:
+case Cu*:
+case tun*:
+  set REMOTE_SYS = mss
+  set REMOTE_SCR = /u/ac/rfiedler/CSAR
+  set HTAR = htar
+  breaksw
+case dslogin*:
+# This is all wrong
+  set REMOTE_SYS = storage
+  set REMOTE_SCR = /users/u43/rfiedler
+  set HTAR = htar
+  breaksw
+case tur*:
+  set REMOTE_SYS = mss
+  set REMOTE_SCR = /u/ac/rfiedler/CSAR
+  set HTAR = tar
+  breaksw
+case blackrose*:
+  set REMOTE_SYS = smss
+  set REMOTE_SCR = /users/r/rafiedl
+  set HTAR = htar_smss
+  breaksw
+default:
+  echo -n "Enter name of remote storage system: "
+  set REMOTE_SYS = "$<"
+  echo -n "Enter home directory on remote storage system: "
+  set REMOTE_SCR = "$<"
+  echo -n "ENter the name of the htar command: "
+  set HTAR = "$<"
+  breaksw
+endsw
+
+# DIR is a Rocstar 3 run directory
+set DIR = `pwd`
+set JUNK = $HOME/archive_htar_temp
+mkdir -p $JUNK
+
+# Set the SUFFIX (Rocout_$SUFFIX).  We also support
+# save multiple Rocout.remesh* dirs created by remeshing.
+
+if ($#argv == 1) then
+  set SUFFIX = "_$1"
+else
+  set SUFFIX = ""
+endif
+
+set nsuffix = 0
+set isuffix = 0
+set istart = 1
+if (-d Rocflu && "$SUFFIX" == "") then
+  cd Rocflu
+  set SUFFIXES = (`ls -d Rocout.remesh_??.?????? | sed -e 's/Rocout//'`)
+  if ("$SUFFIXES" != "") then
+    set nsuffix = $#SUFFIXES
+    echo "There are $nsuffix suffixes"
+    foreach SUFFIX ($SUFFIXES)
+      @ isuffix++
+      echo "$isuffix  $SUFFIX"
+    end
+    echo -n "Enter index of first suffix to process (default 1): "
+    set isuffix = "$<"
+    if ("$isuffix" == "") then
+      set isuffix = 1
+    endif   
+    if ($isuffix < $nsuffix) then
+      echo -n "Enter index of last suffix to process (default ${nsuffix}): "
+      set nsuffix = "$<"
+      if ("$nsuffix" == "") then
+        set nsuffix = $#SUFFIXES
+      endif   
+    endif
+    @ isuffix--
+  endif
+  cd $DIR
+endif
+
+LOOP_SUFFIX:
+
+@ isuffix++
+if ($nsuffix > 0) then
+  set SUFFIX = $SUFFIXES[$isuffix]
+endif
+echo ""
+echo "Setting SUFFIX to $SUFFIX"
+echo ""
+
+# Determine which fluid solver was used.
+# Check for Rocin control files to be sure we get the right one.
+# It is a fatal error to find no fluid solver directory.
+echo ""
+echo "Looking for a fluids directory with Rocin control files ..."
+set FLUIDS = ""
+if (-d Rocflo/Rocout${SUFFIX}) then
+  cd Rocflo/Rocout${SUFFIX}
+  set ROCIN = "`ls fluid_in*.txt | tail -n 1`"
+  if ("$ROCIN" != "") then
+    set FLUIDS = Rocflo
+  else
+    echo ""
+    echo "I found a Rocflo directory, but no Rocin control files."
+    echo "I will look for a Rocflu directory."
+    echo ""
+  endif
+  cd $DIR
+endif
+if ("$FLUIDS" == "") then
+  if (-d Rocflu/Rocout${SUFFIX}) then
+    cd Rocflu/Rocout${SUFFIX} 
+    set ROCIN = "`ls fluid_in*.txt | tail -n 1`"
+    if ("$ROCIN" != "") then
+      set FLUIDS = Rocflu
+    endif
+    cd $DIR
+  endif
+endif
+if ("$FLUIDS" == "") then
+  echo "I cannot find a fluid directory containing Rocin control files."
+  echo ""
+#  goto EXIT
+  goto LOOP_END
+else
+  set FDIR = "$FLUIDS/Rocout${SUFFIX}"
+  echo ""
+  echo "Fluids output directory is $FDIR"
+  echo ""
+endif
+
+# Determine which solid solver was used.
+# Check for Rocin control files to be sure we get the right one.
+# It is not a fatal error to find no solids directory.
+set SOLIDS = ""
+if (-d Rocfrac/Rocout${SUFFIX}) then
+  set SDIR = "Rocfrac/Rocout${SUFFIX}"
+  cd $SDIR
+  set ROCIN = "`ls solid_in*.txt | tail -n 1`"
+  if ("$ROCIN" != "") then
+    set SOLIDS = Rocfrac
+  endif
+endif
+if ("$SOLIDS" == "") then
+  if (-d Rocfrac/Rocout) then
+    set SDIR = "Rocfrac/Rocout"
+    cd $SDIR
+    set ROCIN = "`ls solid_in*.txt | tail -n 1`"
+    if ("$ROCIN" != "") then
+      set SOLIDS = Rocfrac
+    endif
+  endif
+endif
+if ("$SOLIDS" == "") then
+  if (-d Rocsolid/Rocout${SUFFIX}) then
+    set SDIR = "Rocsolid/Rocout${SUFFIX}"
+    cd $SDIR
+    set ROCIN = "`ls solid_in*.txt | tail -n 1`"
+    if ("$ROCIN" != "") then
+      set SOLIDS = Rocsolid
+    endif
+  endif
+endif
+if ("$SOLIDS" == "") then
+  if (-d Rocsolid/Rocout) then
+    set SDIR = "Rocsolid/Rocout"
+    cd $SDIR
+    set ROCIN = "`ls solid_in*.txt | tail -n 1`"
+    if ("$ROCIN" != "") then
+      set SOLIDS = Rocsolid
+    endif
+  endif
+endif
+cd $DIR
+if ("$SOLIDS" == "") then
+  echo "I cannot find a solids directory containing Rocin control files."
+  echo ""
+else
+  echo ""
+  echo "Solids directory is $SDIR"
+  echo ""
+endif
+
+# Determine which burn rate module was used.
+# Check for Rocin control files to be sure we get the right one.
+# It is not a fatal error to find no Rocburn directory.
+set BURN = ""
+if (-d RocburnAPN/Rocout${SUFFIX}) then
+  cd RocburnAPN/Rocout${SUFFIX}
+  set ROCIN = "`ls burn_in*.txt | tail -n 1`"
+  if ("$ROCIN" != "") then
+    set BURN = RocburnAPN
+  else
+    echo "I found a RocburnAPN directory, but no Rocin control files."
+    echo "I will look for a RocburnPY directory."
+    echo ""
+  endif
+  cd $DIR
+endif
+if ("$BURN" == "") then
+  if (-d RocburnPY/Rocout${SUFFIX}) then
+    cd RocburnPY/Rocout${SUFFIX}
+    set ROCIN = "`ls burn_in*.txt | tail -n 1`"
+    if ("$ROCIN" != "") then
+      set BURN = RocburnPY
+    endif
+    cd $DIR
+  endif
+endif
+if ("$BURN" == "") then
+  echo "I cannot find a Rocburn directory containing Rocin control files."
+  echo ""
+else
+  set BDIR = "$BURN/Rocout${SUFFIX}"
+  echo ""
+  echo "Burn directory is $BDIR"
+  echo ""
+endif
+
+# Pick a reasonable default directory name on mass storage.  
+# DIR is the genx run directory, blah/PROBLEM/NNNPROCS.
+# I like to use "GEN3" as the root for Rocstar 3 runs.
+
+set NNNPROCS = $DIR:t
+set PROBLEM_def = $DIR:h
+set PROBLEM_def = $PROBLEM_def:t
+if (! $?PROBLEM) then
+  echo -n "Enter problem name on mass storage (default ${PROBLEM_def}): "
+  set PROBLEM = "$<"
+  if ("$PROBLEM" == "") then
+    set PROBLEM = "$PROBLEM_def"
+  endif
+endif
+set REMOTE_DIR = "${REMOTE_SCR}/GEN3/$PROBLEM/$NNNPROCS"
+
+# Create a script that does the work.  Try to open a connection just once.
+
+set SCRIPT = $HOME/transfer${SUFFIX}.$$
+echo "Creating a script called $SCRIPT to create directories on mass storage."
+echo "The remote directory will be $REMOTE_DIR"
+echo "#\!/bin/csh" > $SCRIPT
+echo "cd $DIR" >> $SCRIPT
+if ("$REMOTE_SYS" == "mss") then
+  echo "mssftp -v << STP" >> $SCRIPT
+else if ("$REMOTE_SYS" == "smss") then
+  echo "hsi << STP" >> $SCRIPT
+else
+  echo "ftp -iv $REMOTE_SYS << STP" >> $SCRIPT
+  switch ($HOST) 
+  case alc*:
+  case up*:
+  case zeus*:
+    # Add a "return" to get to the password prompt.  
+    # It will be entered interactively when the transfer script is run.
+    echo "" >> $SCRIPT
+    breaksw
+  default:
+    breaksw
+  endsw
+endif
+
+# We want to enter the password only once (alc, perhaps others).  We
+# assume here that trying to create existing directories does
+# not stop the script from continuing; we may get warnings.
+
+# Assume the REMOTE_SCR directory exists on mass storage
+
+echo "cd $REMOTE_SCR" >> $SCRIPT
+echo "mkdir GEN3" >> $SCRIPT
+echo "cd GEN3" >> $SCRIPT
+echo "mkdir $PROBLEM" >> $SCRIPT
+echo "cd $PROBLEM" >> $SCRIPT
+echo "mkdir $NNNPROCS" >> $SCRIPT
+echo "cd $NNNPROCS" >> $SCRIPT
+
+# Create the Solver Rocout (and Modout) directories
+
+echo "mkdir $FLUIDS" >> $SCRIPT
+echo "mkdir $FLUIDS/Rocout${SUFFIX}" >> $SCRIPT
+
+if ("$BURN" != "") then
+  echo "mkdir $BURN" >> $SCRIPT
+  echo "mkdir $BURN/Rocout${SUFFIX}" >> $SCRIPT
+endif
+
+if ("$SOLIDS" != "") then
+  echo "mkdir $SOLIDS" >> $SCRIPT
+  echo "mkdir $SDIR" >> $SCRIPT
+endif
+
+# End the ftp session now.  The files themselves will
+# be transferred using htar, so each of those commands
+# will put files on mass storage.
+
+echo "bye" >> $SCRIPT
+echo "STP" >> $SCRIPT
+echo "exit" >> $SCRIPT
+
+if (! $?CREATE_RDIRS) then
+  echo ""
+  echo -n "Should I execute the script $SCRIPT ? (y/n default = y): "
+  set CREATE_RDIRS = "$<"
+  if ("$CREATE_RDIRS" == "") then
+    set CREATE_RDIRS = "y"
+  endif
+endif
+if ("$CREATE_RDIRS" == "y") then
+
+# Invoke the script
+
+  echo ""
+  echo "Starting the script to transfer the files"
+  echo ""
+  chmod u+x $SCRIPT
+  $SCRIPT
+
+endif
+
+#if ("$CREATE_RDIRS" == "y") then
+#  echo ""
+#  echo -n "Should I remove the script $SCRIPT ? (y/n default = y): "
+#  set RESPONSE = "$<"
+#  if ("$RESPONSE" == "") then
+#    set RESPONSE = "y"
+#  endif
+#  if ("$RESPONSE" == "y") then
+    \rm -f $SCRIPT
+#  endif
+#endif
+
+#-------------------------------------------------------------------------------
+
+# Assume from this point forward that the directories into which we will place
+# any files on mass storage already exist.
+
+# Save the top-level output files and control files
+# Do not use the scratch disk space, so that this
+# script can work even on a read-only file system
+# and even for a running job.
+
+if (! $?ARCHIVE_CONTROL) then
+  echo ""
+  echo -n "Should I archive the control files (y/n default=y): "
+  set ARCHIVE_CONTROL = "$<"
+  if ("$ARCHIVE_CONTROL" == "") then
+    set ARCHIVE_CONTROL = "y"
+  endif
+endif
+if ("$ARCHIVE_CONTROL" == "y") then
+  echo ""
+  set TEMP = $JUNK/Temp.$$
+# Save this Control dir on mass staorage.
+  mkdir -p $TEMP/Control${SUFFIX}
+  cp *.txt Rocman/Roc*Control.txt $FLUIDS/${FLUIDS}Control.txt $TEMP/Control${SUFFIX}
+  if (-e $SOLIDS/${SOLIDS}Control.txt) then
+    cp $SOLIDS/${SOLIDS}Control.txt $TEMP/Control${SUFFIX}
+  endif
+  if (-e $BURN/${BURN}Control.txt) then
+    cp $BURN/${BURN}Control.txt $TEMP/Control${SUFFIX}
+  endif
+  if (-e Rocmop/RocmopControl.txt) then
+    cp Rocmop/RocmopControl.txt $TEMP/Control${SUFFIX}
+  endif
+  cd $TEMP
+  echo "$HTAR $TOPTS $REMOTE_DIR/Control${SUFFIX}.tar Control${SUFFIX}"
+  $HTAR $TOPTS $REMOTE_DIR/Control${SUFFIX}.tar Control${SUFFIX}
+  cd $DIR
+  echo ""
+  echo "Deleting temporary control file directory $TEMP"
+  rm -rf $TEMP
+  echo ""
+endif
+
+# Save the fluids probe data and con data.  We may as well
+# save the latest every time this script is run.
+
+if ("$SUFFIX" == "") then
+  echo -n "Should I save the $FLUIDS Modout${SUFFIX} directory (y/n default=y): "
+  set RESPONSE = "$<"
+  if ("$RESPONSE" == "") then
+    set RESPONSE = "y"
+  endif
+  echo ""
+  if ("$RESPONSE" == "y") then
+    cd $FLUIDS
+    echo "$HTAR $TOPTS $REMOTE_DIR/Modout${SUFFIX}.tar Modout${SUFFIX}"
+    $HTAR $TOPTS $REMOTE_DIR/Modout${SUFFIX}.tar Modout${SUFFIX}
+    cd $DIR
+  endif
+else
+  if ($istart == 1) then
+    echo -n "Should I save the $FLUIDS Modout directory (y/n default=y): "
+    set RESPONSE = "$<"
+    if ("$RESPONSE" == "") then
+      set RESPONSE = "y"
+    endif
+    echo ""
+    if ("$RESPONSE" == "y") then
+      cd $FLUIDS
+      echo "$HTAR $TOPTS $REMOTE_DIR/Modout.tar Modout"
+      $HTAR $TOPTS $REMOTE_DIR/Modout.tar Modout
+      cd $DIR
+    endif
+    echo -n "Should I save the $FLUIDS Modin${SUFFIX} directory (y/n default=y): "
+    set RESPONSE = "$<"
+    if ("$RESPONSE" == "") then
+      set RESPONSE = "y"
+    endif
+    echo ""
+    if ("$RESPONSE" == "y") then
+      cd $FLUIDS
+      echo "$HTAR $TOPTS $REMOTE_DIR/Modin${SUFFIX}.tar Modin${SUFFIX}"
+      $HTAR $TOPTS $REMOTE_DIR/Modin${SUFFIX}.tar Modin${SUFFIX}
+      cd $DIR
+    endif
+  else
+    cd $FLUIDS
+    echo "$HTAR $TOPTS $REMOTE_DIR/Modin${SUFFIX}.tar Modin${SUFFIX}"
+    $HTAR $TOPTS $REMOTE_DIR/Modin${SUFFIX}.tar Modin${SUFFIX}
+    cd $DIR
+  endif
+endif
+
+LOOP_ZEROS:
+echo ""
+echo "Getting output dump times that contain $ZEROS"
+if ("$AT_END" == "y") then
+  echo "at the end of the time stamp."
+else
+  echo "anywhere in the time stamp."
+endif
+#
+# Recall that FDIR is FLUIDS/Rocout$SUFFIX
+cd $FDIR
+if ("$AT_END" == "y") then
+  set optimes = (`ls fluid_??\.*${ZEROS}_0000\.hdf | sed -e 's/fluid_//' | sed -e 's/_0000\.hdf//'`)
+else
+  set optimes = (`ls fluid_??\.*${ZEROS}*_0000\.hdf | sed -e 's/fluid_//' | sed -e 's/_0000\.hdf//'`)
+endif
+if ($#optimes == 0) then
+  if ("$SOLIDS" != "") then
+    cd $DIR/$SDIR
+    if ("$AT_END" == "y") then
+      set optimes = (`ls solid_??\.*${ZEROS}_0000\.hdf | sed -e 's/solid_//' | sed -e 's/_0000\.hdf//'`)
+    else
+      set optimes = (`ls solid_??\.*${ZEROS}*_0000\.hdf | sed -e 's/solid_//' | sed -e 's/_0000\.hdf//'`)
+    endif
+  endif
+endif
+if ($#optimes == 0) then
+  cd $DIR/$FDIR
+# This run may have used Rocpanda
+# I will not bother checking for panda solids dumps
+  if ("$AT_END" == "y") then
+    set optimes = (`ls fluid_??\.*${ZEROS}_000\.hdf | sed -e 's/fluid_//' | sed -e 's/_000\.hdf//'`)
+  else
+    set optimes = (`ls fluid_??\.*${ZEROS}*_000\.hdf | sed -e 's/fluid_//' | sed -e 's/_000\.hdf//'`)
+  endif
+  if ($#optimes == 0) then
+    echo ""
+    echo "I cannot find any $FLUIDS hdf dump archives"
+#    goto EXIT
+    goto LOOP_END
+  else
+    set PANDA = "y"
+    set TSUF = "tar"
+  endif
+else
+  set PANDA = "n"
+  set TSUF = "tar"
+endif
+
+cd $DIR
+echo ""
+
+echo "Output times are:"
+echo ""
+set i = 1
+LOOP:
+  echo "$i   $optimes[$i]"
+  if ($i < $#optimes) then
+    @ i++
+    goto LOOP
+  endif
+#
+if ($istart == 1) then
+  echo ""
+  echo "Enter index of first time to transfer"
+  echo -n "(default 1, 0 to change search pattern): "
+  set ifirst = "$<"
+  if ("$ifirst" == "") then
+    set ifirst = 1
+  else if ("$ifirst" == "0") then
+    echo ""
+    echo -n "Enter new search pattern: "
+    setenv ZEROS "$<"
+    echo -n 'only at the end of the time stamp? (default y): '
+    setenv AT_END "$<"
+    if ("$AT_END" == "") then
+      setenv AT_END "y"
+    endif
+    goto LOOP_ZEROS
+  endif
+  if ($ifirst < $#optimes) then
+    echo -n "Enter index of last time to transfer (default $#optimes): "
+    set ilast = "$<"
+    if ("$ilast" == "") then
+      set ilast = $#optimes
+    endif
+  else
+    set ilast = $#optimes
+  endif
+else
+  set ifirst = 1
+  set ilast = $#optimes
+endif
+set istart = 0
+
+if (! $?VERIFY) then
+  echo -n "Should I ask for verification to transfer each dump (y/n default = n): "
+  set VERIFY = "$<"
+  if ("$VERIFY" == "") then
+    set VERIFY = "n"
+  endif
+  echo ""
+  echo "VERIFY is $VERIFY"
+  echo ""
+endif
+
+if ($ifirst > $ilast) then
+  goto LOOP_END
+endif
+
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+
+#
+# Assume the directory has a huge number of files, so ls and
+# any pattern matching takes several minutes.  It can be much more
+# efficient to save the output of a plain ls to a file, and do
+# pattern matching in the file (grep) to get the desired  file names.
+# On the other hand, on lustre file systems a plain ls is very slow.
+#
+switch ($HOST)
+case up*:
+  cd $FDIR
+  set FFILES = $HOME/fluid_file_list_${DIR:t}$SUFFIX
+#  if (-e $FFILES) then
+#    echo -n "File list $FFILES exists.  Should I use it (y/n default=y): "
+#    set RESPONSE = "$<"
+#    if ("$RESPONSE" == "") then
+#      set RESPONSE = y
+#    endif
+#    if ("$RESPONSE" == "n") then
+#      ls > $FFILES
+#    endif 
+#  else
+    echo "Getting list of fluid files ... "
+    ls > $FFILES
+#  endif
+  echo ""
+  echo "Note that the archive$SUFFIX script I will write and execute needs"
+  echo "the file lists to run."
+
+# Are there fluid_plag files?  ifluid_b?  ifluid_nb?  ifluid_ni?
+
+  set PLAG = "`grep -l fluid_plag $FFILES`"
+  set IFLUID_B = "`grep -l '^ifluid_b_' $FFILES`"
+  set IFLUID_NB = "`grep -l '^ifluid_nb_' $FFILES`"
+  set IFLUID_NI = "`grep -l '^ifluid_ni_' $FFILES`"
+
+  if ("$PANDA" == "n") then
+    set Files_per_dump = (`egrep "^fluid_${optimes[1]}_"'(....|.,...)'"\.hdf" $FFILES | wc -l`) 
+  else
+    set Files_per_dump = (`grep "^fluid_${optimes[1]}_...\.hdf" $FFILES | wc -l`) 
+  endif
+  set files_per_dump = $Files_per_dump[1]
+  echo ""
+  echo "There are $files_per_dump files per dump"
+  if ($files_per_dump > 9999) then
+    echo ""
+    echo "This script can handle only up to 9999"
+    exit
+  endif
+  echo ""
+
+  if ("$SOLIDS" != "") then
+    if (-d $DIR/$SDIR) then
+      cd $DIR/$SDIR
+      set SFILES = $HOME/solid_file_list_${DIR:t}$SUFFIX
+#      if (-e $SFILES) then
+#        echo ""
+#        echo -n "File list $SFILES exists.  Should I use it (y/n default=y): "
+#        set RESPONSE = "$<"
+#        if ("$RESPONSE" == "") then
+#          set RESPONSE = y
+#        endif
+#        if ("$RESPONSE" == "n") then
+#          echo ""
+#          ls > $SFILES
+#        endif 
+#      else
+        echo ""
+        echo "Getting list of solid files ... "
+        ls > $SFILES
+#      endif
+#      if ("$PANDA" == "y") then
+#        set SOLID = (`grep '^solid_'"${optimes[1]}_...\.hdf" $SFILES | wc -l`)
+#      else
+#        set SOLID = (`egrep '^solid_'"${optimes[1]}_(....|.,...)\.hdf" $SFILES | wc -l`)
+#      endif
+    endif
+# Not sure about these file names any more
+    set ISOLID_B = "`grep -l '^isolid_b1_' $SFILES`"
+    set ISOLID_NB = "`grep -l '^isolid_nb1_' $SFILES`"
+    set ISOLID_NI = "`grep -l '^isolid_ni1_' $SFILES`"
+  endif
+
+  if ("$BURN" != "") then
+    if (-d $DIR/$BDIR) then
+      cd $DIR/$BDIR
+      set BFILES = $HOME/burn_file_list_${DIR:t}$SUFFIX
+#      if (-e $BFILES) then
+#        echo ""
+#        echo -n "File list $BFILES exists.  Should I use it (y/n default=y): "
+#        set RESPONSE = "$<"
+#        if ("$RESPONSE" == "") then
+#          set RESPONSE = y
+#        endif
+#        if ("$RESPONSE" == "n") then
+#          echo ""
+#          ls > $BFILES
+#        endif 
+#      else
+        echo ""
+        echo "Getting list of burn files ... "
+        ls > $BFILES
+#      endif
+#      if ("$PANDA" == "y") then
+#        set BURN = (`grep '^burn_'"${optimes[1]}_...\.hdf" $BFILES | wc -l`)
+#      else
+#        set BURN = (`egrep '^burn_'"${optimes[1]}_(....|.,...)\.hdf" $BFILES | wc -l`)
+#      endif
+    endif
+  endif
+
+  set i = $ifirst
+LOOP2:
+  echo ""
+  set optime = $optimes[$i]
+  if ("$VERIFY" == "n") then
+    set TRANSFER = "y"
+    echo "Archiving $optime"
+  else
+    echo -n "Should I archive dump $optime ? (y/n default = n): "
+    set TRANSFER = "$<"
+    if ("$TRANSFER" == "") then
+      set TRANSFER = "n"
+    endif
+  endif
+
+  if ("$TRANSFER" == "y") then
+
+    echo "cd $DIR/$FDIR"
+    cd $DIR/$FDIR
+    set SCRATCH = $REMOTE_DIR/$FDIR
+
+    if (! $?SKIP_FLUIDS) then
+      if ("$PANDA" == "y") then
+        $HTAR $TOPTS ${SCRATCH}/fluid_${optime}.hdf.${TSUF} `grep '^f..*'"${optime}_0..\.hdf" $FFILES` fluid_in_${optime}.txt
+        $HTAR $TOPTS ${SCRATCH}/ifluid_${optime}.hdf.${TSUF} `grep '^if..*'"${optime}_0..\.hdf" $FFILES` ifluid_in_${optime}.txt
+      else
+        $HTAR $TOPTS ${SCRATCH}/fluid_${optime}.hdf.${TSUF} `egrep '^fluid_'"${optime}_(....|.,...)\.hdf" $FFILES` fluid_in_${optime}.txt
+        if ("$PLAG" != "") then
+          $HTAR $TOPTS ${SCRATCH}/fluid_plag_${optime}.hdf.${TSUF} `egrep '^fluid_plag_'"${optime}_(....|.,...)\.hdf" $FFILES` ifluid_in_${optime}.txt
+        endif
+        if ("$IFLUID_B" != "") then
+          $HTAR $TOPTS ${SCRATCH}/ifluid_b_${optime}.hdf.${TSUF} `egrep '^ifluid_b_'"${optime}_(....|.,...)\.hdf" $FFILES` ifluid_in_${optime}.txt
+        endif
+        if ("$IFLUID_NB" != "") then
+          $HTAR $TOPTS ${SCRATCH}/ifluid_nb_${optime}.hdf.${TSUF} `egrep '^ifluid_nb_'"${optime}_(....|.,...)\.hdf" $FFILES` ifluid_in_${optime}.txt
+        endif
+        if ("$IFLUID_NI" != "") then
+          $HTAR $TOPTS ${SCRATCH}/ifluid_ni_${optime}.hdf.${TSUF} `egrep '^ifluid_ni_'"${optime}_(....|.,...)\.hdf" $FFILES` ifluid_in_${optime}.txt
+        endif
+      endif
+    endif
+
+#   Solids
+    if ("$SOLIDS" != "" && ! $?SKIP_SOLIDS) then
+      echo "cd $DIR/$SDIR"
+      cd $DIR/$SDIR
+      set SCRATCH = $REMOTE_DIR/$SDIR
+
+      if ("$PANDA" == "y") then
+        $HTAR $TOPTS ${SCRATCH}/solid_${optime}.hdf.${TSUF} `grep '^solid_'"${optime}_0..\.hdf" $SFILES` solid_in_${optime}.txt
+        $HTAR $TOPTS ${SCRATCH}/isolid_${optime}.hdf.${TSUF} `egrep '^isolid_'"(b.|n..)_${optime}_0..\.hdf" $SFILES` isolid_in_${optime}.txt
+      else
+        $HTAR $TOPTS ${SCRATCH}/solid_${optime}.hdf.${TSUF} `egrep '^solid_'"${optime}_(....|.,...)\.hdf" $SFILES` solid_in_${optime}.txt
+        if ("$ISOLID_B" != "") then
+          $HTAR $TOPTS ${SCRATCH}/isolid_b_${optime}.hdf.${TSUF} `egrep '^isolid_b._'"${optime}_(....|.,...)\.hdf" $SFILES` isolid_in_${optime}.txt
+        endif
+        if ("$ISOLID_NB" != "") then
+          $HTAR $TOPTS ${SCRATCH}/isolid_nb_${optime}.hdf.${TSUF} `egrep '^isolid_nb._'"${optime}_(....|.,...)\.hdf" $SFILES` isolid_in_${optime}.txt
+        endif
+        if ("$ISOLID_NI" != "") then
+          $HTAR $TOPTS ${SCRATCH}/isolid_ni_${optime}.hdf.${TSUF} `egrep '^isolid_ni._'"${optime}_(....|.,...)\.hdf" $SFILES` isolid_in_${optime}.txt
+        endif
+      endif
+
+    endif
+
+    if ("$BURN" != "" && ! $?SKIP_BURN) then
+      echo "cd $DIR/$BDIR"
+      cd $DIR/$BDIR
+      set SCRATCH = $REMOTE_DIR/$BDIR
+
+      if ("$PANDA" == "y") then
+        $HTAR $TOPTS ${SCRATCH}/burn_${optime}.hdf.${TSUF} `grep '^burn_'"${optime}_0..\.hdf" $BFILES` burn_in_${optime}.txt
+        $HTAR $TOPTS ${SCRATCH}/iburn_${optime}.hdf.${TSUF} `grep '^iburn_all_'"${optime}_0..\.hdf" $BFILES` iburn_in_${optime}.txt
+      else
+        $HTAR $TOPTS ${SCRATCH}/burn_${optime}.hdf.${TSUF} `egrep '^burn_'"${optime}_(....|.,...)\.hdf" $BFILES` burn_in_${optime}.txt
+        $HTAR $TOPTS ${SCRATCH}/iburn_${optime}.hdf.${TSUF} `egrep '^iburn_all_'"${optime}_(....|.,...)\.hdf" $BFILES` iburn_in_${optime}.txt
+      endif
+
+    endif
+
+  endif
+
+  if ($i < $ilast) then
+    @ i++
+    goto LOOP2
+  endif
+  breaksw
+
+#--------------------------------------------------------
+
+default:
+# Go ahead and use the usual wildcars
+  set i = $ifirst
+LOOP3:
+  echo ""
+  set optime = $optimes[$i]
+  if ("$VERIFY" == "n") then
+    set TRANSFER = "y"
+    echo "Archiving $optime"
+  else
+    echo -n "Should I archive dump $optime ? (y/n default = n): "
+    set TRANSFER = "$<"
+    if ("$TRANSFER" == "") then
+      set TRANSFER = "n"
+    endif
+  endif
+
+  if ("$TRANSFER" == "y") then
+
+    echo "cd $DIR/$FDIR"
+    cd $DIR/$FDIR
+    set SCRATCH = $REMOTE_DIR/$FDIR
+
+    if (! $?SKIP_FLUIDS) then
+      if ("$PANDA" == "y") then
+        $HTAR $TOPTS ${SCRATCH}/fluid_${optime}.hdf.${TSUF} fluid*_${optime}_*.hdf  fluid_in_${optime}.txt
+        $HTAR $TOPTS ${SCRATCH}/ifluid_${optime}.hdf.${TSUF} ifluid*_${optime}_*.hdf ifluid_in_${optime}.txt
+      else
+        $HTAR $TOPTS ${SCRATCH}/fluid_${optime}.hdf.${TSUF} fluid_${optime}_*.hdf fluid_in_${optime}.txt
+        if (-e fluid_plag_in_${optime}.txt) then
+          $HTAR $TOPTS ${SCRATCH}/fluid_plag_${optime}.hdf.${TSUF} fluid_plag_${optime}_*.hdf fluid_plag_in_${optime}.txt
+        endif
+        if ("`ls ifluid_b_${optime}_????.hdf | tail -n 1`" != "") then
+          $HTAR $TOPTS ${SCRATCH}/ifluid_b_${optime}.hdf.${TSUF} ifluid_b_${optime}_*.hdf ifluid_in_${optime}.txt
+        endif
+        if ("`ls ifluid_nb_${optime}_????.hdf | tail -n 1`" != "") then
+          $HTAR $TOPTS ${SCRATCH}/ifluid_nb_${optime}.hdf.${TSUF} ifluid_nb_${optime}_*.hdf ifluid_in_${optime}.txt
+        endif
+        if ("`ls ifluid_ni_${optime}_????.hdf | tail -n 1`" != "") then
+          $HTAR $TOPTS ${SCRATCH}/ifluid_ni_${optime}.hdf.${TSUF} ifluid_ni_${optime}_*.hdf ifluid_in_${optime}.txt
+        endif
+#        $HTAR $TOPTS ${SCRATCH}/ifluid_${optime}.hdf.${TSUF} ifluid_*_${optime}_*.hdf ifluid_in_${optime}.txt
+      endif
+    endif
+
+#   Solids
+    if ("$SOLIDS" != "" && ! $?SKIP_SOLIDS) then
+      echo "cd $DIR/$SDIR"
+      cd $DIR/$SDIR
+      set SCRATCH = $REMOTE_DIR/$SDIR
+
+      if ("$PANDA" == "y") then
+        $HTAR $TOPTS ${SCRATCH}/solid_${optime}.hdf.${TSUF} solid*_${optime}_*.hdf solid_in_${optime}.txt
+        $HTAR $TOPTS ${SCRATCH}/isolid_${optime}.hdf.${TSUF} isolid*_${optime}_*.hdf isolid_in_${optime}.txt
+      else
+        $HTAR $TOPTS ${SCRATCH}/solid_${optime}.hdf.${TSUF} solid*_${optime}_*.hdf solid_in_${optime}.txt
+        if ("`ls isolid_b_${optime}_????.hdf | tail -n 1`" != "") then
+          $HTAR $TOPTS ${SCRATCH}/isolid_b_${optime}.hdf.${TSUF} isolid_b*_${optime}_*.hdf isolid_in_${optime}.txt
+        endif
+        if ("`ls isolid_nb_${optime}_????.hdf | tail -n 1`" != "") then
+          $HTAR $TOPTS ${SCRATCH}/isolid_nb_${optime}.hdf.${TSUF} isolid_nb*_${optime}_*.hdf isolid_in_${optime}.txt
+        endif
+        if ("`ls isolid_ni_${optime}_????.hdf | tail -n 1`" != "") then
+          $HTAR $TOPTS ${SCRATCH}/isolid_ni_${optime}.hdf.${TSUF} isolid_ni*_${optime}_*.hdf isolid_in_${optime}.txt
+        endif
+#        $HTAR $TOPTS ${SCRATCH}/isolid_${optime}.hdf.${TSUF} isolid_*_${optime}_*.hdf isolid_in_${optime}.txt
+      endif
+
+    endif
+
+    if ("$BURN" != "" && ! $?SKIP_BURN) then
+      echo "cd $DIR/$BDIR"
+      cd $DIR/$BDIR
+      set SCRATCH = $REMOTE_DIR/$BDIR
+
+      if ("$PANDA" == "y") then
+        $HTAR $TOPTS ${SCRATCH}/burn_${optime}.hdf.${TSUF} burn*_${optime}_*.hdf burn_in_${optime}.txt
+        $HTAR $TOPTS ${SCRATCH}/iburn_${optime}.hdf.${TSUF} iburn*_${optime}_*.hdf iburn_in_${optime}.txt
+      else
+        $HTAR $TOPTS ${SCRATCH}/burn_${optime}.hdf.${TSUF} burn*_${optime}_*.hdf burn_in_${optime}.txt
+        $HTAR $TOPTS ${SCRATCH}/iburn_${optime}.hdf.${TSUF} iburn*_${optime}_*.hdf iburn_in_${optime}.txt
+      endif
+
+    endif
+
+  endif
+
+  if ($i < $ilast) then
+    @ i++
+    goto LOOP3
+  endif
+  breaksw
+endsw
+
+LOOP_END:
+
+if ($isuffix < $nsuffix) then
+  cd $DIR
+  goto LOOP_SUFFIX
+endif
+
+EXIT:
+exit

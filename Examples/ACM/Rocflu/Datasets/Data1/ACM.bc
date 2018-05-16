@@ -1,0 +1,61 @@
+# BC_INJECT
+PATCH 		1 1 
+NAME		InjectionWall 
+MFRATE          5.7429
+TEMP            2855.0
+RFVFU		0.0
+RFVFV		0.0
+RFVFW		0.0
+COUPLED		1
+BFLAG		1
+MOVEDIR         7
+#
+
+# BC_SLIPW
+PATCH 	2 2
+NAME 	AftFlatWall
+COUPLED	2
+MOVEDIR 0
+#
+
+# BC_SLIPW
+PATCH 	3 3
+NAME 	HeadEndSurface
+COUPLED	2
+MOVEDIR 0
+#
+
+# BC_OUTFLOW
+PATCH           4 4 
+NAME            NozzleOutlet
+TYPE    0
+COUPLED 2
+MVPATCH 0
+SMGRID  0
+CORR    0
+MOVEDIR 0
+#
+ 
+# BC_SLIPW
+PATCH 	5 5
+NAME 	HeadEndRing
+COUPLED	2
+MOVEDIR 0
+#
+ 
+# BC_SLIPW
+PATCH 	6 6
+NAME 	AftEndRing
+COUPLED	2
+MOVEDIR 0
+#
+
+# BC_SLIPW
+PATCH 		7 7 
+NAME		NozzleSurface
+COUPLED		2
+MOVEDIR         0
+#
+
+# END
+

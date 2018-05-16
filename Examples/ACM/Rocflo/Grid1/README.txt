@@ -1,0 +1,1 @@
+This model has a reworked database and blocking structure. It is different than Grid7 only in that the core blocks in the head end have been changed to not have angled surfaces as they approach the head end of the rocket. The angles have, in past runs, caused grid motion failure.   It has 202,623 structured-block hex elements. 

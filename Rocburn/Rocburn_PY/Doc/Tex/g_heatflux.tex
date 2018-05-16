@@ -1,0 +1,113 @@
+\irssection{Heat Flux to the Surface}{g}
+
+As discussed above, the actual form of the flux $g(T_s,T_g)$ depends on whether the solid is a propellant, a no-slip wall, or an ablating wall. If the solid is a propellant, the form of $g$ also differs for times before and after ignition.
+
+\irsssection{Pre-Ignition Phase Along Propellant Surfaces}{PreIgnit}
+
+If the temperature is lower than the ignition temperature, then no mass flux is injected at the propellant surface, and a turbulent boundary layer separates the inviscid field from the propellant surface. Because of this situation, it is assumed that the turbulent boundary layer along the propellant surface is not resolved numerically, and the flux to the (non-ignited) propellant surface is  approximated by integrating the Euler equations down to the surface. In such case $g(\cdots)$ is calculated as
+
+\begin{equation}
+g(T_s,T_g) = \frac{h (T_g - T_s)}{\lambda_c}.
+\label{eq:qc}
+\end{equation}
+
+The film coefficient, $h$, is expressed in terms of the Stanton number {\sf St}, 
+
+\begin{equation}
+h = (U_\infty\rho_g c_p){\sf St}
+\label{eq:hfilmcoeff}
+\end{equation}
+
+where $U_\infty$ is the free-stream velocity and $\rho_g$ is the density of the gas. For the boundary layer with constant free-stream velocity and wall temperature, the Stanton number is given by the Prandtl number {\sf Pr} and the Reynolds number {\sf Re}:
+
+\begin{equation}
+{\sf St} = 0.0287({\sf Pr})^{-2/5}({\sf Re}_{x})^{-1/5}.
+\label{eq:stnum}
+\end{equation}
+
+Note that here, the Reynolds number is based on the streamwise coordinate $x$. Expanding these definitions gives the following expression for the film coefficient.
+
+\begin{equation}
+h=0.0287\rho_g U_\infty c_p\left(x\rho_g U_\infty\mu_g c_p^2\over \lambda_g^2\right)^{-1/5}
+\label{eq:hfilmcoefffull}
+\end{equation}
+
+where $\lambda_g$ is the thermal conductivity of the gas and $\mu_g$ is the viscosity. Such a form is assumed valid for the general case in which both the wall temperature and free-stream velocity vary in $x$ and in time, using the numerically evaluated outer edge solution as the free-stream temperature and velocity. Finally, note that
+
+\begin{equation}
+{\partial g \over \partial T_s} = -{h \over \lambda_c}
+\label{eq:qcprime}
+\end{equation}
+
+where $\lambda_c$ is the thermal conductivity of the solid as before.
+
+\irsssection{Post-Ignition Phase Along Propellant Surfaces}{PostIgnit}
+
+When the surface temperature reaches the ignition value, the surface cell is switched from a non-ignition surface to a burning cell,\footnote{That is, it is assumed that the transition events from ignition to complete combustion occur on a time scale that is too small to resolve numerically, and so the ignition event is treated as a on/off switch.} and the heat flux to the surface is evaluated by integrating the steady state convection--diffusion--reaction equations for the gas phase. Activation energy asymptotic theory is used to relate the flame temperature $T_\star$ to the surface temperature.
+
+\begin{equation}
+\frac{1}{2}\frac{E_g}{R_u} \left[ \frac{1}{T_\star^0} - \frac{1}{T_\star} \right]=
+\frac{E_c}{R_u} \left[ \frac{1}{T_s^0} - \frac{1}{T_s} \right]
+\label{eq:tstar}
+\end{equation}
+
+where the superscript zero ($i^0$) indicates the steady state values and the subscript star ($i_\star$) are the values at the outflow plane. Therefore $T_\star^0$ is the steady flame temperature, and the steady state surface temperature $T_s^0$ is taken by comparing the pyrolysis law in \ireq{eq}{eq:pyro2} to the experimental burn power law in \ireq{eq}{eq:pyro1}. As before with \ireq{eq}{eq:pyro2}, $E_c/R_u$ is the scaled activation energy for solid phase, and likewise $E_g/R_u$ is the scaled activation energy for gas phase (i.e., temperatures).
+
+Once the relationship between flame temperature and surface temperature has been established,
+the integration of the convection--diffusion--reaction equations, together with the connection
+boundary condition at the interface, yields the following expression for $g(\cdots)$.
+
+\begin{equation}
+g(T_s,T_g) = \frac{r_b}{\alpha_c} \left[ T_\star^0 - T_\infty +  T_s - T_\star \right]
+\label{eq:gofT}
+\end{equation}
+
+where $\alpha_c$ is the thermal diffusivity of the solid: $\alpha_c = \lambda_c / (\rho_c c_p)$. (See \ireq{eq}{eq:sld}.) A result of activation energy asymptotic theory is that the injection temperature is equal to the flame temperature: $T_{\rm inject} = T_\star$. Finally, note that
+
+\begin{equation}
+\frac{\partial g}{\partial T_s} = \frac{E_c}{R_u}\frac{1}{T_s^2} g
+ + \frac{r_b}{\alpha_c} \left[ 1 - 2 \frac{E_c}{E_g}\frac{T_\star^2}{T_s^2} \right].
+\label{eq:dgdT}
+\end{equation}
+
+Recent improvements to \Rocburn\ now allow for a lookup table to compute the flux $g$ rather than using the descriptions given above. Note that the lookup table is \textit{propellant specific} and requires significantly more work. For this reason the approach discussed above is sufficient for most purposes. Enabling the lookup table function in the \Rocburn\ input file (\texttt{TABUSE~=~1}) is \textit{strongly} discouraged.
+
+\irsssection{Non-Propellant Surfaces}{Nonprop}
+
+For the case of a no-slip wall or an ablating surface, the assumption is that the turbulent boundary layer will be resolved with enough accuracy as to capture the local heat flux to the wall from the gas phase. The solid phase equation is as before.
+
+\software{Rocflo} solves the compressible equations using an explicit time integrator. In particular, for the cell adjacent to the surface, the cell-centered temperature is updated as
+
+\begin{equation}
+T_1^{n+1}=T_1^n + \Delta t\, \mbox{RungeKutta\_RHS}(T_s^n,T_1^n,T_2^n)
+\label{eq:temp}
+\end{equation}
+
+and will not be discussed in detail here.\footnote{In actuality \software{Rocflo} solves the conservative form of the equations, not the primitive form. \ireq{Eq}{eq:temp} is only used here for illustration purposes.}  
+
+With $T_1^{n+1}$ known from the gas phase, the flux function $g$ can be written as
+
+\begin{eqnarray}
+g&=&\lambda_g {\partial T \over \partial x} \\
+ &\approx&\lambda_g^{n+1} \left( {{T_1^{n+1}-T_s^{n+1}} \over \Delta x} \right),
+\end{eqnarray}
+
+where $\Delta x$ is the distance from $T_1^{n+1}$ to the surface, i.e., it is just half the cell height in the wall-normal direction. The expression for the gas phase thermal conductivity at the surface can be expanded to
+
+\begin{equation}
+\lambda_g^{n+1}=\lambda_g^n + \left({\partial \lambda_g \over \partial T_s}\right)^n
+\left( T_s^{n+1}-T_s^n \right).
+\end{equation}
+
+Thus, the flux connection condition in \ireq{eq}{eq:bc3} at $x=0$ becomes
+
+\begin{equation}
+{\lambda_c \over 2 \Delta z} \left[ -3T_s^{n+1} + 4T_{1,c}^{n+1}-T_{2,c}^{n+1}\right]
+{dz \over dx}=
+\left[ \lambda_g^n + \left({\partial \lambda_g \over \partial T_s}\right)^n
+\left( T_s^{n+1}-T_s^n \right) \right]
+ \left( {{T_{1,g}^{n+1}-T_s^{n+1}} \over \Delta x} \right),
+\label{eq:noburn}
+\end{equation}
+
+and the subscripts $c$ and $g$ denote values in the solid (condensed) phase and the gas phase, respectively. Note that the flux function $g$ is quadratic in $T_s^{n+1}$, so only the correct root need be selected.

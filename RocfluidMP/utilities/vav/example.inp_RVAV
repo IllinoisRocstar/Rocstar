@@ -1,0 +1,20 @@
+! grid/solution format --------------------------------------------------------
+# RVAV_STREAM1
+RVAV_FLOW_TYPE     0
+RVAV_FILE_TYPE     10
+RVAV_GRID_TYPE     0
+RVAV_SOLUTION_TYPE 0
+#
+
+# RVAV_STREAM2
+RVAV_FLOW_TYPE     0
+RVAV_FILE_TYPE     10
+RVAV_GRID_TYPE     0
+RVAV_SOLUTION_TYPE 0
+#
+
+# RVAV_COMPARISONS
+RVAV_NUMBER_OF_COMPARISONS 1
+10  10  1  1  1  1  1  51  1  1  1  1
+10  10  1  1  1  1  1  51  1  1  1  1
+#

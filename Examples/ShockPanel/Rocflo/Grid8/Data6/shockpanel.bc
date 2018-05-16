@@ -1,0 +1,22 @@
+! File with boundary conditions
+
+# BC_INFLOW_VELTEMP
+BLOCK     0  0       ! applies to block ... (0 0 = to all)
+PATCH     0  0       ! applies to patch ... (0 0 = to all patches of BLOCK)
+TYPE      1          ! supersonic inflow
+DISTRIB   0          ! single value (=0) or distribution (=1)
+PROFILE   0          !
+VELX      297.59     ! downstream velocity in x-direction [m/s]
+VELY      0.         ! downstream velocity in y-direction [m/s]
+VELZ      0.         ! downstream velocity in z-direction [m/s]
+PRESS     1.5436E+05 ! downstream static pressure [Pa]
+TEMP      300.0      !
+RECYCTURB 0
+#
+
+# BC_SLIPW
+BLOCK     0  0   ! applies to block ... (0 0 = to all)
+PATCH     0  0   ! applies to patch ... (0 0 = to all patches of BLOCK)
+EXTRAPOL  0      ! order of extrapolation to dummy cells (0 or 1)
+MAXCHANGE 0.1    ! 
+#

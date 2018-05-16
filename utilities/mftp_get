@@ -1,0 +1,348 @@
+#!/bin/csh
+#
+# mftp_get
+#
+# Transfer multiple output dumps from mass storage.
+#
+# This version supports both LLNL and NCSA mass storage systems.
+#
+# NOTE: for NCSA's UniTree, you must already have obtained a
+#       Kerberos ticket using the kinit command.
+#
+# This version transfers each group of files (e.g, fluid_*)
+# at one output time as a separate tar file.
+#
+# Prior to running this script, cd to the GENx run directory
+# where you have created the following subdirectories:
+#
+# DIR: {Rocflo OR Rocflu}/HDFout
+#      {Rocfrac OR Rocsolid}/HDFout
+#      {RocburnAPN OR RocburnPY}/HDFout
+#
+# If you have more than one type of fluid, solid, or burn
+# directory, it will only get files for one of them -- e.g., it will
+# not try to retrieve files for both Rocflo and Rocflu.
+#
+# On mass storage, the HDF dump tar files must reside
+# under the directory named what you will enter here for the
+# "remote directory":
+#
+# REMOTE_DIR: {Rocflo OR Rocflu}/HDFout
+#             {Rocfrac OR Rocsolid}/HDFout
+#             {RocburnAPN OR RocburnPY}/HDFout
+#
+# See also the script used to save the tar files, mftp_put.
+#
+# Written by Robert Fiedler, revised for GEN2.5 2/18/04.
+
+# Determine what machine this is (short name).
+                                                                                
+if (! $?HOST) then
+  set HOST = `hostname -s`
+else
+  set HOST = `echo $HOST | sed -e 's/\..*//'`
+endif
+                                                                                
+if ($HOST == "blue" || $HOST == "frost" || $HOST == "alc") then
+  set MASS_STORE = "storage"
+  set CENTER = "LLNL"
+else
+  set MASS_STORE = "mss.ncsa.uiuc.edu"
+  set CENTER = "NCSA"
+endif
+
+set DIR = `pwd`
+
+set FDIR = "Rocflo/HDFout"
+if (! -d $FDIR) then
+  set FDIR = "Rocflu/HDFout"
+  if (! -d $FDIR) then
+    echo ""
+    echo "Cannot find Rocflo or Rocflu HDFout directory"
+    echo ""
+    exit
+  endif
+endif
+echo ""
+echo "Fluids directory is $FDIR"
+
+set SDIR = "Rocfrac/HDFout"
+if (! -d $SDIR) then
+  set SDIR = "Rocsolid/HDFout"
+  if (! -d $SDIR) then
+    echo ""
+    echo "Cannot find Rocsolid or Rocfrac HDFout directory"
+    echo ""
+    exit
+  endif
+endif
+echo ""
+echo "Solids directory is $SDIR"
+
+set BDIR = "RocburnAPN/HDFout"
+if (! -d $BDIR) then
+  set BDIR = "RocburnPY/HDFout"
+  if (! -d $BDIR) then
+    echo ""
+    echo "Cannot find RocburnAPN or RocburnPY HDFout directory"
+    echo ""
+    exit
+  endif
+endif
+echo ""
+echo "Burn directory is $BDIR"
+echo ""
+
+if ($CENTER == "LLNL") then
+  set Remote_dir = /users/u43/$USER/GEN2.5/RSRM/480procs_coupled_021704
+else
+  set Remote_dir = /u/ac/$USER/CSAR/GEN2.5/Inhibitor/060procs_coupled_021804
+endif
+echo -n "Enter directory on $MASS_STORE (${Remote_dir}): "
+set REMOTE_DIR = "$<"
+if ("$REMOTE_DIR" == "") then
+  set REMOTE_DIR = $Remote_dir
+endif
+
+echo ""
+echo "Getting output dump times ... "
+#
+set SCRIPT = $HOME/getout.$$
+set LIST = $HOME/remote_fluid_file_list_$REMOTE_DIR:t
+if (-e $LIST) then
+  echo ""
+  echo "Remote fluid file list exists as $LIST"
+  echo -n "Should I use it (y/n default y): "
+  set RESPONSE = "$<"
+  if ("$RESPONSE" == "") then
+    set RESPONSE = "y"
+  endif
+  if ("$RESPONSE" != "y") then
+    set GETLIST = "y"
+  else
+    set GETLIST = "n"
+  endif
+else
+  set GETLIST = "y"
+endif
+
+if ("$GETLIST" == "y") then
+  echo "#\!/bin/csh" > $SCRIPT
+  echo "ftp -iv $MASS_STORE >& $LIST << STOP" >> $SCRIPT
+  echo "cd $REMOTE_DIR/$FDIR ">> $SCRIPT
+  echo 'ls "fluid_*.tar"' >> $SCRIPT
+  echo "bye" >> $SCRIPT
+  echo "STOP" >> $SCRIPT
+
+  chmod u+x $SCRIPT
+  $SCRIPT
+  \rm -f $SCRIPT
+endif
+#set optimes = (`cat $LIST | grep 'fluid_..\..*.tar' | sed -e 's/..*fluid_//' | sed -e 's/\.tar//'`)
+set optimes = (`cat $LIST | grep 'fluid_..\..*.tar' | sed -e 's/^fluid_//' | sed -e 's/\.tar//'`)
+
+echo ""
+echo "Output times are:"
+echo ""
+set i = 1
+LOOP:
+  echo "$i   $optimes[$i]"
+  if ($i < $#optimes) then
+    @ i++
+    goto LOOP
+  endif
+#
+echo ""
+echo -n "Enter index of first time to transfer (1): "
+set ifirst = "$<"
+if ("$ifirst" == "") then
+  set ifirst = 1
+endif
+echo -n "Enter index of last time to transfer ($#optimes): "
+set ilast = "$<"
+if ("$ilast" == "") then
+  set ilast = $#optimes
+endif
+echo -n "Should I ask for verification to transfer each dump (y/n default = n): "
+set VERIFY = "$<"
+if ("$VERIFY" == "") then
+  set VERIFY = "n"
+endif
+echo ""
+echo "VERIFY is $VERIFY"
+
+echo -n "Should I transfer the fluid"'*'" series (y/n default = n): "
+set FLUID = "$<"
+if ("$FLUID" == "") then
+  set FLUID = "n"
+endif
+echo -n "Should I transfer the ifluid"'*'" series (y/n default = n): "
+set IFLUID = "$<"
+if ("$IFLUID" == "") then
+  set IFLUID = "n"
+endif
+echo -n "Should I transfer the solid"'*'" series (y/n default = n): "
+set SOLID = "$<"
+if ("$SOLID" == "") then
+  set SOLID = "n"
+endif
+echo -n "Should I transfer the isolid"'*'" series (y/n default = n): "
+set ISOLID = "$<"
+if ("$ISOLID" == "") then
+  set ISOLID = "n"
+endif
+echo -n "Should I transfer the burn"'*'" series (y/n default = n): "
+set BURN = "$<"
+if ("$BURN" == "") then
+  set BURN = "n"
+endif
+echo -n "Should I transfer the iburn"'*'" series (y/n default = n): "
+set IBURN = "$<"
+if ("$IBURN" == "") then
+  set IBURN = "n"
+endif
+
+# Create the script that does the work.
+
+set SCRIPT = $HOME/transfer.$$
+echo "#\!/bin/csh" > $SCRIPT
+if ($CENTER != "LLNL") then
+  echo "ftp -iv $MASS_STORE << STOP">> $SCRIPT
+endif
+
+set i = $ifirst
+LOOP2:
+  echo ""
+  set optime = $optimes[$i]
+  if ("$VERIFY" == "n") then
+    set TRANSFER = "y"
+    echo "Transferring $optime"
+  else
+    echo -n "Should I transfer dump $optime ? (y/n default = n): "
+    set TRANSFER = "$<"
+    if ("$TRANSFER" == "") then
+      set TRANSFER = "n"
+    endif
+  endif
+
+  if ("$TRANSFER" == "y") then
+
+    if ($CENTER != "LLNL") then
+      if ("$FLUID" == "y" || "$IFLUID" == "y") then
+        echo "lcd $DIR/$FDIR" >> $SCRIPT
+        echo "cd $REMOTE_DIR/$FDIR" >> $SCRIPT
+      endif
+
+      if ("$FLUID" == "y") then
+        echo 'get fluid_'"${optime}"'.tar "|tar xvf - "' >> $SCRIPT
+      endif
+      if ("$IFLUID" == "y") then
+        echo 'get ifluid_'"${optime}"'.tar "|tar xvf - "' >> $SCRIPT
+      endif
+
+      if ("$SOLID" == "y" || "$ISOLID" == "y") then
+        echo "lcd $DIR/$SDIR" >> $SCRIPT
+        echo "cd $REMOTE_DIR/$SDIR" >> $SCRIPT
+      endif
+
+      if ("$SOLID" == "y") then
+        echo 'get solid_'"${optime}"'.tar "|tar xvf - "' >> $SCRIPT
+      endif
+      if ("$ISOLID" == "y") then
+        echo 'get isolid_'"${optime}"'.tar "|tar xvf - "' >> $SCRIPT
+      endif
+
+      if ("$BURN" == "y" || "$IBURN" == "y") then
+        echo "lcd $DIR/$BDIR" >> $SCRIPT
+        echo "cd $REMOTE_DIR/$BDIR" >> $SCRIPT
+      endif
+
+      if ("$BURN" == "y") then
+        echo 'get burn_'"${optime}"'.tar "|tar xvf - "' >> $SCRIPT
+      endif
+      if ("$IBURN" == "y") then
+        echo 'get iburn_'"${optime}"'.tar "|tar xvf - "' >> $SCRIPT
+      endif
+
+    else
+
+      if ("$FLUID" == "y" || "$IFLUID" == "y") then
+        echo "cd $DIR/$FDIR" >> $SCRIPT
+        set RD = $REMOTE_DIR/$FDIR
+      endif
+
+      if ("$FLUID" == "y") then
+        echo "htar xvf ${RD}/fluid_${optime}.tar" >> $SCRIPT
+      endif
+      if ("$IFLUID" == "y") then
+        echo "htar xvf ${RD}/ifluid_${optime}.tar" >> $SCRIPT
+      endif
+
+      if ("$SOLID" == "y" || "$ISOLID" == "y") then
+        echo "cd $DIR/$SDIR" >> $SCRIPT
+        set RD = $REMOTE_DIR/$SDIR
+      endif
+
+      if ("$SOLID" == "y") then
+        echo "htar xvf ${RD}/solid_${optime}.tar" >> $SCRIPT
+      endif
+      if ("$ISOLID" == "y") then
+        echo "htar xvf ${RD}/isolid_${optime}.tar" >> $SCRIPT
+      endif
+
+      if ("$BURN" == "y" || "$IBURN" == "y") then
+        echo "cd $DIR/$BDIR" >> $SCRIPT
+        set RD = $REMOTE_DIR/$BDIR
+      endif
+
+      if ("$BURN" == "y") then
+        echo "htar xvf ${RD}/burn_${optime}.tar" >> $SCRIPT
+      endif
+      if ("$IBURN" == "y") then
+        echo "htar xvf ${RD}/iburn_${optime}.tar" >> $SCRIPT
+      endif
+
+    endif
+
+  endif
+
+  if ($i < $ilast) then
+    @ i++
+    goto LOOP2
+  endif
+
+if ($CENTER != "LLNL") then
+  echo "bye" >> $SCRIPT
+  echo "STOP" >> $SCRIPT 
+endif
+echo "exit" >> $SCRIPT
+
+echo ""
+echo -n "Should I execute the script $SCRIPT ? (y/n default = y): "
+set RESPONSE = "$<"
+if ("$RESPONSE" == "") then
+  set RESPONSE = "y"
+endif
+if ("$RESPONSE" == "y") then
+
+# Invoke the script
+
+  echo ""
+  echo "Starting the script to trasfer the files"
+  echo ""
+  chmod u+x $SCRIPT
+  $SCRIPT
+
+endif
+
+echo ""
+echo -n "Should I remove the script $SCRIPT ? (y/n default = y): "
+set RESPONSE = "$<"
+if ("$RESPONSE" == "") then
+  set RESPONSE = "y"
+endif
+if ("$RESPONSE" == "y") then
+  \rm -f $SCRIPT
+endif
+
+exit

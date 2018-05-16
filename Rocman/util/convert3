@@ -1,0 +1,109 @@
+#!/bin/sh
+
+if test $# -ne 1
+then
+ echo "$0 old_control_file"
+ exit 0 
+fi
+
+test ! -f "$1" && echo "Error: $1 not exists" && exit 1
+
+exec < $1
+
+output="RocstarControl.txt.new"
+echo "Generating $output ..."
+exec > $output
+
+read_line() {
+  read line
+   # remove comment
+  line=`echo $line | sed -e 's/#.*$//'`
+   # empty line stops conversion
+  test -z "`echo $line | sed -e 's/ //'`" && exit 0
+}
+
+test_delim() {
+  if echo $line | grep ',' > /dev/null 2>/dev/null
+  then
+    delim=','
+  else
+    delim=' '
+  fi
+}
+
+#line 1
+read_line
+test_delim
+echo $line | awk '{ 
+    if ( $1 == "FullyCoupled" ) 
+      print "CouplingScheme = SolidFluidBurnSPC"; 
+    else if ( $1 == "FluidAlone" ) 
+      print "CouplingScheme = FluidBurnAlone"; 
+    else if ( $1 == "SolidAlone" ) 
+      print "CouplingScheme = SolidAlone"; 
+    print "FluidModule = " $2; 
+    print "SolidModule = " $3; 
+    print "BurnModule = " $4; 
+    print "OutputModule = " $5;  } '
+
+echo
+
+#line 2
+read_line
+test_delim
+echo $line | awk -F"$delim" '{
+    print "InitialTime = " $1;
+    print "MaximumTime = " $2; } '
+
+echo
+
+#line 3
+read_line
+test_delim
+echo $line | awk -F"$delim" '{
+    print "MaxNumPredCorrCycles = " $1;
+    print "MaxNumTimeSteps = " $2; } '
+
+echo
+
+#line 4
+read_line
+test_delim
+echo $line | awk -F"$delim" '{
+    print "TolerTract = " $1;
+    print "TolerMass = " $2;
+    print "TolerVelo = " $3;
+    print "TolerDisp = " $4; } '
+
+echo
+
+#line 5
+read_line
+test_delim
+echo $line | awk -F"$delim" '{
+    print "CurrentTimeStep = " $1;
+    if (NF > 1) print "ZoomFactor = " $2; } '
+
+echo
+
+delim=' '
+
+#line 6
+read_line
+echo $line | awk -F"$delim" '{ print "OutputIntervalTime = " $1; }'
+
+echo
+
+#line 7
+read_line
+echo $line | awk -F"$delim" '{ print "MaxWallTime = " $1; }'
+
+echo
+
+#line 8
+read_line
+echo $line | awk -F"$delim" '{ print "ProfileDir = \"" $1 "\""; }'
+
+echo
+
+

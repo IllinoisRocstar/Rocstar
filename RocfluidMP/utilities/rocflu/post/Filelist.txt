@@ -1,0 +1,140 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.26 2007/04/05 01:13:45 haselbac Exp $
+#
+# Purpose: Filelist for rflupost utility.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003-2005 by the University of Illinois
+#
+################################################################################
+
+SRCCXX+=        main.C
+
+ifeq (,$(findstring NO_TECPLOT,$(FPPFLAGS)))
+  SRCCXX+= 	tecwrap.C
+endif
+
+SRCF90=		RFLU_ModENSIGHT.F90\
+		RFLU_ModENSIGHTUtils.F90\
+		RFLU_ModExtractFlowData.F90\
+		RFLU_ModExtractFlowDataUtils.F90\
+		RFLU_ModMergeRegions.F90\
+		RFLU_ModPlottingVars.F90
+
+ifeq (,$(findstring NO_TECPLOT,$(FPPFLAGS)))
+  SRCF90+= 	RFLU_ModTECPLOT.F90\
+		RFLU_ModTECPLOTUtils.F90
+endif
+
+SRCF90+= 	BuildVersionString.F90\
+		RFLU_AllocateMemoryVert.F90\
+		RFLU_AllocMemSolWrapper.F90\
+		RFLU_AllocMemVertWrapper.F90\
+      		RFLU_ComputeExactFlowError.F90\
+      		RFLU_ComputeExactFlowProbeError.F90\
+      		RFLU_ComputeVertexVariables.F90\
+		RFLU_DeallocateMemoryVert.F90\
+		RFLU_DeallocMemSolWrapper.F90\
+		RFLU_DeallocMemVertWrapper.F90\
+		RFLU_DecideBuildGeometry.F90\
+		RFLU_DecideBuildStencilsWeights.F90\
+		RFLU_InterpolateWrapper.F90\
+		RFLU_MergePostProcessRegions.F90\
+		RFLU_PostProcessRegions.F90\
+		RFLU_PostProcessRegionsCommon1.F90\
+		RFLU_PostProcessRegionsCommon2.F90\
+		RFLU_PostProcessRegions_ENS.F90\
+		RFLU_PrintHeader.F90\
+		RFLU_ReadPostInfo.F90\
+		RFLU_SetPatchPlotFlags.F90\
+		RFLU_WriteVersionString.F90\
+		rflupost.F90
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Filelist.txt,v $
+# Revision 1.26  2007/04/05 01:13:45  haselbac
+# Added entry for RFLU_ModExtractFlowDataUtils.F90
+#
+# Revision 1.25  2006/01/06 22:19:12  haselbac
+# Added entry for RFLU_DecideBuildStencilsWeights.F90
+#
+# Revision 1.24  2005/10/05 20:12:16  haselbac
+# Added entries for new routines
+#
+# Revision 1.23  2005/08/09 01:00:45  haselbac
+# Added entry for RFLU_SetPatchPlotFlags
+#
+# Revision 1.22  2005/05/04 16:32:05  haselbac
+# Changed adding of tecwrap to eliminate problems on machines wo Tecplot
+#
+# Revision 1.21  2005/05/03 20:37:55  haselbac
+# Added entry for tecwrap.C
+#
+# Revision 1.20  2005/05/03 03:12:07  haselbac
+# Added compilation of main.C, removed main.F90
+#
+# Revision 1.19  2005/05/01 14:20:37  haselbac
+# Added entry for RFLU_ModPlottingVars
+#
+# Revision 1.18  2005/04/29 12:51:45  haselbac
+# Added entry for RFLU_ComputeExactFlowProbeError
+#
+# Revision 1.17  2005/04/15 15:08:31  haselbac
+# Removed entries for files required by Charm/FEM
+#
+# Revision 1.16  2004/12/29 21:10:32  haselbac
+# Added entries for new procedures
+#
+# Revision 1.15  2004/10/26 15:18:05  haselbac
+# Added entry for RFLU_ModExtractFlowData.F90
+#
+# Revision 1.14  2004/07/21 14:56:33  haselbac
+# Added RFLU_DecideBuildGeometry, cosmetics
+#                             
+# Revision 1.13  2004/06/16 20:01:42  haselbac       
+# Added RFLU_ModTECPLOTUtils.F90                     
+#
+# Revision 1.12  2004/03/19 21:31:37  haselbac       
+# Removed alloc/dealloc routines                     
+#
+# Revision 1.11  2004/02/26 21:02:31  haselbac       
+# Added/deleted alloc/dealloc routines               
+#
+# Revision 1.10  2004/01/29 22:58:41  haselbac       
+# Added entry for RFLU_ComputeExactFlowError         
+#
+# Revision 1.9  2003/11/25 21:03:52  haselbac        
+# Added entry for RFLU_InterpolateWrapper            
+#
+# Revision 1.8  2003/06/04 22:15:28  haselbac        
+# Rm RFLU_ReadSpecialCells, added RFLU_ReadPostInfo  
+#
+# Revision 1.7  2003/05/05 18:42:11  haselbac        
+# Added new merge routines                           
+#
+# Revision 1.6  2003/04/11 15:15:18  jiao            
+# Changed RFLU_CHARM back to CHARM.                  
+#
+# Revision 1.5  2003/04/01 16:40:09  haselbac        
+# Removed and added routines                         
+#
+# Revision 1.4  2003/03/31 16:20:16  haselbac        
+# Added RFLU_WriteVersionString                      
+#
+# Revision 1.3  2003/03/20 23:36:45  jiao            
+# ACH: Removed trailing blank spaces.                
+#
+# Revision 1.2  2003/03/20 20:15:15  haselbac        
+# Removed Allocate/DeallocateMemory routines         
+#
+# Revision 1.1  2003/03/20 19:26:22  haselbac        
+# Initial revision                                   
+#
+################################################################################

@@ -1,0 +1,49 @@
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\setcounter{equation}{0}
+
+\irsection{Numerical Solution of Unsteady Heat Conduction}{NumSol}
+
+To solve for unsteady heat conduction in \ireq{eq}{eq:sld}, subject to the boundary conditions in \ireq{eqs}{eq:bc1} \textcolor{teal}{-- (\ref{eq:bc3})}, a computational grid is introduced with a cluster of points close to the surface $x=0$. The code uses either an exponential grid or a boundary layer type grid. In either case, let $z=z(x)$ be the mapping. Then \ireq{eq}{eq:sld} transforms to
+
+\begin{equation}
+\rho_c c_p \left( {\partial T\over\partial t} + r_b {\partial T \over \partial z} {dz \over dx} \right) 
+= \lambda_c \left[ {\partial^2 T \over \partial z^2} \left({dz \over dx}\right)^2
++ {\partial T \over \partial z} {d^2 z \over dx^2} \right].
+\end{equation}
+
+The flux boundary condition becomes
+
+\begin{equation}
+{\partial T \over \partial z}{dz \over dx}\left(0^-\right) = g\left(T_s,T_g\right).
+\end{equation}
+
+The transformed unsteady heat equation for the interior points is solved numerically using a simple, first-order time integrator of the form
+
+\begin{equation}
+T^{n+1}=T^n~+~\Delta t\left[ 
+\alpha_c \left( {\partial T \over \partial z} {d^2z \over dx^2}
++ {\partial^2 T \over \partial z^2} \left({dz \over dx}\right)^2 \right)
+- r_b {\partial T \over \partial z} {dz \over dx} \right],
+\label{eq:fotimeint}
+\end{equation}
+
+where $\alpha_c=\lambda_c/(\rho_c c_p)$ is the thermal diffusivity as before. A first-order time integrator is used because the timestep is typically small, and computational speed dictates that the integrator be fast. The spatial derivatives are computed using standard second-order central difference schemes. In all of test simulations, this approach was deemed sufficient.
+
+The surface temperature at timestep $n+1$, i.e., $T_s^{n+1}$, is found from the flux boundary condition.
+Note, however, that the equation is nonlinear in the surface temperature $T_s$. Since the timesteps are small, a full Newton method is not used; rather the $g$ function is expanded about the previous timestep of $T_s$ using Taylor's Theorem:
+
+\begin{equation}
+g(T_s^{n+1},T_g^{n+1})\approx g(T_s^n,T_g^n) +
+\left. {\partial g \over \partial T_s}\right|_{T_s^n}\left(T_s^{n+1}-T_s^n\right).
+\end{equation}
+
+Then using a standard one-sided, second-order finite difference scheme, the updated surface temperature is expressed as
+
+\begin{equation}
+T_s^{n+1}=\frac{ 4T_2^{n+1} - T_3^{n+1} - {2 \Delta z \over dz/dx}g
+ + {2 \Delta z \over dz/dx} {\partial g \over \partial T_s} T_s^{n}}
+{3 + {2 \Delta z \over dz/dx} {\partial g \over \partial T_s} }.
+\end{equation}
+
+The value of $g(T_s^n)$ and $\partial g/\partial T_s(T_s^n)$, which is computed in the subroutine \texttt{GFUN} (\irref{Section}{Update}), depends on the specific conditions selected by the user; a more detailed discussion is presented in \irref{Section}{Input}.

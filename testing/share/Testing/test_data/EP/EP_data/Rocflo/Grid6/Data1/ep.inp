@@ -1,0 +1,126 @@
+
+! Input file
+
+! Flow initialization ----------------------------------------------------------
+
+# INITFLOW
+BLOCK   0  0
+NDUMMY  2
+DENS	1.0
+VELX	0.0
+VELY	0.0
+VELZ 	0.0
+PRESS	1.5E+5
+#
+
+! mapping of blocks to processors ----------------------------------------------
+
+# BLOCKMAP
+NBLOCKS   0      ! no. of blocks per processor (0=automatic mapping)
+#
+
+! grid/solution format ---------------------------------------------------------
+
+# FORMATS
+GRID      0	! 0=ASCII, 1=binary, 2=HDF
+SOLUTION  2	! 0=ASCII, 1=binary, 2=HDF
+#
+
+! viscous/inviscid flow --------------------------------------------------------
+
+# FLOWMODEL
+BLOCK    0  0
+MODEL    0 	! 0 - Euler, 1 - Navier-Stokes
+MOVEGRID 1	! 0 - static grid, 1 - moving grid
+
+! grid motion scheme -----------------------------------------------------------
+
+# GRIDMOTION
+TYPE    0       ! 0=blockwise grid motion, 1=global grid motion
+NITER   5       ! number of Jacobi iterations (if TYPE=1)
+WEIGHT  2.0     ! weighting factor for inverse node distance (if TYPE=1)
+#
+
+! reference values -------------------------------------------------------------
+
+# REFERENCE
+CP	1846.35
+GAMMA	1.2144
+PRLAM    0.45       ! laminar Prandtl number
+#
+
+! probe ------------------------------------------------------------------------
+
+# PROBE
+NUMBER 1
+0 2.00 0.5 0.5      ! block, icell, jcell, kcell (1=first physical cell)
+#
+WRITIME 1.0e-5
+OPENCLOSE 1
+#
+
+! forces -----------------------------------------------------------------------
+
+# FORCES
+TYPE     1       ! 0=no forces calculated, 1=pressure forces, 2=1+viscous forces
+#
+
+! time-stepping control --------------------------------------------------------
+
+# TIMESTEP
+FLOWTYPE  1	! 0 - steady flow, 1 - unsteady flow
+TIMESTEP  1.0E-04 ! Max. physical time step 
+STARTTIME 0.0 ! Current iteration
+MAXTIME   0.2 ! Maximum physical time
+WRITIME   0.001 ! Offset between iterations to store solutions
+PRNTIME   0.00000005 ! Offset between iterations to print convergence 
+#
+
+! multi-physics modules: -------------------------------------------------------
+
+# TURBULENCE
+BLOCK  0  0      ! applies to block ... (0 0 = to all)
+MODEL  0         ! 0=laminar, 1=...
+#
+
+# SPECIES
+BLOCK  0  0      ! applies to block ... (0 0 = to all)
+MODEL  0         ! 0=perfect gas, 1=...
+#
+
+# CONPART
+BLOCK  0  0      ! applies to block ... (0 0 = to all)
+USED   0         ! 0=module not used
+#
+
+# DISPART
+BLOCK  0  0      ! applies to block ... (0 0 = to all)
+USED   0         ! 0=module not used
+#
+
+# RADIATION
+BLOCK  0  0      ! applies to block ... (0 0 = to all)
+USED   0         ! 0=module not used
+#
+
+! numerics ---------------------------------------------------------------------
+
+# MULTIGRID
+START    1       ! at which grid level to start (>0; 1=finest grid)
+CYCLE    0       ! 0=no MG, 1=V-cycle, 2=W-cycle
+REFINE   99999   ! no. of iterations before switching to next finer grid
+#
+
+# NUMERICS
+BLOCK    0  0    ! applies to block ... (0 0 = to all)
+CFL      3.0     ! CFL number
+SMOOCF   -0.7    ! coefficient of implicit residual smoothing (<0 - no smooth.)
+DISCR    0       ! type of space discretization (0=central, 1=Roe, 2=MAPS)
+K2       0.5     ! dissipation coefficient k2 (if discr=0)
+1/K4    128.     ! dissipation coefficient 1/k4 (if discr=0)
+PSWTYPE   1      ! 0=standard pressure switch, 1=TVD type (if discr=0)
+PSWOMEGA  0.1    ! blending coefficient for PSWTYPE=1 (if discr=0)
+ORDER    2       ! 1=first-order, 2=second-order, 4=fourth-order
+LIMFAC   5.0     ! limiter coefficient (if discr=1)
+ENTROPY  0.05    ! entropy correction coefficient (if discr=1)
+#

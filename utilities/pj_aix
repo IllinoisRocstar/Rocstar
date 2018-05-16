@@ -1,0 +1,906 @@
+#!/bin/csh
+#
+# Batch job script creation script for GEN2.5 on IBM SPs at
+# LLNL or SDSC
+#
+# For new jobs, set the previous JOB ID to 0.  For restarts,
+# set it to 1.  At LLNL, it will determine the JOB ID of
+# dependent jobs in the queue for you.
+#
+# At LLNL, this version also saves old output in 
+# *_<PREVIOUS_JOB_ID> directories if you ask it to start a 
+# new run (by setting the OLD JOB ID equal to 0).
+#
+# This version also creates dependent jobs for restarting.
+#
+# This version allows you to modify Rocfrac input parameters.
+#
+# This version puts "Rocpanda" in GENXControl.txt
+#
+# This version prints out all control files, and some input
+# files, including Rocman/RocmanControl.txt.
+#
+# This version has Rocfrac boundary conditions for different
+# problems and uses either the old or new format for the
+# Rocfrac control file.
+#
+# Written by Robert Fiedler, revised 7/10/03.
+#
+#...................................................................
+
+# If necessary, read in the number of CPUs and the run time limit.
+
+unset noclobber
+set CWD = `pwd`
+set OUTDIR = $CWD
+
+if ("$#argv" == "0") then
+  echo -n "Enter total number of CPUs: "
+  set CPUS = "$<"
+else
+  set CPUS = "$1"
+  shift
+endif
+
+if ("$#argv" == "0") then
+  echo -n "Enter number of Rocpanda servers: "
+  set PCPUS = "$<"
+else
+  set PCPUS = "$1"
+  shift
+endif
+set Panda_buf = 230
+if ("$PCPUS" > 0) then
+  set PANDA = "Rocpanda"
+  echo -n "Enter Rocpanda buffer size in MB (${Panda_buf}): "
+  set PANDA_BUF = "$<"
+  if ("$PANDA_BUF" == "") then
+    set PANDA_BUF = "$Panda_buf"
+  endif
+else
+# Use p-threaded version of RocHDF
+  set PANDA = "Rocphdf"
+  set PANDA_BUF = "$Panda_buf"
+endif
+@ CCPUS = $CPUS - $PCPUS
+
+set RESERVE = 10
+echo "${RESERVE} minutes will be reserved for final output"
+if ("$#argv" == "0") then
+  echo -n "Enter total wall clock time limit in minutes: "
+  set TIME = "$<"
+else
+  set TIME = "$1"
+  shift
+endif
+
+if ("$#argv" == "0") then
+  echo -n "Enter program name (genx.x): "
+  set Program = "$<"
+  if ("$Program" == "") then
+    set Program = "genx.x"
+  endif
+else
+  set Program = "$1"
+  shift
+endif
+
+if ("$#argv" == "0") then
+  echo -n "Is this run fluids only? (n): "
+  set FLO_ONLY = "$<"
+  if ("$FLO_ONLY" == "") then
+    set FLO_ONLY = "n"
+  endif
+else
+  set FLO_ONLY = "$1"
+  shift
+endif
+if ("$FLO_ONLY" == "y" || "$FLO_ONLY" == "Y") then
+  set DUMMYFRAC = "-dummyfrac"
+  set COUPLING = "FluidAlone"
+#  set SOLIDS = "RocfracDummy"
+  set SOLIDS = "Rocfrac"
+else
+  set DUMMYFRAC = ""
+  set COUPLING = "FullyCoupled"
+  set SOLIDS = "Rocfrac"
+endif
+
+set Modify_rocfrac = "n"
+set Divisor = "2.0"
+set Modulus = "8.274e+06"
+set Poisson = "0.49985"
+set Density = "1770.0"
+set Solid_ale = "y"
+set Mesh_motion = "0.3"
+set MODIFY_ROCFRAC = "$Modify_rocfrac"
+set DIVISOR = "$Divisor"
+set MODULUS = "$Modulus"
+set POISSON = "$Poisson"
+set DENSITY = "$Density"
+set SOLID_ALE = "$Solid_ale"
+set MESH_MOTION = "$Mesh_motion"
+set FRAC_FORMAT = ""
+set ANALYSIS = "0"
+if ("$DUMMYFRAC" != "-dummyfrac") then
+  echo -n "Modify Rocfrac parameters (${Modify_rocfrac}): "
+  set MODIFY_ROCFRAC = "$<"
+  if ("$MODIFY_ROCFRAC" == "") then
+    set MODIFY_ROCFRAC = "$Modify_rocfrac"
+  endif
+  if ("$MODIFY_ROCFRAC" == "y") then
+    echo -n "Enter Courant Divisor (<0 for new format) (${Divisor}): "
+    set DIVISOR = "$<"
+    if ("$DIVISOR" == "") then
+      set DIVISOR = "$Divisor"
+      set FRAC_FORMAT = ""
+      echo "RocfracControl.txt is assumed to be in the old format"
+    else
+      set DIV = `echo $DIVISOR | sed -e 's/[0-9].*//'`
+      if ("$DIV" == "-") then
+        set FRAC_FORMAT = "new"
+        echo "RocfracControl.txt is assumed to be in the new format"
+        set DIVISOR = `echo $DIVISOR | sed -e 's/-//'`
+        echo "DIVISOR set to $DIVISOR"
+      else
+        set FRAC_FORMAT = ""
+        echo "RocfracControl.txt is assumed to be in the old format"
+      endif
+    endif
+    echo -n "Enter Youngs Modulus (${Modulus}): "
+    set MODULUS = "$<"
+    if ("$MODULUS" == "") then
+      set MODULUS = "$Modulus"
+    endif
+    echo -n "Enter Poisson ratio (${Poisson}): "
+    set POISSON = "$<"
+    if ("$POISSON" == "") then
+      set POISSON = "$Poisson"
+    endif
+    echo -n "Enter Propellant mass density (${Density}): "
+    set DENSITY = "$<"
+    if ("$DENSITY" == "") then
+      set DENSITY = "$Density"
+    endif
+    if ("$FRAC_FORMAT" == "") then
+      echo "Analysis types: -1 NH, 0 A-B, 2 Linear, 10 node-based NH, 11 node-based A-B"
+      set Analysis = "-1"
+      set ANALYSIS = "$Analysis"
+      echo -n "Enter Analysis Type (${Analysis}): "
+      set ANALYSIS = "$<"
+      if ("$ANALYSIS" == "") then
+        set ANALYSIS = "$Analysis"
+      endif
+    else
+      set Analysis = "HYPERELASTIC, ARRUDA-BOYCE"
+      set ANALYSIS = "$Analysis"
+      echo "Analysis types: ELASTIC, NLGEOM = NO"
+      echo "                ELASTIC, NLGEOM = YES"
+      echo "                HYPERELASTIC, NEOHOOKINC"
+      echo "                HYPERELASTIC, ARRUDA-BOYCE"
+      echo -n "Enter Analysis Type (${Analysis}): "
+      set ANALYSIS = "$<"
+      if ("$ANALYSIS" == "") then
+        set ANALYSIS = "$Analysis"
+      endif
+    endif
+    echo -n "ALE in the solid (${Solid_ale}): "
+    set SOLID_ALE = "$<"
+    if ("$SOLID_ALE" == "") then
+      set SOLID_ALE = "$Solid_ale"
+    endif
+    if ("$SOLID_ALE" == "y") then
+      echo -n "Enter mesh motion parameter (${Mesh_motion}): "
+      set MESH_MOTION = "$<"
+      if ("$MESH_MOTION" == "") then
+        set MESH_MOTION = "$Mesh_motion"
+      endif
+    else
+      set MESH_MOTION = "$Mesh_motion"
+    endif
+  endif
+endif
+
+# Select physics applications and code options
+set FLUIDS = Rocflo
+set BURN = RocburnAPN
+set Verbose = 0
+if ($Verbose > 0) then
+  set VERBOSE = "-v $Verbose"
+else
+  set VERBOSE = ""
+endif
+
+set Problem_default = Scalability
+if ("$#argv" == "0") then
+  echo -n "Enter problem name (${Problem_default}): "
+  set Problem = "$<"
+  if ("$Problem" == "") then
+    set Problem = "$Problem_default"
+  endif
+else
+  set Problem = "$1"
+  shift
+endif
+
+if ("$#argv" == "0") then
+  if ("$DUMMYFRAC" == "-dummyfrac") then
+    set time_step = 1.0e-06
+  else
+    set time_step = 1.0e-06
+  endif
+  echo -n "Enter system time step (${time_step}): "
+  set Time_step = "$<"
+  if ("$Time_step" == "") then
+    set Time_step = "$time_step"
+  endif
+else
+  set Time_step = "$1"
+  shift
+endif
+
+if ("$#argv" == "0") then
+  echo -n "Enter physical problem end time (1.0e-05): "
+  set End_time = "$<"
+  if ("$End_time" == "") then
+    set End_time = "1.0e-05"
+  endif
+else
+  set End_time = "$1"
+  shift
+endif
+
+if ("$#argv" == "0") then
+  echo -n "Enter output interval (1.0e-03): "
+  set Output_interval = "$<"
+  if ("$Output_interval" == "") then
+    set Output_interval = "1.0e-03"
+  endif
+else
+  set Output_interval = "$1"
+  shift
+endif
+
+set Jobname_default = SCA
+if ("$#argv" == "0") then
+  echo -n "Enter job name (${Jobname_default}): "
+  set Jobname = "$<"
+  if ("$Jobname" == "") then
+    set Jobname = "$Jobname_default"
+  endif
+else
+  set Jobname = "$1"
+  shift
+endif
+
+set MACHINE = "`hostname | grep blue`"
+if ("$MACHINE" == "") then
+   set MACHINE = "`hostname | grep frost`"
+   if ("$MACHINE" == "") then
+     set MACHINE = "`hostname | grep snow`"
+     if ("$MACHINE" == "") then
+       set MACHINE = "`hostname | grep horizon`"
+       if ("$MACHINE" == "") then
+         set TPN = "32"
+         set GP  = "/scratch/users"
+         set HOST = copper
+         set CLASS = debug
+       else
+         set TPN = "8"
+         set GP  = "/gpfs"
+         set HOST = horizon
+         set OUTDIR = ${HOME}/gen2_5/Jobs
+         set CLASS = high
+       endif
+     else
+       set TPN = "8"
+       set GP  = "/p/gw1"
+       set HOST = snow
+     endif
+   else
+     set TPN = "16"
+     set GP  = "/p/gf1"
+     set HOST = frost
+   endif
+else
+   set TPN = "4"
+   set GP  = "/p/gb1"
+   set HOST = blue
+endif
+
+if ("$#argv" == "0") then
+  if ("$HOST" != "horizon" && "$HOST" != "copper") then
+    set Jid = (`\pstat -m $HOST -u $LOGNAME | grep $Jobname | tail -n 1`)
+  else
+    set Jid = ""
+  endif
+  if ("$Jid" == "") then
+    set Jid = ("1")
+  endif
+  echo -n "Job ID of previous run (${Jid[1]}): "
+  set JID = "$<"
+  if ("$JID" == "") then
+    set JID = "$Jid[1]"
+  endif
+else
+  set JID = "$1"
+  shift
+endif
+
+if ("$HOST" != "horizon" && "$HOST" != "copper") then
+  if ("$#argv" == "0") then
+    set Jobs = 1
+    echo -n "How many identical jobs to submit (${Jobs}): "
+    set JOBS = "$<"
+    if ("$JOBS" == "") then
+      set JOBS = "$Jobs"
+    endif
+  else
+    set JOBS = "$1"
+    shift
+  endif
+else
+  set JOBS = "1"
+endif
+
+set jcount = 0
+
+LOOP:
+
+@ jcount++
+if ("$HOST" != horizon && "$HOST" != "copper") then
+  if ($jcount > 1) then
+    set Jid = (`\pstat -m $HOST -u $LOGNAME | grep $Jobname | tail -n 1`)
+    set JID = "$Jid[1]"
+  endif
+else
+  set JID = 1
+endif
+
+#set NODES = `expr $CPUS / $TPN + $CPUS % $TPN`
+set NODES = `expr $CPUS / $TPN`
+set EXTRA = `expr $NODES \* $TPN`
+if ("$EXTRA" != "$CPUS") then
+  @ NODES = $NODES + 1
+endif 
+#set NODES = `expr $CPUS / 2 + $CPUS % 2`
+set FILE = "pjob_${CPUS}p"
+set JOBNAME = "$Jobname"
+
+set TPN0 = $TPN
+if ("$TPN" > "$CPUS") then
+   set TPN = "$CPUS"
+endif
+
+# Set code wall time, add reserve for final output and overhead
+set DAYS = 0
+set HOURS = 0
+set MINUTES = `expr $TIME - 1`
+set MAXMINUTES = `expr $DAYS \* 1440 + $HOURS \* 60 + $MINUTES`
+set MAXSECONDS = `expr $MAXMINUTES \* 60 - $RESERVE \* 60`
+#
+# Write stuff from here down to the "WHOA" near the bottom into
+# the batch job script file.
+#
+# Check the definitions of directories carefully below.  You
+# will be shown the script before it is submitted, so you will
+# have a chance to try again.
+#
+if ("$HOST" != "horizon" && "$HOST" != "copper") then
+# LLNL
+
+  cat <<WHOA >! $FILE
+#!/bin/csh 
+#PSUB -r ${JOBNAME}${CCPUS}     # Job name 
+#PSUB -ln $NODES        # Number of nodes 
+#PSUB -g ${CPUS}us@dist # Number of tasks [protocol][@layout]
+#PSUB -tM ${MAXMINUTES}m # Wall time limit (minutes)
+#PSUB -b illinois       # Bank to use 
+#PSUB -c pbatch         # Constrain to pdebug or pbatch node pool
+#PSUB -c ${HOST}        # Constrain to this machine
+#PSUB -eo               # Combine stderr and stdout 
+#PSUB -me               # Send mail at job completion
+#PSUB -lc 0             # Limit core file size
+#PSUB -np               # Non preemptable
+WHOA
+
+  if ("$JID" != "0") then
+    echo "#PSUB -d $JID" >> $FILE
+  endif
+
+  cat <<WHOA >> $FILE
+echo "Request \$PCS_REQID"  # Display request ID 
+echo "Beginning at"
+set echo
+date
+echo ""
+
+# Help prevent /var/tmp from filling up
+setenv TMPDIR /var/tmp/\$LOADL_STEP_ID
+
+# If not compiled with LLNL_COMPILE_SINGLE_TREADED set to TRUE, use:
+#setenv MP_SINGLE_THREAD "yes"
+unsetenv MP_SINGLE_THREAD 
+
+#unsetenv MPI_TIMEOUT
+#setenv MP_INFOLEVEL 4
+#setenv MP_S_CHECK_PARITY "yes"
+setenv MP_WAIT_MODE "yield"
+WHOA
+
+else
+# horizon or copper
+
+  cat <<WHOA > $FILE
+#!/usr/bin/csh 
+#@ output = ${JOBNAME}${CCPUS}.o
+#@ error = ${JOBNAME}${CCPUS}.o
+#@ initialdir = ${OUTDIR}
+#@ job_type = parallel
+#@ notify_user = ${LOGNAME}
+#@ node_usage = shared
+#@ node = $NODES
+#@ total_tasks = $CPUS
+#@ resources = ConsumableCpus(1) ConsumableMemory(1600Mb)
+#@ notification = error
+#@ notification = complete
+#@ wall_clock_limit = 00:${MAXMINUTES}:00
+#@ class = $CLASS
+#@ queue
+WHOA
+
+endif
+# Machine
+
+cat <<WHOA >> $FILE
+
+set PROGRAM = "$Program"
+
+set PROBLEM = "$Problem"
+
+set END_TIME = "$End_time"
+#if ("\$PROBLEM" == "Scalability") then
+#  set STEPS_MAX = 10
+#else
+  set STEPS_MAX = 10000000
+#endif
+set SOLIDS_TO_FLUIDS = 1
+set TIME_STEP = "$Time_step"
+set OUTPUT_INTERVAL = "$Output_interval"
+set MAX_ITERS = 1
+set TOLS = "0.001, 0.001, 0.001, 0.001"
+
+# Add zeros to CPUS, if needed, to make nicer names
+set NCPUS = "$CCPUS"
+if ($CCPUS < 100) then
+  set NCPUS = "0\${NCPUS}"
+endif
+if ($CCPUS < 10) then
+  set NCPUS = "0\${NCPUS}"
+endif
+
+set NFILES = $CCPUS
+
+set GPFS = "${GP}/${LOGNAME}/gen2_5-data/\${PROBLEM}"
+set NFS = "/nfs/tmp2/${LOGNAME}/genx/Codes"
+
+set GEN2_SRC  = \${HOME}/genx/Codes
+#set GEN2_SRC  = \${HOME}/gen2_5/Solver
+#set GEN2_SRC  = /nfs/tmp2/${LOGNAME}/genx/Codes
+
+set GEN2_INPUT_DATA = \${GPFS}/\${NCPUS}procs
+#set GEN2_INPUT_DATA = \${NFS}/\${PROBLEM}/\${NCPUS}procs
+
+#set GEN2_TIMING_DATA = \${NFS}/\${NCPUS}procs_timing_${HOST}
+set GEN2_TIMING_DATA = \${GPFS}/\${NCPUS}procs_timing_${HOST}
+
+# Define working directories
+
+set GEN2_IN_DIR = "\$GEN2_INPUT_DATA"
+
+#setenv MP_COREDIR \$GEN2_OUTDIR  # Dump core somewhere with space
+#setenv MP_STDOUTMODE "0"  # Let's hear from process 0 only
+
+# Create directories, if needed
+if (! -d \$GPFS) then
+#    mkdir -p \$GPFS
+   exit
+endif
+if (! -d \$GEN2_TIMING_DATA) then
+  mkdir -p \$GEN2_TIMING_DATA
+endif
+
+# Check the input directory
+if (! -d "\${GEN2_IN_DIR}") then
+   cd \$GPFS
+   if (-e "\${NCPUS}procs.tar") then
+      tar xf \${NCPUS}procs.tar
+   else
+      exit
+   endif
+endif
+
+# Go to the input directory
+cd \${GEN2_IN_DIR}
+
+# Uncompress files, create fluids binary mesh files
+#prep_data
+
+# Get the last output dump time from the Rocflo log file
+if (-e GENX.restart.info && $JID != 0) then
+  set DUMP = (\`tail -n 1 GENX.restart.info\`)
+  if ("\$#DUMP" != 2) then
+    set RESTART_TIME = "0."
+  else
+    set RESTART_TIME = "\$DUMP[2]"
+  endif
+else
+  set RESTART_TIME = "0."
+endif
+
+set ROCFLO_PREFIX = (\`head -1 Rocflo/RocfloControl.txt\`)
+if (-d Rocfrac) then
+  if ("$FRAC_FORMAT" == "") then
+    set ROCFRAC_PREFIX = (\`head -2 Rocfrac/RocfracControl.txt\`)
+  else
+    set ROCFRAC_PREFIX = (\`head -11 Rocfrac/RocfracControl.txt | tail -n 1\`)
+  endif
+else
+  set ROCFRAC_PREFIX = ""
+endif
+
+if ("\$RESTART_TIME" == "0." && "$HOST" != "horizon" && "$HOST" != "copper") then
+# 
+# Save the output from the previous run (LLNL only)
+#
+# Get previous Job ID
+#
+  cd \${HOME}/genx
+#
+# Do not find this job's file
+#
+#  set OLD_JOB = "\`ls -rt ${JOBNAME}${CCPUS}.o* | tail -n 1\`"
+  set OLD_JOB = "\`ls -rt ${JOBNAME}${CCPUS}.o* | tail -n 2 | head -1\`"
+  if ("\$OLD_JOB" == "") then
+    set OLD_JOB = "0"
+  else
+    set OLD_JOB = "\`echo \$OLD_JOB | sed -e 's/${JOBNAME}${CCPUS}.o//'\`"
+  endif
+  cd \${GEN2_IN_DIR}
+
+  if ("\$OLD_JOB" != "0") then
+    foreach Rocdir (Rocfrac RocburnAPN Rocflo)
+      if (-d \$Rocdir) then
+        cd \$Rocdir
+        if (! -e HDFout_\${OLD_JOB}) then
+          mv HDFout HDFout_\${OLD_JOB}
+          mkdir HDFout
+        endif
+        if ("\$Rocdir" == "Rocfrac") then
+          if (! -e Restart_\${OLD_JOB}) then
+            mkdir Restart_\${OLD_JOB}
+            mv InputSummary.res Restart_\${OLD_JOB}
+          endif
+        endif
+        if ("\$Rocdir" == "Rocflo") then
+          if (! -e Probe_\${OLD_JOB}) then
+            if (-e "\${ROCFLO_PREFIX}.prb_0001") then
+              mkdir Probe_\${OLD_JOB}
+              mv *.prb* Probe_\${OLD_JOB}
+            endif
+          endif
+        endif
+        cd ..
+      endif
+    end
+    if (! -e Restart_\${OLD_JOB}) then
+      mkdir Restart_\${OLD_JOB}
+      mv GENX.restart.info Restart_\${OLD_JOB}
+      cp *.txt Restart_\${OLD_JOB}
+    endif
+  endif
+endif
+#
+
+# Copy the program to the input directory
+#if (! -e \${PROGRAM}) then
+#  cp \${GEN2_SRC}/\${PROGRAM} \${PROGRAM}
+  ln -sf \${GEN2_SRC}/\${PROGRAM} \${PROGRAM}
+#endif
+
+# Edit the (original) input files to specify output directories, etc.
+#
+# Put the correct number of steps to take, output time interval,
+# run time limit, timing data directory etc. into 
+# GENXControl.txt
+#
+/bin/ex GENXControl.txt << STP
+1,8d
+0a
+$COUPLING $FLUIDS $SOLIDS $BURN $PANDA
+\${RESTART_TIME}, \${END_TIME}
+\${MAX_ITERS}, \${STEPS_MAX}
+\${TOLS}
+\${TIME_STEP}
+\${OUTPUT_INTERVAL}
+$MAXSECONDS
+\${GEN2_TIMING_DATA}/
+.
+wq
+STP
+echo ""
+echo "Task 0: cat GENXControl.txt"
+cat GENXControl.txt
+echo ""
+
+if ("$PCPUS" > 0) then
+cat <<STP >! RocpandaControl.txt 
+C ${CCPUS}
+S ${PCPUS}
+M 1
+D . d
+B ${PANDA_BUF}
+STP
+
+echo ""
+echo "Task 0: cat RocpandaControl.txt"
+cat RocpandaControl.txt
+echo ""
+endif
+
+if (-d Rocfrac) then
+  if ("$MODIFY_ROCFRAC" == "y") then
+    if ("$FRAC_FORMAT" != "") then
+# Edit the Rocfrac control file -- new format
+      cat <<STP >! Rocfrac/RocfracControl.txt
+** Structure of Control File
+** ---------------------------
+**
+** Lines with '**' in the 1st two columns indicate comments
+** Lines with '*' in the 1st column indicates keyword 
+**
+** PREFIX: 
+** Directory name containing Mesh input files
+**
+*PREFIX
+\${ROCFRAC_PREFIX}
+**
+** SCALE FACTOR: set this parameter equal to the factor that is used 
+**   to scale the time increment computed by Rocfrac. Default setting 
+**   is 1.0. 
+**
+*DYNAMIC, SCALE FACTOR = ${DIVISOR}
+**
+** Select the 4-node tetrahedral
+**
+*ELEMENT,TYPE=V3D4
+**
+**
+** ELASTIC 
+** Young's Modulus, Poisson's Ratio, Density, Expansion Coeffs
+**
+**
+** HYPERELASTIC, ARRUDA-BOYCE or NEOHOOKINC
+** Young's Modulus, Poisson's Ratio, Density, Expansion Coeffs
+**
+*${ANALYSIS}
+1
+${MODULUS}  ${POISSON}  ${DENSITY}  0.0
+**
+** Boundary Conditions
+**
+STP
+
+      if ("$SOLID_ALE" == "y") then
+        cat <<STP >> Rocfrac/RocfracControl.txt
+** FOR ALE:
+*ALE
+${MESH_MOTION}
+STP
+      else
+cat <<STP >> Rocfrac/RocfracControl.txt
+** FOR ALE:
+** Uncomment next two lines and set Scale Factor = 0.25
+**ALE
+**${MESH_MOTION} 
+STP
+      endif
+# ALE
+
+    else
+# Edit the Rocfrac control file -- old format
+      cat <<STP >! Rocfrac/RocfracControl.txt
+*PREFIX
+\${ROCFRAC_PREFIX}
+*NRUN
+${DIVISOR} 4
+*MATVOL (Young's Modulus, Poisson's Ratio, Density, Thermal Expansion, Analysis type)
+1
+${MODULUS}  ${POISSON}  ${DENSITY}  0.0  ${ANALYSIS}
+STP
+
+      if ("$SOLID_ALE" == "y") then
+       cat <<STP >> Rocfrac/RocfracControl.txt
+*ALE
+${MESH_MOTION}
+STP
+      endif
+#ALE
+
+    endif
+# Format
+
+# The boundary conditions are problem dependent!
+    switch (\$PROBLEM)
+
+      case TitanIV:
+        cat <<STP >> Rocfrac/RocfracControl.txt
+*BOUNDARY
+1
+1 0 0 0 0. 0. 0.
+STP
+        breaksw
+
+      case Scalability:
+        cat <<STP >> Rocfrac/RocfracControl.txt
+*BOUNDARY
+2
+1 0 0 0  0. 0. 0.
+2 1 1 0  0. 0. 0.
+*BOUNDARYMM
+2
+1 0 0 0  0. 0. 0.
+2 1 1 0  0. 0. 0.
+STP
+        breaksw
+
+      case Arienti:
+        cat <<STP >> Rocfrac/RocfracControl.txt
+*BOUNDARY
+4
+1 0 0 0  0. 0. 0.
+2 0 1 1  0. 0. 0.
+3 1 1 0  0. 0. 0.
+4 0 1 0  0. 0. 0.
+***BOUNDARY
+**4
+**1 1 1 0  0. 0. 0.
+**2 1 1 0  0. 0. 0.
+**3 1 1 0  0. 0. 0.
+**4 1 1 0  0. 0. 0.
+STP
+        breaksw
+
+      case RSRM:
+        cat <<STP >> Rocfrac/RocfracControl.txt
+*BOUNDARY
+1
+1 0 0 0  0. 0. 0.
+*BOUNDARYMM
+2
+1 1 0 0  0. 0. 0.
+2 0 1 1  0. 0. 0.
+STP
+        breaksw
+
+      default:
+        echo "You need to add the boundary conditions for \${PROBLEM} to this script"
+        breaksw
+
+    endsw
+
+    cat <<STP >> Rocfrac/RocfracControl.txt
+*END
+*MESHSOFT (Choices: TetMesh, Patran, Ansys)
+Patran
+*END
+STP
+
+  endif
+# Modify
+
+echo ""
+echo "Task 0: cat Rocfrac/RocfracControl.txt"
+cat Rocfrac/RocfracControl.txt
+echo ""
+
+endif
+# Directory
+
+echo "Task 0: cat Rocflo/\${ROCFLO_PREFIX}.inp"
+cat Rocflo/\${ROCFLO_PREFIX}.inp
+echo ""
+
+echo "Task 0: cat RocburnAPN/Rocburn_APN_0d.dat"
+cat RocburnAPN/Rocburn_APN_0d.dat
+echo ""
+
+if (-d Rocman) then
+echo "Task 0: cat Rocman/RocmanControl.txt"
+cat Rocman/RocmanControl.txt
+echo ""
+endif
+
+# Run the code
+setenv XLFRTEOPTS "err_recovery=no"  # Turn off I/O error recovery
+#\${GEN2_SRC}/\${PROGRAM}
+\${PROGRAM} ${VERBOSE}
+
+echo ""
+echo "The script made it past running \${PROGRAM}"
+
+date
+
+# Alter the state of the next dependent job to be sure we will
+# retain the nodes that ran this one.
+if ("$HOST" != "horizon" && "$HOST" != "copper") then
+  set Jid = (\`\\pstat -m $HOST -u $LOGNAME | grep DEPEND | grep $JOBNAME | head -1\`)
+  if ("\$Jid" != "") then
+    palter -f -n \$Jid[1] -d 0
+    sleep 30
+  endif
+endif
+
+exit
+WHOA
+
+if ($jcount == 1) then
+
+echo ""
+echo -n "Do you wish to view the job script? (n): "
+set VIEW = "$<"
+if ("$VIEW" == "y") then
+  echo ""
+  echo "Here is the batch file for $CPUS processors:"
+  echo ""
+  cat $FILE
+endif
+
+echo ""
+echo -n "Do you wish to submit the job(s)? (y/n/e[xpedite]): "
+set SUBMIT = "$<"
+
+endif
+
+if ("$SUBMIT" == "" || "$SUBMIT" == y) then
+  if ("$HOST" != "horizon" && "$HOST" != "copper") then
+    echo "psub $FILE"
+    psub $FILE
+  else
+    echo "llsubmit $FILE"
+    llsubmit $FILE
+  endif
+else
+  if ("$SUBMIT" == "e" || "$SUBMIT" == "expedite" || "$SUBMIT" == "x") then
+    if ("$HOST" != "horizon" && "$HOST" != "copper") then
+      echo ""
+#      echo "psub -exempt "TOOLONG,CPU&TIME,CPUS>MAX" -p 1.0 $FILE"
+#      psub -exempt "TOOLONG,CPU&TIME,CPUS>MAX" -p 1.0 $FILE
+      echo "psub -expedite $FILE"
+      psub -expedite $FILE
+    else
+      echo ""
+      echo "editing $FILE to change priority to high"
+      echo ""
+      ex $FILE <<END
+/class =
+d
+i
+#@ class = $CLASS
+.
+wq
+END
+      echo ""
+      echo "llsubmit $FILE"
+      llsubmit $FILE
+    endif
+  else
+    echo "$FILE not submitted"
+  endif
+endif
+
+if ($jcount < $JOBS) then
+  goto LOOP
+endif
+
+exit

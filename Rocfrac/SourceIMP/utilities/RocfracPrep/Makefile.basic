@@ -1,0 +1,51 @@
+# Makefile for Rocfrac
+
+LIBDIR		= $(PREFIX)/lib
+BINDIR		= .
+
+vpath	%.f90	$(srcdir)
+vpath   %.so    $(LIBDIR)
+vpath   %.a     $(LIBDIR)
+
+#CPPFLAGS	= -I$(COMHOME)/include -w -Rb -Rc -Rp
+
+CPPFLAGS	= -I$(COMHOME)/include -w
+
+
+OBJF90 	= CharKeyWrd.o \
+        GENII_LinkedList.o \
+	DataTypeLinkList.o \
+	Linked_List2.o \
+	meshdata.o \
+	linked_list.o \
+	CommGloble.o \
+	RocfracPrep.o \
+	readinp.o \
+	read_patran.o \
+	NewCommList.o \
+	2DmeshOverlay.o \
+	2Dmesh.o
+
+EXEC = $(BINDIR)/rfracprep
+
+# include the common makefile components
+COMHOME	= $(top_srcdir)/Roccom
+BUILD_COMHOME	= ../../../Roccom
+.NOTPARALLEL: $(EXEC)
+
+#CHKOBJS	= $(OBJF90)
+include $(COMHOME)/Makefile.common
+
+# also include makefile for metis
+include $(COMHOME)/External/Makefile.metis
+
+all : $(EXEC)
+
+##LDLIBS := -lRocout -lRocin $(LDLIBS) -lmetis
+LDLIBS := -lRocout -lRocin $(LDLIBS) -lxl -lmetis
+$(EXEC) : $(OBJF90) $(LIBMETIS)
+	$(LINKF90MAIN) $(FFLAGS) -o $@ $(OBJF90) $(LDLIBS)
+
+#==================== Clean =========================
+clean:
+	rm -f $(OBJF90) *.mod $(EXEC)

@@ -1,0 +1,9 @@
+0.77    a in rb=a*P^n,  rb in cm/sec and P in atm, a_p (cm/sec)
+0.62       n in rb=a*P^n,  rb in cm/sec and P in atm, n_p
+1          Maximum_number_of_spatial_nodes,_nxmax
+2916.0     adiabatic flame temperature, Tf_adiabatic (K)
+298.00     initial temperature        , To_read      (K)
+Rocburn_2D_Output/Rocburn_APN
+
+Solid Propellant Properties for ARC Attitude Control Motor (ACM) per
+AIAA UQ paper by Brandyberry from Summer 2006.

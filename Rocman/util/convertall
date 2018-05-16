@@ -1,0 +1,16 @@
+#!/bin/sh
+
+dir=`dirname $0`
+if test ! -d $dir
+then
+  echo "$dir not found!"
+  exir 1
+fi
+absdir=`cd $dir; pwd`
+
+$absdir/convert3 RocstarControl.txt
+cd Rocman
+if test -f RocmanControl.txt
+then
+  $absdir/convertman3 RocmanControl.txt
+fi

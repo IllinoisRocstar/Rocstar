@@ -1,0 +1,124 @@
+################################################################################
+#
+# $Id: Filelist.txt,v 1.18 2006/05/01 21:02:26 haselbac Exp $
+#
+# Purpose: Filelist for RocfluMP solver.
+#
+# Description: None.
+#
+# Notes: None.
+#
+# Copyright: (c) 2003-2005 by the University of Illinois
+#
+################################################################################
+
+SRCF90+=        BuildVersionString.F90\
+                RFLU_AllocateMemory.F90\
+                RFLU_AllocateMemoryWrapper.F90\
+		RFLU_CentralFirstPatch.F90\
+                RFLU_CentralFirstPatch_GL.F90\
+		RFLU_CentralSecondPatch.F90\
+                RFLU_CentralSecondPatch_GL.F90\
+                RFLU_CheckGridSpeeds.F90\
+                RFLU_ComputeEnerDissOLES.F90\
+		RFLU_ComputeFluxInv.F90\
+                RFLU_ComputeGridSpeeds.F90\
+                RFLU_ComputeIntegral1OLES.F90\
+                RFLU_ComputeIntegral2OLES.F90\
+                RFLU_ComputeIntegral3OLES.F90\
+                RFLU_ComputeIntegral4OLES.F90\
+                RFLU_ComputeIntegral5OLES.F90\
+                RFLU_ComputeIntegrals1245OLES.F90\
+                RFLU_ComputeIntegralValues.F90\
+                RFLU_ComputeWeightsOLES.F90\
+                RFLU_ConvFluxOLES.F90\
+                RFLU_DeallocateMemory.F90\
+                RFLU_DeallocateMemoryWrapper.F90\
+                RFLU_EndFlowSolver.F90\
+		RFLU_ExplicitMultiStage.F90\
+                RFLU_FlowSolver.F90\
+                RFLU_GetDeformationWrapper.F90\
+                RFLU_InitFlowSolver.F90\
+                RFLU_InvFlux_I.F90\
+                RFLU_MinimumTimeStep.F90\
+                RFLU_MoveGridDisp.F90\
+                RFLU_MoveGridWrapper.F90\
+                RFLU_MoveGridXyz.F90\
+                RFLU_OpenConverFile.F90\
+                RFLU_OpenStatsFileOLES.F90\
+                RFLU_OpenTotalMassFile.F90\
+                RFLU_PrintChangeInfo.F90\
+                RFLU_PrintHeader.F90\
+		RFLU_PrintWriteConvergence.F90\
+                RFLU_ReadIntegrals1245OLES.F90\
+                RFLU_ResidualNorm.F90\
+                RFLU_SetMoveGridOptions.F90\
+                RFLU_TimeStepInviscid.F90\
+                RFLU_TimeStepping.F90\
+                RFLU_TimeStepViscous.F90\
+                RFLU_USER_GetDeformation.F90\
+		RFLU_UpdateBoundaryValues.F90\
+                RFLU_WriteIntegrals1245OLES.F90\
+                RFLU_WriteStatsFileOLES.F90\
+		RFLU_WriteVersionString.F90
+
+################################################################################
+#
+# RCS Revision history:
+#
+# $Log: Filelist.txt,v $
+# Revision 1.18  2006/05/01 21:02:26  haselbac
+# Added entry for RFLU_ComputeFluxInv.F90
+#
+# Revision 1.17  2006/03/26 20:22:10  haselbac
+# Added entries for GL patch flux routines
+#
+# Revision 1.16  2005/05/16 20:43:28  haselbac
+# Removed/added entries
+#
+# Revision 1.15  2005/04/29 12:46:37  haselbac
+# Removed entries for probe routines
+#
+# Revision 1.14  2005/04/15 15:07:12  haselbac
+# Added entry for RFLU_PrintWriteConvergence, removed entry for RFLU_UpdateDummyCells
+#                                      
+# Revision 1.13  2004/12/19 15:48:30  haselbac                
+# Added entry for RFLU_InvFlux_I                              
+#
+# Revision 1.12  2004/11/03 17:13:13  haselbac                
+# Removed RFLU_HACK_UpdateVirtualCells                        
+#
+# Revision 1.11  2004/02/13 02:58:31  haselbac                
+# Added entries for fast Roe routines                         
+#
+# Revision 1.10  2004/01/29 22:59:14  haselbac                
+# Added entries for RFLU_RoeFirst and RFLU_RoeSecond          
+#
+# Revision 1.9  2003/12/04 03:29:56  haselbac                 
+# Added entries for second-order and viscous flux routines    
+#
+# Revision 1.8  2003/11/25 21:04:33  haselbac                 
+# Added entry for RFLU_UpdateDummyCells                       
+#
+# Revision 1.7  2003/10/03 20:46:24  haselbac                 
+# Added RFLU_UpdateBoundaryValues                             
+#
+# Revision 1.6  2003/06/04 22:12:07  haselbac                 
+# Added RFLU_CentralFirstPatch, rm RFLU_RoeCentralFirstPatch  
+#
+# Revision 1.5  2003/05/16 22:07:29  haselbac                 
+# Added RFLU_HLLCFirst                                        
+#
+# Revision 1.4  2003/04/29 22:47:07  haselbac                 
+# Removed RFLU_CheckMoveGridInput                             
+#
+# Revision 1.3  2003/04/07 14:26:08  haselbac                 
+# Added RFLU_PrintProbeInfo                                   
+#
+# Revision 1.2  2003/03/31 16:15:52  haselbac                 
+# Added/removed several routines                              
+#
+# Revision 1.1  2003/03/20 19:26:21  haselbac                 
+# Initial revision                                            
+#
+################################################################################

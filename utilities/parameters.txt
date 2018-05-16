@@ -1,0 +1,11 @@
+ 0.600                 n in r_b = a_p * (P/P_ref)^n
+ 0.00113               a_p
+ 1.013e+05             P_ref -- reference pressure
+ 1760.0                solid density
+ 1.18                  gamma
+ 2552.82               Heat capacity at constant P
+ 2859.                 flame temperature
+ 0.13916               burning surface area (approx)
+ 1.5761e-02              throat radius
+ 4.78663e-02           exit radius
+ 100000.               Ambient pressure (Pa)

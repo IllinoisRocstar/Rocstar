@@ -1,0 +1,27 @@
+
+# BC_INJECT
+BLOCK     0  0   ! applies to block ... (0 0 = to all)
+PATCH     0  0   ! applies to patch ... (0 0 = to all patches of BLOCK)
+EXTRAPOL  0      ! order of extrapolation to dummy cells (0 or 1)
+DISTRIB   0      ! single value (=0) or distribution (=1)
+MFRATE    5.7429 ! mass flow rate [kg/(m^2*s)] (if distrib=0)
+MAXCHANGE 0.2
+TEMP      2855.0 ! injection temperature [K] (if distrib=0)
+#
+
+# BC_OUTFLOW
+BLOCK     0  0   ! applies to block ... (0 0 = to all)
+PATCH     0  0   ! applies to patch ... (0 0 = to all patches from above range of blocks)
+TYPE      0      ! 0=supersonic only, 1=subsonic only, 2=mixed
+DISTRIB   0      ! single value (=0) or distribution (=1)
+MODEL     1      ! 0=standard model, 1=partly non-reflecting
+PRESS     1.0E+5 ! 7584500.  ! static pressure [Pa] (if type=1 or 2)
+NRCOEF    1.0    ! non-reflecting coefficient (default=1.)
+#
+
+# BC_SLIPW
+BLOCK     0  0   ! applies to block ... (0 0 = to all)
+PATCH     0  0   ! applies to patch ... (0 0 = to all patches of BLOCK)
+EXTRAPOL  0      ! order of extrapolation to dummy cells (0 or 1)
+MAXCHANGE 0.2
+#

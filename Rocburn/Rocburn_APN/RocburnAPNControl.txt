@@ -1,0 +1,22 @@
+7.7300    a in rb=a*P^n,  rb in cm/sec and P in atm, a_p (cm/sec)
+0.62       n in rb=a*P^n,  rb in cm/sec and P in atm, n_p
+1          Maximum_number_of_spatial_nodes,_nxmax
+2916.0     adiabatic flame temperature, Tf_adiabatic (K)
+298.00     initial temperature        , To_read      (K)
+0.0470     xmax, max x value for this propellant type (m)
+100.0      a in rb=a*P^n,  rb in cm/sec and P in atm, a_p (cm/sec)
+0.0        n in rb=a*P^n,  rb in cm/sec and P in atm, n_p
+1          Maximum_number_of_spatial_nodes,_nxmax
+ 800.0     adiabatic flame temperature, Tf_adiabatic (K)
+298.00     initial temperature        , To_read      (K)
+0.5000     xmax, max x value for this propellant type (m)
+
+
+Rocburn_2D_Output/Rocburn_APN
+
+Solid Propellant Properties for ARC Attitude Control Motor (ACM) per John
+Spark's e-mail of 8/28/2002.
+
+The first material has the nominal propellant burn rate x 10.
+The second material is the eroding nozzle (constant rate, set too high)
+

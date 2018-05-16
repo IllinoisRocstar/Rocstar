@@ -1,0 +1,296 @@
+%&pdfLaTeX
+% !TEX encoding = UTF-8 Unicode
+\documentclass[12pt]{article}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+%\usepackage[cm]{fullpage}
+\usepackage[colorlinks=true,linkcolor=Teal,citecolor=Black,urlcolor=Blue]{hyperref}
+\usepackage{ifxetex}
+\usepackage{url}
+\ifxetex
+%\usepackage{fontspec}
+%\defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+%\setmainfont[Scale=.95]{Times}
+\setmainfont[Mapping=tex-text, Scale=2.0]{STIXGeneral}
+\else
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\fi
+\usepackage{textcomp}
+\usepackage{natbib}  % formatting for references
+\usepackage{mdframed}
+\usepackage{setspace}
+%\usepackage{ulem}
+%\usepackage{amssymb}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}% Include figure files
+\usepackage{longtable} % allow multipage tables
+\usepackage{multirow}
+\usepackage{psfrag,rotating,multirow,setspace,colordvi}
+\usepackage{epstopdf}
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage{bm}% bold math
+%\usepackage{subfigure}
+%\usepackage{caption}
+\usepackage[font={sf,normalsize},format=plain,labelfont=bf]{caption}
+\usepackage{subcaption}
+\usepackage{float}
+%\usepackage{babel}
+\usepackage{makeidx}
+%\usepackage[font=footnotesize,format=plain,labelfont=bf,font=doublespacing]{caption}
+%\usepackage{overcite}
+\usepackage{color}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\definecolor{color18}{rgb}{0.5,0.5,0.5}
+
+% ==================================================
+% Track changes and commenting packages and commands
+% ==================================================
+\usepackage{todonotes}
+\newcommand{\jek}[1]{\todo[inline,color=purple!40,caption={}]{#1}}
+\newcommand{\mdb}[1]{\todo[inline,color=orange!40,caption={}]{#1}}
+\newcommand{\mja}[1]{\todo[inline,color=blue!40,caption={}]{#1}}
+\newcommand{\mtc}[1]{\todo[inline,color=red!40,caption={}]{#1}}
+\newcommand{\sam}[1]{\todo[inline,color=green!40,caption={}]{#1}}
+\newcommand{\rxi}[1]{\todo[inline,color=yellow!40,caption={}]{#1}}
+
+%\usepackage[addedmarkup=bf,deletedmarkup=sout]{changes} %Final showing markup
+\usepackage[final]{changes} %Final
+
+\definechangesauthor[color=purple]{jek}
+\newcommand{\jeka}[1]{\added[id=jek]{#1}}
+\newcommand{\jekd}[1]{\deleted[id=jek]{#1}}
+\newcommand{\jekr}[2]{\replaced[id=jek]{#1}{#2}}
+
+\definechangesauthor[color=orange]{mdb}
+\newcommand{\mdba}[1]{\added[id=mdb]{#1}}
+\newcommand{\mdbd}[1]{\deleted[id=mdb]{#1}}
+\newcommand{\mdbr}[2]{\replaced[id=mdb]{#1}{#2}}
+
+\definechangesauthor[color=blue]{mja}
+\newcommand{\mjaa}[1]{\added[id=mja]{#1}}
+\newcommand{\mjad}[1]{\deleted[id=mja]{#1}}
+\newcommand{\mjar}[2]{\replaced[id=mja]{#1}{#2}}
+
+\definechangesauthor[color=red]{mtc}
+\newcommand{\mtca}[1]{\added[id=mtc]{#1}}
+\newcommand{\mtcd}[1]{\deleted[id=mtc]{#1}}
+\newcommand{\mtcr}[2]{\replaced[id=mtc]{#1}{#2}}
+
+\definechangesauthor[color=green]{sam}
+\newcommand{\sama}[1]{\added[id=sam]{#1}}
+\newcommand{\samd}[1]{\deleted[id=sam]{#1}}
+\newcommand{\samr}[2]{\replaced[id=sam]{#1}{#2}}
+
+\definechangesauthor[color=yellow]{rib}
+\newcommand{\riba}[1]{\added[id=rib]{#1}}
+\newcommand{\ribd}[1]{\deleted[id=rib]{#1}}
+\newcommand{\ribr}[2]{\replaced[id=rib]{#1}{#2}}
+% ==================================================
+
+
+% ==================================================
+% SI units package and special commands
+% ==================================================
+\usepackage{siunitx}
+\newcommand{\SIper}{\SI[per-mode=symbol]}
+% ==================================================
+
+
+% ==================================================
+% Special page formatting commands 
+% ==================================================
+
+% Shorten or lengthen page by one line (for orphan lines)
+\newcommand{\longpage}{\enlargethispage{\baselineskip}}
+\newcommand{\shortpage}{\enlargethispage{-\baselineskip}}
+
+% Wrap text to end of line for artificial line break
+% (Shift-Enter in Word) for figure placement
+\newcommand{\startsquarepar}{%
+    \par\begingroup \parfillskip 0pt \relax}
+\newcommand{\stopsquarepar}{%
+    \par\endgroup}
+% ==================================================
+
+
+\usepackage{wrapfig}
+%\usepackage{epstopdf}
+%\usepackage[rflt]{floatflt}
+\usepackage{fancyhdr}
+%\setlength{\headheight}{12pt}
+\setlength{\headheight}{25pt}
+\setlength{\headsep}{.4in}
+\setlength{\textheight}{650pt}
+\setlength{\parskip}{5pt}
+\setlength{\parindent}{0pt}
+%\setlength{\footskip}{.1in}
+\renewcommand{\headrulewidth}{.5pt}
+\renewcommand{\footrulewidth}{0pt}
+
+
+\newcommand{\tab}{\hspace{5mm}}
+
+\usepackage{enumerate}
+
+% IR-specific stuff
+\usepackage{sectsty}
+\allsectionsfont{\bfseries\sffamily}
+\newcommand{\irpart}[2]{\part{\textsf{#1}}}
+\newcommand{\irpara}[2]{\paragraph{\textsf{#1}}}
+\newcommand{\irspara}[2]{\subparagraph{\textsf{#1}}}
+\newcommand{\irparanonum}[2]{\paragraph*{\textsf{#1}}}
+\newcommand{\irsection}[2]{\section{\textsf{#1}}\label{#2}}
+\newcommand{\irsectionnonum}[2]{\section*{\textsf{#1}}\label{#2}}
+\newcommand{\irssection}[2]{\subsection{\textsf{#1}}\label{#2}}
+\newcommand{\irssectionnonum}[2]{\subsection*{\textsf{#1}}\label{#2}}
+\newcommand{\irsssection}[2]{\subsubsection{\textsf{#1}}\label{#2}}
+\newcommand{\irsssectionnonum}[2]{\subsubsection*{\textsf{#1}}\label{#2}}
+\newcommand{\irtitle}[1]{\title{\bf{\textsf{#1}}}}
+\newcommand{\irauthor}[1]{\author{\textsf{#1}}}
+\newcommand{\irdate}[1]{\textsf{\date{#1}}}
+\newcommand{\irtoday}{\textsf{\today}}
+\newcommand{\rocstar}{{\textit{Rocstar}}}
+\newcommand{\software}[1]{\textit{#1}}
+\newcommand{\irfilename}[1]{\texttt{\textsf{#1}}}
+\newcommand{\irwebsite}[1]{\irfilename{\bf #1}}
+\newcommand{\commandline}[1]{\texttt{> #1}}
+\newcommand{\plusplus}[1]{#1{}\texttt{++}}
+\newcommand{\plus}[1]{#1{}\texttt{+}}
+\newcommand{\irref}[2]{\hyperref[#2]{#1~\ref{#2}}}
+\newcommand{\ireq}[2]{\hyperref[#2]{#1~(\ref{#2})}}
+\newcommand{\irrefexp}[3]{\hyperref[#3]{{#1}~{#2}}}
+\newcommand{\hilight}[1]{\colorbox{yellow}{#1}}
+\def\Dpartial#1#2{ \frac{\partial #1}{\partial #2} }
+\def\Dparttwo#1#2{ \frac{\partial^2 #1 }{ \partial #2^2} }
+\def\Dpartpart#1#2#3{ \frac{\partial^2 #1 }{ \partial #2 \partial #3} }
+\def\Dnorm#1#2{ \frac{d #1 }{ d #2} }
+\def\Dnormtwo#1#2{ \frac{d^2 #1 }{ d #2 ^2} }
+\def\Dtotal#1#2{ \frac{D #1 }{ D #2} }
+
+
+\newcommand{\cJ}{\mathcal{J}}
+\newcommand{\cI}{\mathcal{I}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cG}{\mathcal{G}}
+
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bn}{\mathbf{n}}
+
+\newcommand{\hh}{{\hat{h}}}
+\newcommand{\rh}{{\hat{r}}}
+
+\newcommand{\vvC}{{\Vec{\Vec{c}}}}
+\newcommand{\vF}{{\vec{F}}}
+%\newcommand{\vf}{{\vec{f}}}
+\newcommand{\vb}{{\vec{b}}}
+\newcommand{\vq}{{\vec{q}}}
+\newcommand{\vR}{{\vec{R}}}
+\newcommand{\vqs}{{\vec{q}^{\,*}}}
+\newcommand{\vqsT}{{\vec{q}^{\,*T}}}
+\newcommand{\vs}{{\vec{s}}}
+
+
+\newcommand{\bxi}{\boldsymbol{\xi}}
+
+
+\newcommand{\bbK}{{\mathbb{K}}}
+\newcommand{\bbS}{{\mathbb{S}}}
+\newcommand{\bbP}{{\mathbb{P}}}
+\newcommand{\bbI}{{\mathbb{I}}}
+\newcommand{\bbA}{{\mathbb{A}}}
+\newcommand{\bbB}{{\mathbb{B}}}
+\newcommand{\pOmega}{{\partial\Omega}}
+
+%\providecommand{\e}[1]{\ensuremath{\times 10^{#1}}}
+
+\def\eps{\varepsilon}
+\def\bx{\mathbf{x}}
+\def\bk{\mathbf{k}}
+\def\bkappa{\boldsymbol{\kappa}}
+
+
+\def\bdash{\hbox{\drawline{4}{.5}\spacce{2}}}
+\def\spacce#1{\hskip #1pt}
+\def\drawline#1#2{\raise 2.5pt\vbox{\hrule width #1pt height #2pt}}
+\def\dashed{\bdash\bdash\bdash\bdash\nobreak\ }
+\def\solid{\drawline{24}{.5}\nobreak\ }
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\renewcommand{\thispagestyle}[1]{} % do nothing
+
+%command to generate the header, put #1 at the right (document title) and #2 centered (release statement)
+\newcommand{\irheader}[2]
+{
+  \pagestyle{fancy}
+  \rhead{}
+  \rfoot{}
+  \chead{}
+  %\cfoot{\color{color18}{\thepage{}}}
+  \fancyhead[LO,L]{\includegraphics[width=24pt]{../Figures/IRTriangles.png}\color{color18}\textsf{\space Illinois Rocstar LLC}}
+  \fancyhead[RO,R]{\color{color18}{\textsf{#1}}}
+  \fancyhead[CO,C]{\color{color18}{\textsf{#2}}}
+  \fancyfoot[CO,C]{\color{color18}{\thepage{}}}
+}
+
+%Command to generate the copyright page
+\newcommand{\ircopyright}[0]
+{
+  %\clearpage\null
+  \vfill
+%\pagesytle{empty}
+  \begin{minipage}[b]{0.9\textwidth}
+  \footnotesize\raggedright
+  \setlength{\parskip}{0.5\baselineskip}
+  Copyright \copyright\the\year\ Illinois Rocstar LLC\par
+  \irwebsite{www.illinoisrocstar.com}
+  \end{minipage}
+  \vspace*{2\baselineskip}
+  \cleardoublepage
+}
+
+\newcommand{\ircallout}[3]
+{
+  \begin{wrapfigure}{#1}{#2\textwidth}
+        \vspace{-20pt}
+        \centering
+        \fbox{\parbox{#2\textwidth}{#3}}
+        \vspace{-10pt}
+  \end{wrapfigure}
+}
+
+\newcommand\todoin[2][]{\todo[inline, caption={2do}, #1]{
+\begin{minipage}{\textwidth-4pt}#2\end{minipage}}}
+
+\newcommand{\todoingreen}[1]{\todo[inline, color=green!40]{#1}}            
+
+
+
+% add copyright command to /maketitle
+\makeatletter
+\g@addto@macro{\maketitle}{\ircopyright}
+\makeatother
+
+\makeindex
+\usepackage{dirtree}
+
+% ******************
+%  CALLOUT BOX CONSTRUCT
+% ******************
+%
+%\begin{wrapfigure}{r}{0.3\textwidth}
+%        \vspace{-20pt}
+%        \centering
+%        \fbox{
+%             \parbox{0.3\textwidth}{
+%                  This is a test of a callout box. 
+%                  It has several lines and even a paragraph.
+%
+%                  See here for the new paragraph. This paragraph
+%                  no longer has a bulleted list.
+%             }                      
+%        }
+%        \vspace{-10pt}
+%\end{wrapfigure}

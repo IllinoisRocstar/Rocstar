@@ -1,0 +1,17 @@
+CouplingScheme = FluidBurnAlone
+FluidModule = Rocflo
+BurnModule = RocburnAPN
+OutputModule = Rocout
+
+MaximumTime =  0.016
+ZoomFactor = 1.0
+AutoRestart = T
+
+CurrentTimeStep = 1.0e-07
+
+OutputIntervalTime = 1.0E-04
+
+MaxWallTime = 86300
+
+ProfileDir = Rocman/Profiles
+

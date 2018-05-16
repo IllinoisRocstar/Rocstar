@@ -1,0 +1,1 @@
+../src/QualityMetric/ScalarAddQualityMetric.hpp
