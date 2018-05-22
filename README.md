@@ -30,11 +30,11 @@ Make sure to compile and install following packages before you start compiling R
 * IMPACT (available at illinoir rocstar git repo)
 * METIS 4.0.3 (available http://glaros.dtc.umn.edu/gkhome/fsroot/sw/metis/OLD)
 
-## Build RocstarMP ##
+### Build RocstarMP ###
 For the following steps we assume `$ROCSTAR_PROJECT_PATH` is the path to RocstarMP, `$ROCSTAR_INSTALL_PATH` is 
 the desired installation location, `$IMPACT_INSTALL_PATH` is the path to the locatin IMPACT project is installed, 
 `$METIS_LIB_PATH` and `$METIS_INC_PATH` are the paths to the location of library and headers of metis.
-Star the build process by executing:
+Start the build process by executing:
 
 ```
 $ cd $ROCSTAR_PROJECT_PATH
@@ -46,7 +46,7 @@ $ make install
 
 Executing the commands above will build all libraries and executables.
 
-## Testing RocstarMP ##
+### Testing RocstarMP ###
 NOTE: Disregard the testing for now, currently heavily depend on IRAD project. Will be changed as we go.
 From the build directory, execute the following command to test the installation:
 ```
