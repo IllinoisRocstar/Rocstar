@@ -1,0 +1,222 @@
+#!/bin/csh -f
+#
+# build_HDF
+#
+# Build and install the HDF and external libraries from source.
+#
+# Assumes the zlib, szip, jpeg, and HDF source code archives
+# are in the current working directory.
+#
+# On some systems (abe in particular), we disable szip regardless
+# of the values coded in the Set-up section.
+#
+# written by Robert Fiedler, revised 11/19/08.
+
+#--------------------------------------------------------------
+# Set-up
+
+set ZLIB = "y"
+set SZIP_BUILD = "y"
+set SZIP_USE = "y"
+set JPEG = "y"
+set HDF_CONFIGURE  = "y"
+set HDF_COMPILE  = "y"
+set HDF_TEST  = "y"
+set HDF_INSTALL  = "y"
+set MAKE = gmake
+
+#--------------------------------------------------------------
+
+set HOST = `hostname`
+switch ($HOST)
+case alc*:
+  set INSTALL_DIR = $HOME/HDF
+  breaksw
+case dslogin*:
+case frost*:
+case up*:
+  if (! $?OBJECT_MODE) then
+    set INSTALL_DIR = $HOME/HDF_64
+    setenv OBJECT_MODE 64
+    setenv CC 'gcc -64'
+  else
+    if ("$OBJECT_MODE" == 64) then
+      set INSTALL_DIR = $HOME/HDF_64
+      setenv CC 'gcc -64'
+    else
+      set INSTALL_DIR = $HOME/HDF_32
+#      setenv CC 'gcc -32'
+    endif
+  endif
+  breaksw
+case mcr*:
+  set INSTALL_DIR = $HOME/HDF_mcr
+  breaksw
+case thunder*:
+  set INSTALL_DIR = $HOME/HDF_thunder
+  setenv CXX 'g++'
+  setenv CC 'gcc'
+  breaksw
+case tur*:
+  set INSTALL_DIR = $HOME/HDF_test
+#  set CFLAGS = "-fPIC -fno_common"
+#  set CXXFLAGS = "-fPIC -fno_common"
+  setenv CC "cc -fPIC -dynamic -fno-common"
+  setenv F77 "f77 -qpic -qnocommon -qthreaded"
+  set LD_FLAGS = "-fPIC -fno_common"
+  set MAKE = make
+  breaksw
+case zeus*:
+  set INSTALL_DIR = $HOME/HDF_zeus
+  setenv CC mpiicc
+  setenv CFLAGS "-fPIC"
+  setenv CXX mpicpc
+  setenv CXXFLAGS "-fPIC"
+  setenv F77 ifort
+  breaksw
+case honest*:
+# abe
+  set INSTALL_DIR = $HOME/HDF
+  setenv CC mpicc
+  setenv CFLAGS "-fPIC"
+  setenv CXX mpicxx
+  setenv CXXFLAGS "-fPIC"
+  setenv F77 ifort
+  set SZIP_BUILD = "n"
+  set SZIP_USE = "n"
+  breaksw
+default:
+  echo -n "Enter install directory: "
+  set INSTALL_DIR = "$<"
+  breaksw
+endsw
+echo ""
+echo "We will install HDF in $INSTALL_DIR"
+echo ""
+
+set DIR = `pwd`
+
+if (-e /bin/ex) then
+  set EX = '/bin/ex'
+else
+  set EX = '/usr/bin/ex'
+endif
+
+# zlib
+if ("$ZLIB" == "y") then
+  if (! -d zlib-1.2.1) then
+    gunzip -c zlib-1.2.1.tar.gz | tar xf -
+  endif
+  echo ""
+  echo "Building zlib"
+  echo ""
+  cd zlib-1.2.1
+  $MAKE distclean
+#  ./configure --prefix=$INSTALL_DIR
+  ./configure --shared --prefix=$INSTALL_DIR
+  $MAKE test
+  $MAKE install 
+  cd $DIR
+endif
+
+# szip
+if ("$SZIP_BUILD" == "y") then
+  if (! -d szip-2.0) then
+    gunzip -c szip-2.0.tar.gz | tar xf -
+  endif
+  echo ""
+  echo "Building szip"
+  echo ""
+  cd szip-2.0
+  $MAKE distclean
+  ./configure --prefix=$INSTALL_DIR
+  $MAKE
+  $MAKE check
+  $MAKE install
+  cd $DIR
+endif
+
+# jpeg
+if ("$JPEG" == "y") then
+  if (! -d jpeg-6b) then
+    gunzip -c jpegsrc.v6b.tar.gz | tar xf -
+  endif
+  echo ""
+  echo "Building jpeg"
+  echo ""
+  cd jpeg-6b
+
+  # Create the bin dir if it does not exist
+  mkdir -p $INSTALL_DIR/bin
+  mkdir -p $INSTALL_DIR/man/man1
+
+  # Use cc on AIX -- says gcc cannot create executables!
+  $MAKE distclean
+  ./configure --prefix=$INSTALL_DIR
+  $MAKE
+  $MAKE test
+
+  # On AIX, I ended up altering the install part to
+  # use cp instead of installbsd, and drop the mode changes.
+  echo ""
+  echo "Editing Makefile to replace installbsd with cp"
+  echo ""
+  $EX Makefile << STP
+/INSTALL
+.,.+3d
+i
+INSTALL= cp
+INSTALL_PROGRAM= cp
+INSTALL_LIB= cp
+INSTALL_DATA= cp
+.
+wq
+STP
+  echo ""
+
+  $MAKE install
+  $MAKE install-lib
+  cd $DIR
+endif
+
+# Finally, the HDF source
+if (! -d HDF4.2r1) then
+  gunzip -c HDF4.2r1.tar.gz | tar xf -
+endif
+cd HDF4.2r1
+if ("$HDF_CONFIGURE" == "y") then
+  echo ""
+  echo "Configuring HDF"
+  echo ""
+  $MAKE distclean
+  if ("$SZIP_USE" == "y") then
+    ./configure --with-zlib=$INSTALL_DIR --with-jpeg=$INSTALL_DIR --with-szip=$INSTALL_DIR --prefix=$INSTALL_DIR
+  else
+    ./configure --with-zlib=$INSTALL_DIR --with-jpeg=$INSTALL_DIR --prefix=$INSTALL_DIR
+  endif
+endif
+if ("$HDF_COMPILE" == "y") then
+  echo ""
+  echo "Compiling HDF"
+  echo ""
+  $MAKE >& gmake_out
+endif
+if ("$HDF_TEST" == "y") then
+  echo ""
+  echo "Testing HDF"
+  echo ""
+  $MAKE check >& check_out
+endif
+if ("$HDF_INSTALL" == "y") then
+  echo ""
+  echo "Installing HDF"
+  echo ""
+  $MAKE install
+  endif
+endif
+cd $DIR
+
+echo ""
+echo "Done"
+exit
+
