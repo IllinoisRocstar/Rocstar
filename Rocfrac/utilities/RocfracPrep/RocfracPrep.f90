@@ -380,15 +380,21 @@ PROGRAM RocfracPrep
 
   OPEN(4005,FILE='Rocin/isolid_in_00.000000.txt',STATUS='replace',FORM='formatted')
   WRITE(4005,*) '@Proc: *'
-  !WRITE(4005,*) '@Files: Rocfrac/Rocin/SurfMesh.%4p.hdf'
+#ifndef USE_CGNS
+  WRITE(4005,*) '@Files: Rocfrac/Rocin/SurfMesh.%4p.hdf'
+#else
   WRITE(4005,*) '@Files: Rocfrac/Rocin/SurfMesh.%4p.cgns'
+#endif
   WRITE(4005,*) '@Panes: @BlockCyclic 100 100'
   close(4005)
   
   OPEN(4005,FILE='Rocin/solid_in_00.000000.txt',STATUS='replace',FORM='formatted')
   WRITE(4005,*) '@Proc: *'
-  !WRITE(4005,*) '@Files: Rocfrac/Rocin/'//prefx(1:prefx_lngth)//'.%4p.hdf'
+#ifndef USE_CGNS
+  WRITE(4005,*) '@Files: Rocfrac/Rocin/'//prefx(1:prefx_lngth)//'.%4p.hdf'
+#else
   WRITE(4005,*) '@Files: Rocfrac/Rocin/'//prefx(1:prefx_lngth)//'.%4p.cgns'
+#endif
   WRITE(4005,*) '@Panes: @Cyclic 1'
   close(4005)
 

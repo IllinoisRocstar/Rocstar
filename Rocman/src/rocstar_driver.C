@@ -433,8 +433,11 @@ void RocmanControl_parameters::read( MPI_Comm comm, int comm_rank)
   const char *rankWidth = "4";
   COM_call_function( OUT_set_option, "rankwidth", rankWidth);
   COM_call_function( OUT_set_option, "pnidwidth", "0");
-  //const char *ioFormat = "HDF";
+#ifndef USE_CGNS
+  const char *ioFormat = "HDF";
+#else
   const char *ioFormat = "CGNS";
+#endif
   COM_call_function( OUT_set_option, "format", ioFormat);
   if ( async_out) 
        COM_call_function( OUT_set_option, "async", "on");
@@ -566,7 +569,6 @@ void rocstar_driver( int verb, int remeshed, bool debug) {
   param.read();
 
   int comm_rank = param.myRank;
-
 
   param.controlVerb = verb;
   param.controlDebug = debug;

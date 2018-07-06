@@ -88,8 +88,11 @@ SUBROUTINE GenxWriteRocinout( global )
   ENDIF
 
   WRITE(mapfname,1000)'../Rocin/fluid_in_00.000000.txt'
-  !WRITE(solfname,1000)'fluid_%5b.hdf'
+#ifndef USE_CGNS
+  WRITE(solfname,1000)'fluid_%5b.hdf'
+#else
   WRITE(solfname,1000)'fluid_%5b.cgns'
+#endif
   OPEN(IF_REGMAP,file=mapfname,form='formatted',status='unknown',iostat=errFlg)
   global%error = errFlg
   IF (global%error /= 0) &
@@ -103,8 +106,11 @@ SUBROUTINE GenxWriteRocinout( global )
 ! mixture surface mapping file:
 
   WRITE(mapfname,1000)'../Rocin/ifluid_in_00.000000.txt'
-  !WRITE(solfname,1000)'ifluid_%5b.hdf'
+#ifndef USE_CGNS
+  WRITE(solfname,1000)'ifluid_%5b.hdf'
+#else
   WRITE(solfname,1000)'ifluid_%5b.cgns'
+#endif
   OPEN(IF_REGMAP,file=mapfname,form='formatted',status='unknown',iostat=errFlg)
   global%error = errFlg
   IF (global%error /= 0) &

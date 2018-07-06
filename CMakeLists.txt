@@ -64,7 +64,7 @@ find_path(HDF4_INC hdf.h HINTS /usr/include /usr/include/hdf)
 if (ENABLE_CGNS)
   find_package(HDF5 REQUIRED) # will set HDF5_LIBRARIES
   find_library(CGNS_LIB cgns HINTS /usr/lib/ /usr/lib64/)
-  add_definitions(-D_CGNS)
+  add_definitions(-DUSE_CGNS)
 endif()
 
 # compiler definitions
