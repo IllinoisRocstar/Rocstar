@@ -224,6 +224,7 @@ SUBROUTINE RFLU_InitFlowSolver(casename,verbLevel,global,levels)
 ! ****************************************************************************** 
 
   CALL MPI_Comm_size(global%mpiComm,global%nProcAlloc,errorFlag)
+
   global%error = errorFlag
   IF ( global%error /= ERR_NONE ) THEN 
     CALL ErrorStop(global,ERR_MPI_OUTPUT,__LINE__)

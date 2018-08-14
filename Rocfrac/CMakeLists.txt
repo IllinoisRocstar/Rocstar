@@ -35,7 +35,11 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 include_directories(${ROCMAN_INC} ${HDF4_INC} ${METIS_INC})
-add_definitions(-DUSE_HDF=1)
+if(ENABLE_CGNS)
+    add_definitions(-DUSE_CGNS=1)
+else()
+    add_definitions(-DUSE_HDF=1)
+endif()
 
 if(NOT BUILD_STATIC)
   add_library(Rocfrac SHARED ${LIB_SRCS})

@@ -176,6 +176,7 @@ Control_parameters::Control_parameters()
   InterruptFlag = 0;
   maxNumDumps = 0;
   current_dump = 0;
+  current_time = 0.0;
   tolerTract = tolerMass = tolerVelo = tolerDisp = .001;
   maxNumPredCorrCycles = 1;
   maxNumTimeSteps = std::numeric_limits<int>::max();
