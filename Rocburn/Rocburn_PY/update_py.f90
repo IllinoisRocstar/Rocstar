@@ -78,11 +78,7 @@ CONTAINS
     CALL MFUN(bp,bw)
 
 !!    rb_old = bw%rb
-    IF (bflag == 0) THEN                                !KJM
-       rb_old = merge(bw%rb, zero, bw%Ts >= bp%Tignition)
-    ELSE                                                !KJM
-       rb_old = bw%rb                                   !KJM
-    ENDIF                                               !KJM
+    rb_old     = merge(bw%rb, zero, bw%Ts >= bp%Tignition)
 
     DO  i=2,nx-1
 
@@ -98,11 +94,7 @@ CONTAINS
 
     Tnp1(nx)=To
 
-    IF (bflag == 0) THEN                                !KJM
-       bw%ignited = (bw%Ts > bp%Tignition) 
-    ELSE                                                !KJM
-       bw%ignited = .TRUE.                              !KJM
-    ENDIF                                               !KJM
+    bw%ignited = (bw%Ts > bp%Tignition) 
 
     CALL GFUN(bp,bw)
 
@@ -115,12 +107,7 @@ CONTAINS
     ! third        add = 18.0*Tnp1(2)-9.0*Tnp1(3)+2.0*Tnp1(4)
     bw%Ts=(add-rhs)/coe
 
-    IF (bflag == 0) THEN                                !KJM
-       bw%ignited = (bw%Ts > bp%Tignition) 
-    ELSE                                                !KJM
-       bw%ignited = .TRUE.                              !KJM
-    ENDIF                                               !KJM
-
+    bw%ignited = (bw%Ts > bp%Tignition) 
     bflag = merge(1,0,bw%ignited)
     if(bw%ignited) THEN
        CALL TFUN(bp,bw)
@@ -134,11 +121,7 @@ CONTAINS
 ! EVALUATE burning rate
 
     CALL MFUN(bp,bw)
-    IF (bflag == 0) THEN                                !KJM
-       bw%rb = merge(bw%rb, zero, bw%Ts >= bp%Tignition)
-    ELSE
-       bw%rb = bw%rb
-    ENDIF
+    bw%rb = merge(bw%rb, zero, bw%Ts >= bp%Tignition)
 !
 !    CONVERT the output back to MKS
 !
@@ -252,14 +235,7 @@ CONTAINS
 !   Mass Flux over Density
 
     if(bp%TABUSE == 0) then
-!!=====================================================================================
-!! Below are the changes made in order to make the model burn according to aP^n
-!! instead of according to the temperature, which appears no to work. Also, TFUN
-!! was changed to inject only at the adiabatic flame temperature
-!!=====================================================================================
-!!       bw%rb = bp%Ac * exp ( - bp%ec_ru / bw%Ts)
-       bw%rb = bp%a_p * (bw%P/bp%Pref)**bp%n_p
-!!======================================================================================
+       bw%rb = bp%Ac * exp ( - bp%ec_ru / bw%Ts)
        bw%alfa_eff = bp%alfac
     else
        jj = 0;kk = 0;
@@ -290,14 +266,7 @@ CONTAINS
 !   FLAME TEMPERATURE, Temperature of the injected gas
 
     if (bp%TABUSE == 0) then
-!!=====================================================================================
-!! Below are the changes made in order to make the model burn according to aP^n
-!! instead of according to the temperature, which appears no to work. Also, TFUN
-!! was changed to inject only at the adiabatic flame temperature
-!!=====================================================================================
-!!       bw%Tstar = one/ ( bw%c2 - bw%c3 * (bw%c1-one/bw%Ts) )
-       bw%Tstar = bp%Tstar0
-!!=====================================================================================
+       bw%Tstar = one/ ( bw%c2 - bw%c3 * (bw%c1-one/bw%Ts) )
        if ( bw%Ts > bw%Ts0 .AND. bw%Ts > bw%Tslimit ) bw%Tstar = bp%Tstar0
     else
        jj =0;kk = 0;
@@ -312,3 +281,9 @@ CONTAINS
 !*****************************************************************************
 
 END MODULE  UPDATE_PY
+
+
+
+
+
+
