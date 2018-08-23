@@ -131,7 +131,7 @@ SUBROUTINE RFLU_GetBoundaryValues(region)
 ! in the fluid RK substeps.  The following check accomplishes mdot zeroing for 
 ! burned out faces.
         IF(pPatch%bflag(ifl) .ne. 0) THEN
-           pVals(BCDAT_INJECT_MFRATE,ifl) = pPatch%mdotAlp(ifl)
+           pVals(BCDAT_INJECT_MFRATE,ifl) = ABS(pPatch%mdotAlp(ifl))
         ELSE
 	   boCount = boCount + 1
            pVals(BCDAT_INJECT_MFRATE,ifl) = 0.0
@@ -151,15 +151,15 @@ SUBROUTINE RFLU_GetBoundaryValues(region)
          IF ( pPatch%nBFaces > 0 ) THEN
             WRITE(STDOUT,'(A,5X,A)') SOLVER_NAME,'Minimum/maximum values:'      
             WRITE(STDOUT,'(A,7X,A,2(1X,E15.8))') SOLVER_NAME,'mdotAlp:    ', & 
-                 MINVAL(pPatch%mdotAlp(1:pPatch%nBFaces)), & 
-                 MAXVAL(pPatch%mdotAlp(1:pPatch%nBFaces))
+                 MINVAL(ABS(pPatch%mdotAlp(1:pPatch%nBFaces))), & 
+                 MAXVAL(ABS(pPatch%mdotAlp(1:pPatch%nBFaces)))
             WRITE(STDOUT,'(A,7X,A,2(1X,E15.8))') SOLVER_NAME,'TflmAlp:    ', & 
                  MINVAL(pPatch%tflmAlp(1:pPatch%nBFaces)), & 
                  MAXVAL(pPatch%tflmAlp(1:pPatch%nBFaces))
          END IF ! pPatch%nBFaces
       END IF ! global%myProcid       
       
-      IF ( MINVAL(pPatch%mdotAlp(1:pPatch%nBFaces)) < 0.0_RFREAL ) THEN 
+      IF ( MINVAL(ABS(pPatch%mdotAlp(1:pPatch%nBFaces))) < 0.0_RFREAL ) THEN 
         WRITE(errorString,*) 'Patch:',pPatch%iPatchGlobal
         CALL ErrorStop(global,ERR_MDOT_NEGATIVE,__LINE__,TRIM(errorString))
       END IF ! MINVAL
