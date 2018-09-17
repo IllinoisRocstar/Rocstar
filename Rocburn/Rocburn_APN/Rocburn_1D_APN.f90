@@ -71,7 +71,8 @@
 
 
     SUBROUTINE INITIALIZE_0D( G_APN, comm, Indir, nxmax, To_read)
-      TYPE (G_BURN_1D), POINTER :: G_APN
+      !TYPE (G_BURN_1D), POINTER :: G_APN
+      TYPE (G_BURN_1D), ALLOCATABLE :: G_APN
       INTEGER, INTENT(IN)       :: comm
       CHARACTER(*), INTENT(IN)  :: Indir
       INTEGER, INTENT(OUT)      :: nxmax
@@ -87,12 +88,19 @@
       INTERFACE 
         SUBROUTINE APN_input_0d(G_APN, Indir)
           USE M_Rocburn_APN_Global_Data
-          TYPE(G_BURN_1D), POINTER :: G_APN
+          !TYPE(G_BURN_1D), POINTER :: G_APN
+          TYPE(G_BURN_1D), ALLOCATABLE :: G_APN
           CHARACTER(*), INTENT(IN) :: Indir
         END SUBROUTINE APN_input_0d
 
       END INTERFACE
 
+      ! MS
+      !IF (ASSOCIATED(G_APN)) THEN
+      !    WRITE(*,*) 'Deallocating G_APN'
+      !    DEALLOCATE(G_APN)
+      !END IF
+      ! MS End
       ALLOCATE(G_APN)
 
 !
@@ -122,7 +130,8 @@
 
       IMPLICIT NONE
 
-      TYPE (G_BURN_1D), POINTER :: G_APN
+      !TYPE (G_BURN_1D), POINTER :: G_APN
+      TYPE (G_BURN_1D), ALLOCATABLE :: G_APN
       INTEGER, INTENT(INOUT)     :: bflag
       REAL(DBL), INTENT (IN)  :: P_mks, To, rhoc_mks, p_coor(3)
       REAL(DBL), INTENT (OUT) :: rb_mks, Toa, fr
@@ -182,7 +191,8 @@
     SUBROUTINE GET_BURNING_RATE_1D( G_APN, delt, P_mks, To, Tn,   &
               qc_mks, qc_old_mks, qr_mks, qr_old_mks, rhoc_mks, &
               Toa, rb_mks, fr, bflag, Tnp1, Tflame, p_coor)
-      TYPE (G_BURN_1D), POINTER :: G_APN
+      !TYPE (G_BURN_1D), POINTER :: G_APN
+      TYPE (G_BURN_1D), ALLOCATABLE :: G_APN
       REAL(DBL), INTENT (IN)      :: delt, P_mks, To
       REAL(DBL), INTENT (IN)      :: Tn(:)
       REAL(DBL), INTENT (IN)      :: qc_mks, qc_old_mks, qr_mks, qr_old_mks
@@ -213,7 +223,6 @@
 !RAF
 !RAF Find out which material applies for this face.  I need the x coord.
 !RAF
- 
          DO mat=1,G_APN%nmat
            IF (p_coor(1) <= G_APN%xmax(mat)) EXIT
          END DO
@@ -241,7 +250,8 @@
     END SUBROUTINE GET_BURNING_RATE_1D
 
     SUBROUTINE FINALIZE_0D( G_APN)
-      TYPE (G_BURN_1D), POINTER :: G_APN
+      !TYPE (G_BURN_1D), POINTER :: G_APN
+      TYPE (G_BURN_1D), ALLOCATABLE :: G_APN
 
       DEALLOCATE( G_APN)
     END SUBROUTINE FINALIZE_0D

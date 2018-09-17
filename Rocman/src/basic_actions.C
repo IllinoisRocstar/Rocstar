@@ -519,6 +519,19 @@ void FluidPropagateSurface::run( double t, double dt, double alpha_dummy)
   double zero = 0.0;
   COM_call_function( RocBlas::copy_scalar, &zero, &p_rb_hdl);
 
+  int np = 0;
+  int* pids;
+  // MS
+  //std::cout << __FILE__ << __LINE__ << std::endl;
+  //COM_get_panes("Burn", &np, &pids);
+  //if (np>0)
+  //{
+  //  std::cout << "Pane " << *pids << " size ";
+  //  int sz;
+  //  COM_get_size("Burn.rb", *pids, &sz);
+  //  std:cout << sz << std::endl;
+  //}
+  // MS
   COM_call_function( RocBlas::copy, &b_rb_hdl, &fb_rb_hdl);
 
   // Burnout strategy:
@@ -554,8 +567,8 @@ void FluidPropagateSurface::run( double t, double dt, double alpha_dummy)
   // in which every node has cflag=1
   // BurnOut(cflag,bflag);
   if(PROPCON_burnout >= 0){
-    //    std::cout << "Rocstar> Burning out surface elements with Rocon." 
-    //	      << std::endl;
+        std::cout << "Rocstar> Burning out surface elements with Rocon." 
+    	      << std::endl;
     double data2 = 20000*dt;
     COM_call_function( PROP_propagate, &p_pmesh_hdl, &p_rb_hdl, &data2, &p_vm_hdl);
     MPI_Barrier(mycomm);
@@ -576,12 +589,16 @@ void FluidPropagateSurface::run( double t, double dt, double alpha_dummy)
   // the propagation constrained to the constraint surface.
   // p_rb_hdl = burning_rate
   if(PROPCON_burnout_filter >= 0)
+  {
     COM_call_function(PROPCON_burnout_filter,&p_bflag_hdl,&p_rb_hdl);
+  }
   //
   
   // Now original code to propagate the mesh:
   if ( p_cnstr_type > 0) 
+  {
     COM_call_function( PROP_set_cnstr, &p_cnstr_type);
+  }
 
   double data = dt * zoom;
 
@@ -589,6 +606,7 @@ void FluidPropagateSurface::run( double t, double dt, double alpha_dummy)
   if(!rank && man_verbose > 2)
     std::cout << "Rocstar: Calling Rocprop"  << std::endl;
   // p_rb_hdl is the "speed function"
+  std::cout << __FILE__ << __LINE__ << std::endl;
   COM_call_function( PROP_propagate, &p_pmesh_hdl, &p_rb_hdl, &data, &p_vm_hdl);
   MPI_Barrier(mycomm);
   if(!rank && man_verbose > 2)

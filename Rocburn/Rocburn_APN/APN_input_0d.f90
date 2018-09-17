@@ -57,7 +57,8 @@
 !   Global data for Rocburn_1D_APN passed as a pointer
 !
 
-    TYPE (G_BURN_1D), POINTER :: G_APN
+    !TYPE (G_BURN_1D), POINTER :: G_APN
+    TYPE (G_BURN_1D), ALLOCATABLE :: G_APN
 !
 !   arguments
 !
@@ -114,13 +115,14 @@
 
     READ(ir,*,IOSTAT=ioerr) G_APN%verbosity
     IF(ioerr /= 0) THEN
-      G_APN%verbosity = 1
+      G_APN%verbosity = 3
     ENDIF
 
     CLOSE(ir)
 
     IF(G_APN%rank .eq. 0 .AND. G_APN%verbosity .gt. 0) THEN
        WRITE(6,'(A)') 'RocburnAPN: *********** Using APN Burn Model **************'
+       WRITE(6,'(A,i2,A)') 'RocburnAPN: Upto ',MATMAX,' materials are supported!'
     ENDIF
     IF(G_APN%rank .eq. 0 .AND. G_APN%verbosity .gt. 1) THEN
        WRITE(6,'(A,i3,A)') 'RocburnAPN:  Found a total of ',G_APN%nmat,' materials'
@@ -131,7 +133,7 @@
           WRITE(6,'(A,i3,A,f12.4)') 'RocburnAPN:  Tf_adiabatic(',mat,') = ',&
                                      G_APN%Tf_adiabatic(mat)
           WRITE(6,'(A,f12.4)') 'RocburnAPN:  To= ',G_APN%To
-          WRITE(6,'(A,i3,A,f12.4)') 'RocburnAPN:  xmax(',mat,')  =',&
+          WRITE(6,'(A,i3,A,E12.4)') 'RocburnAPN:  xmax(',mat,')  =',&
                                     G_APN%xmax(mat)
        END DO
     END IF

@@ -82,6 +82,7 @@ set_constraints( const COM::DataItem *ct_in) {
   if ( _buf == NULL) return;
 
   if ( ct_in == NULL) {
+    std::cout << __FILE__ << __LINE__ << std::endl;
     // Deallocate cnstr_types if constraints are unset
     _buf->dealloc_array( "PROP_cnstr_nodes", 0);
     _buf->dealloc_array( "PROP_cnstr_faces", 0);
@@ -92,6 +93,7 @@ set_constraints( const COM::DataItem *ct_in) {
   else {
     COM_assertion_msg( ct_in->is_panel() || ct_in->is_elemental(), 
 		       "Constraints must be associated with panes or faces.");
+    std::cout << __FILE__ << __LINE__ << std::endl;
 
     // Copy the constraints onto the window
     _buf->resize_array( _cnstr_faces, 0);
@@ -102,12 +104,12 @@ set_constraints( const COM::DataItem *ct_in) {
     _buf->resize_array( _cnstr_bndry_nodes, 0);
     determine_constraint_boundary( _cnstr_faces, _cnstr_bndry_edges, _cnstr_bndry_nodes);
 
-    // Determine nodal constraints.
+    //// Determine nodal constraints.
     _buf->resize_array( _cnstr_nodes, 0);
 
     // Convert constraints from facial/panel to nodal
     convert_constraints( _cnstr_faces, _cnstr_nodes);
-    _cnstr_set = true;
+    //_cnstr_set = true;
   }
 }
 
@@ -253,7 +255,9 @@ void Propagation_3::
 determine_constraint_boundary( const COM::DataItem *ctypes_faces,
 			       COM::DataItem *ctypes_bndry_edges,
 			       COM::DataItem *ctypes_bndry_nodes) {
+  // this line causes memory leak
   _surf->update_bd_flags( ctypes_faces); // Update facal flags along boundaries
+  // this line end
 
   char zero = 0;
   Rocblas::copy_scalar( &zero, ctypes_bndry_edges);

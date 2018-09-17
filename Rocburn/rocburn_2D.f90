@@ -94,7 +94,8 @@ CONTAINS
     INTERFACE
        SUBROUTINE INIT_0D( g_1d, comm, Indir, nxmax, To_read)
          USE M_ROCBURN_INTERFACE_DATA, ONLY : G_BURN_1D, DBL
-         TYPE (G_BURN_1D), POINTER :: g_1d
+         !TYPE (G_BURN_1D), POINTER :: g_1d
+         TYPE (G_BURN_1D), ALLOCATABLE :: g_1d
          INTEGER, INTENT(IN)       :: comm
          CHARACTER(*), INTENT(IN)  :: Indir
          INTEGER, INTENT(OUT)      :: nxmax
@@ -104,7 +105,8 @@ CONTAINS
        SUBROUTINE INIT_1D( g_1d, bflag, P, To, rhoc, p_coor, rb, &
                            Toa, fr, Tn, Tflame)
          USE M_ROCBURN_INTERFACE_DATA, ONLY : G_BURN_1D, DBL
-         TYPE (G_BURN_1D), POINTER :: g_1d
+         !TYPE (G_BURN_1D), POINTER :: g_1d
+         TYPE (G_BURN_1D), ALLOCATABLE :: g_1d
          INTEGER, INTENT(INOUT)    :: bflag
          REAL(DBL), INTENT (IN)    :: P, To, rhoc, p_coor(3)
          REAL(DBL), INTENT (OUT)   :: rb, Toa, fr
@@ -232,6 +234,13 @@ CONTAINS
 !   Get size information from Roccom
 !
     CALL COM_get_panes( ioWin, nblks, blk_ids)
+    ! MS
+    !IF (ASSOCIATED(G_b%blocks)) THEN
+        !WRITE (*,*) 'DEALLOCATING G_b%blcoks'
+        !DEALLOCATE(G_b%blocks)
+        !NULLIFY(G_b%blocks)
+    !END IF
+    ! MS
     ALLOCATE (G_b%blocks( nblks), STAT=ierror); CALL CHECK_ALLOC( ierror)
 
 !
@@ -257,7 +266,28 @@ CONTAINS
           CALL COM_get_array( ioWin//".rhos_alp", bid, blk%rhoc)
           CALL COM_get_array( ioWin//".Tf_alp", bid, blk%Tg)
 !!!       CALL COM_get_array( ioWin//".To_alp",   bid, blk%To)
+       ! MS: Start
+       ELSE
+           IF (ASSOCIATED(blk%qr)) THEN 
+              DEALLOCATE(blk%qr)
+              NULLIFY (blk%qr)
+           ENDIF
+           IF (ASSOCIATED(blk%qc)) THEN 
+              DEALLOCATE(blk%qc)
+              NULLIFY (blk%qc)
+           END IF
+           IF (ASSOCIATED(blk%rhoc)) THEN 
+              DEALLOCATE(blk%rhoc)
+              NULLIFY (blk%rhoc)
+           END IF
+           IF (ASSOCIATED(blk%Tg)) THEN 
+              DEALLOCATE(blk%Tg)
+              NULLIFY (blk%Tg)
+           END IF
+           NULLIFY (blk%rhoc)
+           NULLIFY (blk%Tg)
        END IF
+       ! MS: End
        CALL COM_get_array( ioWin//".centers", bid, blk%coor)
 
 !
@@ -265,6 +295,7 @@ CONTAINS
 !
 
        CALL COM_get_array( ioWin//".rb", bid, blk%rb)
+       !WRITE(*,*) 'Size of blk.rb', SIZE(blk%rb)       
        CALL COM_get_array( ioWin//".Tflm", bid, blk%Tf)
        ! The above dataitems need be initialized by INIT_1D
        
@@ -281,7 +312,30 @@ CONTAINS
           CALL COM_get_array( intWin//".rhos_old", bid, blk%rhoc_old)
           CALL COM_get_array( intWin//".Tf_old",   bid, blk%Tg_old)
 !!!       CALL COM_get_array( intWin//".To_old",   bid, blk%To_old)
+       ! MS: Start
+       ELSE
+           IF (ASSOCIATED(blk%pres_old)) THEN 
+              DEALLOCATE(blk%pres_old)
+              NULLIFY (blk%pres_old)
+           END IF
+           IF (ASSOCIATED(blk%qc_old)) THEN 
+              DEALLOCATE(blk%qc_old)
+              NULLIFY (blk%qc_old)
+           END IF
+           IF (ASSOCIATED(blk%qr_old)) THEN 
+              DEALLOCATE(blk%qr_old)
+              NULLIFY (blk%qr_old)
+           END IF
+           IF (ASSOCIATED(blk%rhoc_old)) THEN 
+              DEALLOCATE(blk%rhoc_old)
+              NULLIFY (blk%rhoc_old)
+           END IF
+           IF (ASSOCIATED(blk%Tg_old)) THEN 
+              DEALLOCATE(blk%Tg_old)
+              NULLIFY (blk%Tg_old)
+           END IF
        END IF
+       ! MS: End
 
 !
 !      Profile history
@@ -296,7 +350,26 @@ CONTAINS
              CALL COM_get_array( intWin//".dist", bid, blk%dist)
              ! blk%dist should be initialized by CALCDIST_2D
           END IF
+       ! MS: Start
+       ELSE
+           IF (ASSOCIATED(blk%temp)) THEN 
+              DEALLOCATE(blk%temp)
+              NULLIFY (blk%temp)
+           END IF
+           IF (ASSOCIATED(blk%Toa)) THEN 
+              DEALLOCATE(blk%Toa)
+              NULLIFY (blk%Toa)
+           END IF
+           IF (ASSOCIATED(blk%fr)) THEN 
+              DEALLOCATE(blk%fr)
+              NULLIFY (blk%fr)
+           END IF
+           IF (ASSOCIATED(blk%dist)) THEN 
+              DEALLOCATE(blk%dist)
+              NULLIFY (blk%dist)
+           END IF
        END IF
+       ! MS: End
     END DO  ! ib
 
 !   Call Rocin to copy dataitems (without the mesh) into the new windows.
@@ -425,14 +498,16 @@ CONTAINS
     INTERFACE
        SUBROUTINE GET_FILM_COEFF_1D( g_1d, p_coor, Ts, T_euler, P, Qc, Qcprime)
          USE  M_ROCBURN_INTERFACE_DATA, ONLY : G_BURN_1D, DBL
-         TYPE (G_BURN_1D), POINTER   :: g_1d
+         !TYPE (G_BURN_1D), POINTER   :: g_1d
+         TYPE (G_BURN_1D), ALLOCATABLE   :: g_1d
          REAL(DBL), INTENT (IN)      :: p_coor(3), Ts, T_euler, P
          REAL(DBL), INTENT (OUT)     :: Qc,Qcprime
        END SUBROUTINE GET_FILM_COEFF_1D
 
        SUBROUTINE GET_TIME_STEP_1D( g_1d, rb, Toa, dt_max)
          USE  M_ROCBURN_INTERFACE_DATA, ONLY : G_BURN_1D, DBL
-         TYPE (G_BURN_1D), POINTER   :: g_1d
+         !TYPE (G_BURN_1D), POINTER   :: g_1d
+         TYPE (G_BURN_1D), ALLOCATABLE   :: g_1d
          REAL(DBL), INTENT (IN)      :: rb, Toa
          REAL(DBL), INTENT (OUT)     :: dt_max
        END SUBROUTINE GET_TIME_STEP_1D
@@ -441,7 +516,8 @@ CONTAINS
             qc, qc_old, qr, qr_old, rhoc, &
             Toa, rb, fr, bflag, Tnp1, Tflame, p_coor)
          USE  M_ROCBURN_INTERFACE_DATA, ONLY : G_BURN_1D, DBL
-         TYPE (G_BURN_1D), POINTER   :: g_1d
+         !TYPE (G_BURN_1D), POINTER   :: g_1d
+         TYPE (G_BURN_1D), ALLOCATABLE   :: g_1d
          REAL(DBL), INTENT (IN)      :: delt, P, To
          REAL(DBL), INTENT (IN)      :: Tn(:)
          REAL(DBL), INTENT (IN)      :: qc, qc_old, qr, qr_old
@@ -511,13 +587,31 @@ CONTAINS
 !RAF          exp_APN = log10(out_APN/pre_APN)                            !get the exponent
 !RAF       END IF
 
+
        DO ib=1, nblks
           blk => G_b%blocks(ib)
+          ! MS
+          !WRITE(*,*) 'Size of blk.pres', SIZE(blk%pres)
+          !WRITE(*,*) 'Size of blk.qr', SIZE(blk%qr)
+          !WRITE(*,*) 'Size of blk.qc', SIZE(blk%qc)
+          !WRITE(*,*) 'Size of blk.rhoc', SIZE(blk%rhoc)
+          !WRITE(*,*) 'Size of blk.tg', SIZE(blk%Tg)
+          !WRITE(*,*) 'Size of blk.burn_flag', SIZE(blk%burn_flag)
+          !WRITE(*,*) 'Size of blk.rb', SIZE(blk%rb)
+          !WRITE(*,*) 'Size of blk.tf', SIZE(blk%Tf)
+          !WRITE(*,*) 'Size of blk.temp1', SIZE(blk%temp,1)
+          !WRITE(*,*) 'Size of blk.temp2', SIZE(blk%temp,2)
+          !WRITE(*,*) 'Size of blk.toa', SIZE(blk%Toa)
+          !WRITE(*,*) 'Size of blk.fr', SIZE(blk%fr)
+          !WRITE(*,*) 'Size of blk.dist', SIZE(blk%dist)
+          !WRITE(*,*) 'Size of blk.rb', SIZE(blk%rb)
+          ! MS End
           DO ic =1, blk%nfaces
             blk%burn_flag(ic) = 1
 
 !RAF             blk%rb(ic) = pre_APN*blk%pres(ic)**exp_APN
 !RAF             blk%Tf(ic) = Tflame_APN                                 !This assumes no ignition model for APN
+            
 
              CALL GET_BURNING_RATE_1D ( G_b%g_1d, zero, blk%pres(ic), &
                   zero, G_b%Tn,   &
@@ -637,7 +731,12 @@ CONTAINS
 
    END IF     !IF is_APN
 
-
+   ! MS
+   IF (ASSOCIATED(blk)) THEN
+     WRITE (*,*) 'DEASSOCIATING blk'
+     NULLIFY(blk)
+   END IF
+   ! MS
 
   END SUBROUTINE UPDATE
 

@@ -35,14 +35,14 @@ MODULE M_ROCBURN_INTERFACE_DATA
 !
 !  Author:          K-C Tang, L. Massa, X. Jiao
 !
-
+  USE M_Rocburn_APN_Global_Data
   IMPLICIT NONE
 
 
 !  ===================
 !  D A T A   T Y P E S
 !  ===================
-  INTEGER, PARAMETER :: DBL = SELECTED_REAL_KIND(P=14,R=30)
+  !INTEGER, PARAMETER :: DBL = SELECTED_REAL_KIND(P=14,R=30)
 
 !
 !  ---------------
@@ -110,9 +110,10 @@ MODULE M_ROCBURN_INTERFACE_DATA
   END TYPE block
 
 ! This is a placeholder for the type defined in 1D modules
-  TYPE, PUBLIC :: G_BURN_1D
-     INTEGER :: buf(4096)
-  END TYPE G_BURN_1D
+  !TYPE, PUBLIC :: G_BURN_1D_1
+  !   INTEGER :: buf(4096)
+  !   !INTEGER :: buf(1) 
+  !END TYPE G_BURN_1D_1
 
 !
 !  -----------------------
@@ -135,7 +136,8 @@ MODULE M_ROCBURN_INTERFACE_DATA
 
      CHARACTER(LEN=80)         :: mname
 
-     TYPE(G_BURN_1D), POINTER  :: g_1d
+     !TYPE(G_BURN_1D), POINTER  :: g_1d
+     TYPE(G_BURN_1D), ALLOCATABLE  :: g_1d
   END TYPE list_block
 
 CONTAINS

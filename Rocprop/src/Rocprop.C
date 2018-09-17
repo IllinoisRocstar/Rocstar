@@ -111,22 +111,27 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
 			 int *code)
 {
   COM_assertion_msg(false,"Made it here.");
+  std::cout << __FILE__ << __LINE__ << std::endl;
   COM_assertion_msg( validate_object()==0, "Invalid object");
 
   // If Rocprop is not yet initialized, call the initialization routine.
   SURF::Window_manifold_2 *wm = manifold();
   if ( wm == NULL) 
-  { initialize( pmesh, _parent); wm = manifold(); }
+      initialize( pmesh, _parent); wm = manifold(); 
   
   COM_assertion_msg( pmesh->window() == _win,
 		     "Rocprop was initialized for a different window");
 
   // If the propagation object is not yet created, create a default one.
   if ( _prop == NULL) {
-    if ( _prop_method == PROP_FO)
+    std::cout << "Generating propagation object type ";
+    if ( _prop_method == PROP_FO) {
+      std::cout << "Face Offse.\n";
       _prop = new FaceOffset_3( wm, _buf);
-    else
+    }else{
+      std::cout << "Marker Particles.\n";
       _prop = new MarkerParticles_3( wm, _buf);
+    }
   }
 
   // Save the coordinates into buffers
@@ -135,6 +140,7 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
   Rocblas::copy( nc, oldnc);
 
   _prop->set_constraints( _cnstr_types);
+  
 
   // std::cout << "made it HERE" << std::endl;
   // MPI_Barrier(MPI_COMM_WORLD);
@@ -150,9 +156,9 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
   // MPI_Barrier(MPI_COMM_WORLD);
   // exit(1);
 
-  // Initialize constraints
-  _prop->set_bounds( _cnstr_bound);
-  _prop->set_verbose(_verb);
+  //// Initialize constraints
+  //_prop->set_bounds( _cnstr_bound);
+  //_prop->set_verbose(_verb);
   
   // std::cout << "made it HERE" << std::endl;
   // MPI_Barrier(MPI_COMM_WORLD);
@@ -160,97 +166,101 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
 
 
 
-  // Set tolerance for eigenvalues.
-  if ( _prop_method == PROP_FO) {
-    if ( _eig_thres>=0)
-      ((FaceOffset_3*)_prop)->set_eigen_threshold( _eig_thres);
-    if ( _courant>=0)
-      ((FaceOffset_3*)_prop)->set_courant_constant( _courant);
-    if ( _fangle_strong>=0)
-      ((FaceOffset_3*)_prop)->set_fangle_strong( _fangle_strong);
-    if ( _fangle_weak>=0)
-      ((FaceOffset_3*)_prop)->set_fangle_weak( _fangle_weak);
-    if ( _fangle_turn>=0)
-      ((FaceOffset_3*)_prop)->set_fangle_turn( _fangle_turn);
-    if ( _wf_expn>=0)
-      ((FaceOffset_3*)_prop)->set_wavefrontal_expansion( _wf_expn);
-    if ( _nrm_dfsn>=0)
-      ((FaceOffset_3*)_prop)->set_normal_diffusion( _nrm_dfsn);
-    if ( _feature_layer>=0)
-      ((FaceOffset_3*)_prop)->set_feature_layer( _feature_layer);
-    if ( _wght_scheme>=0)
-      ((FaceOffset_3*)_prop)->set_weighting_scheme( _wght_scheme);
-    if ( _smoother>=0)
-      ((FaceOffset_3*)_prop)->set_smoother( _smoother);
-    if ( _conserv>=0)
-      ((FaceOffset_3*)_prop)->set_conserve( _conserv);
-  }
+  //// Set tolerance for eigenvalues.
+  //if ( _prop_method == PROP_FO) {
+  //  if ( _eig_thres>=0)
+  //    ((FaceOffset_3*)_prop)->set_eigen_threshold( _eig_thres);
+  //  if ( _courant>=0)
+  //    ((FaceOffset_3*)_prop)->set_courant_constant( _courant);
+  //  if ( _fangle_strong>=0)
+  //    ((FaceOffset_3*)_prop)->set_fangle_strong( _fangle_strong);
+  //  if ( _fangle_weak>=0)
+  //    ((FaceOffset_3*)_prop)->set_fangle_weak( _fangle_weak);
+  //  if ( _fangle_turn>=0)
+  //    ((FaceOffset_3*)_prop)->set_fangle_turn( _fangle_turn);
+  //  if ( _wf_expn>=0)
+  //    ((FaceOffset_3*)_prop)->set_wavefrontal_expansion( _wf_expn);
+  //  if ( _nrm_dfsn>=0)
+  //    ((FaceOffset_3*)_prop)->set_normal_diffusion( _nrm_dfsn);
+  //  if ( _feature_layer>=0)
+  //    ((FaceOffset_3*)_prop)->set_feature_layer( _feature_layer);
+  //  if ( _wght_scheme>=0)
+  //    ((FaceOffset_3*)_prop)->set_weighting_scheme( _wght_scheme);
+  //  if ( _smoother>=0)
+  //    ((FaceOffset_3*)_prop)->set_smoother( _smoother);
+  //  if ( _conserv>=0)
+  //    ((FaceOffset_3*)_prop)->set_conserve( _conserv);
+  //}
 
-  COM::DataItem *spd = spds_io ? 
-    _buf->inherit( spds_io, "rpr_spd_buf", 
-		   COM::Pane::INHERIT_USE, true, NULL, 0) : NULL;
-  _buf->init_done( false);
+  //COM::DataItem *spd = spds_io ? 
+  //  _buf->inherit( spds_io, "rpr_spd_buf", 
+  //        COM::Pane::INHERIT_USE, true, NULL, 0) : NULL;
+  //_buf->init_done( false);
 
-  // Subcycle to take small time steps
-  double t = 0, t_rem = *dt;
-  while ( t_rem > 0 || *dt==0) {
-    // Time stepping
-    int smoothed=(_rediter>0);
-    double max_dt = _prop->time_stepping( spd, t_rem, du, &smoothed);
+  //// Subcycle to take small time steps
+  //double t = 0, t_rem = *dt;
+  //while ( t_rem > 0 || *dt==0) {
+  //  // Time stepping
+  //  int smoothed=(_rediter>0);
+  //  double max_dt = _prop->time_stepping( spd, t_rem, du, &smoothed);
 
-    if ( _verb && _rank==0)
-      std::cout << "Rocprop: Subcycling with time step " << max_dt << std::endl;
+  //  if ( _verb && _rank==0)
+  //    std::cout << "Rocprop: Subcycling with time step " << max_dt << std::endl;
 
-    t = *dt - (t_rem-max_dt);
-    t_rem = *dt - t;
+  //  t = *dt - (t_rem-max_dt);
+  //  t_rem = *dt - t;
 
-    if ( t_rem > 0 && max_dt < *dt * _time_lb) {
-      // If code is present, then set it to nonzero value 
-      // if time step is large.
-      if ( code) {
-	*code = -1;
-	std::cerr << "Rocprop: Given time step could not be reached" << std::endl;
-	break; 
-      }
-      else if ( dt_elapsed==NULL) {
-	std::cerr << "Rocprop: Time step is smaller than the lower bound "
-		  << *dt*_time_lb << '=' << *dt << '*' << _time_lb 
-		  << "\nMesh is too distorted. Stopping..." << std::endl;
-	COM_assertion( max_dt >= *dt * _time_lb); abort();
-      }
-    }
-    if ( code) *code = 0;
+  //  if ( t_rem > 0 && max_dt < *dt * _time_lb) {
+  //    // If code is present, then set it to nonzero value 
+  //    // if time step is large.
+  //    if ( code) {
+  //  *code = -1;
+  //  std::cerr << "Rocprop: Given time step could not be reached" << std::endl;
+  //  break; 
+  //    }
+  //    else if ( dt_elapsed==NULL) {
+  //  std::cerr << "Rocprop: Time step is smaller than the lower bound "
+  //  	  << *dt*_time_lb << '=' << *dt << '*' << _time_lb 
+  //  	  << "\nMesh is too distorted. Stopping..." << std::endl;
+  //  COM_assertion( max_dt >= *dt * _time_lb); abort();
+  //    }
+  //  }
+  //  if ( code) *code = 0;
 
-    // Add the dispments to the current coordinates
-    Rocblas::add( nc, du, nc);
+  //  // Add the dispments to the current coordinates
+  //  Rocblas::add( nc, du, nc);
 
-    // Reset the speed function
-    if ( _cnstr_bound && spd && spd->is_elemental())
-      _prop->bound_facial_speed( spd);
+  //  // Reset the speed function
+  //  if ( _cnstr_bound && spd && spd->is_elemental())
+  //    _prop->bound_facial_speed( spd);
 
-    // If propagation method is face offsetting, then perform mesh smoothing
-    // by face offsetting with time step equal to 0.
-    if ( _prop_method == PROP_FO) {
-      for ( int i=smoothed; i<_rediter; ++i) {
-	if ( _verb && _rank==0)
-	  std::cout << "Rocprop: Perform additional mesh smoothing" << std::endl;
-	_prop->time_stepping( NULL, 0, du, NULL);
-	Rocblas::add( nc, du, nc);
-      }
-    }
+  //  // If propagation method is face offsetting, then perform mesh smoothing
+  //  // by face offsetting with time step equal to 0.
+  //  if ( _prop_method == PROP_FO) {
+  //    for ( int i=smoothed; i<_rediter; ++i) {
+  //  if ( _verb && _rank==0)
+  //    std::cout << "Rocprop: Perform additional mesh smoothing" << std::endl;
+  //  _prop->time_stepping( NULL, 0, du, NULL);
+  //  Rocblas::add( nc, du, nc);
+  //    }
+  //  }
 
-    // If user request for elapsed time, then do not subcycle.
-    if ( dt_elapsed) { *dt_elapsed = t; break; }
-    else if ( *dt==0) break;
-  }
+  //  // If user request for elapsed time, then do not subcycle.
+  //  if ( dt_elapsed) { *dt_elapsed = t; break; }
+  //  else if ( *dt==0) break;
+  //}
 
-  // Compute displacements and recover the original coordinates
-  Rocblas::sub( nc, oldnc, du);
-  Rocblas::copy( oldnc, nc);
+  //// Compute displacements and recover the original coordinates
+  //Rocblas::sub( nc, oldnc, du);
+  //Rocblas::copy( oldnc, nc);
 
-  // Deallocate spds_buf
-  if ( spd) _buf->delete_dataitem( spd->name());
-  _buf->init_done( false);
+  //// Deallocate spds_buf
+  //if ( spd) 
+  //{
+  //    std::cout << __FILE__ << __LINE__ << std::endl;
+  //    _buf->delete_dataitem( spd->name());
+  //}
+  //_buf->init_done( false);
 }
 
 void Rocprop::set_option( const char *opt, const char *val) 
