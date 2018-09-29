@@ -1043,10 +1043,10 @@ MODULE RFLU_ModGeometry
                        ABS(MINVAL(faceSum(ZCOORD,1:pGrid%nCellsTot))), & 
                        ABS(MAXVAL(faceSum(ZCOORD,1:pGrid%nCellsTot))))  
 
-      IF ( faceSumMax > MINVAL(pGrid%fn(XYZMAG,1:pGrid%nFacesTot)) ) THEN
-        WRITE(errorString,'(A,1X,E13.6)') 'Error:',faceSumMax 
-        CALL ErrorStop(global,ERR_FACESUM,__LINE__,TRIM(errorString))
-      END IF ! faceSumMax  
+      !IF ( faceSumMax > MINVAL(pGrid%fn(XYZMAG,1:pGrid%nFacesTot)) ) THEN
+      !  WRITE(errorString,'(A,1X,E13.6)') 'Error:',faceSumMax 
+      !  CALL ErrorStop(global,ERR_FACESUM,__LINE__,TRIM(errorString))
+      !END IF ! faceSumMax  
 
       DEALLOCATE(faceSum,STAT=errorFlag)
       global%error = errorFlag    

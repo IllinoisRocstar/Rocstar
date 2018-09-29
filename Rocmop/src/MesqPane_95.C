@@ -107,6 +107,43 @@ namespace Mesquite{
   }
 
   void MesqPane::init(){
+    //// Debugging
+    //int rank;
+    //MPI_Comm_rank(_pane->window()->get_communicator(), &rank);
+    //if (rank==2)
+    //{
+    //    _verb = 2;
+    //    std::cout << "Pane information\n";
+    //    std::cout << "ID = " << _pane->id() << std::endl;
+    //    std::cout << "DIM = " << _pane->dimension() << std::endl;
+    //    std::cout << "Is unstructured = " << _pane->is_unstructured() << std::endl;
+    //    std::cout << "#Node = " << _pane->size_of_nodes() << std::endl;
+    //    std::cout << "#Real Node = " << _pane->size_of_real_nodes() << std::endl;
+    //    std::cout << "#Ghost Node = " << _pane->size_of_ghost_nodes() << std::endl;
+    //    std::cout << "#Element = " << _pane->size_of_elements() << std::endl;
+    //    std::cout << "#Real Element = " << _pane->size_of_real_elements() << std::endl;
+    //    std::cout << "#Ghost Element = " << _pane->size_of_ghost_elements() << std::endl;
+    //    std::cout << "Element Type = " << _pane->connectivity(1)->element_type() << std::endl;
+    //    std::cout << "#Node/Element = " << _pane->connectivity(1)->size_of_nodes_pe() << std::endl;
+    //    std::cout << "#First element of connectivity = " << (_pane->connectivity(1)->pointer())[0] << std::endl;          
+    //    //for (int ie=0; ie<_pane->size_of_elements(); ie++)
+    //    for (int ie=0; ie<10; ie++)
+    //    {
+    //        std::cout << "Element " << ie << " conn = ";
+    //        for (int ic=0; ic<_pane->connectivity(1)->size_of_nodes_pe(); ic++)
+    //            std::cout << _pane->connectivity(1)->pointer()[ie*(_pane->connectivity(1)->size_of_nodes_pe()) + ic] << " ";
+    //        std::cout << std::endl;
+    //    }
+    //    // writing nodal coordinates for first element
+    //    double* pc = _pane->coordinates();
+    //    for (int ic=0; ic<4; ic++)
+    //    {
+    //        int ip = _pane->connectivity(1)->pointer()[4+ic];
+    //        std::cout << "Coordinates " << pc[ic*4] << " " << pc[ic*4+1] << " " << pc[ic*4+2] << std::endl;            
+    //    }
+
+
+    //}
     if(_verb)
       cout << "MOP> MesqPane::init" << endl;
     _dc = new MAP::Pane_dual_connectivity(_pane, _with_ghost);
