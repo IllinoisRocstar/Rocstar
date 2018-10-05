@@ -373,6 +373,10 @@ static inline void load_rocprop(const RocmanControl_parameters *param, MPI_Comm 
     sprintf(val, "%f", param->PROP_fangle);
     COM_call_function( PROP_set_option, "fangle", val);
 
+    // MS
+    COM_call_function( PROP_set_option, "verbose", "2");
+
+
     int PROP_initialize = COM_get_function_handle("PROP.initialize");
     int PROP_propagate = COM_get_function_handle("PROP.propagate");
     COM_set_profiling_barrier( PROP_initialize, comm);
@@ -606,7 +610,6 @@ void FluidPropagateSurface::run( double t, double dt, double alpha_dummy)
   if(!rank && man_verbose > 2)
     std::cout << "Rocstar: Calling Rocprop"  << std::endl;
   // p_rb_hdl is the "speed function"
-  std::cout << __FILE__ << __LINE__ << std::endl;
   COM_call_function( PROP_propagate, &p_pmesh_hdl, &p_rb_hdl, &data, &p_vm_hdl);
   MPI_Barrier(mycomm);
   if(!rank && man_verbose > 2)

@@ -66,18 +66,15 @@ void PhysicsAction::run(double t, double dt, double alpha)
   // 
   if(!agent->withgm) 
   {
-    //std::cout << "Agent Name = " << agent->get_agent_name() << std::endl;
-    HeapLeakChecker heap_checker("physicsaction_run");
-    {
-    //COM_call_function(agent->update_handle, &t, &dt, 
-	//	      &agent->bc_handle);
-    }
-    if (!heap_checker.NoLeaks()) assert(NULL == "heap memory leak");
+    std::cout << "Agent Name = " << agent->get_agent_name() << std::endl;
+    COM_call_function(agent->update_handle, &t, &dt, 
+		      &agent->bc_handle);
   }
   else
   {
-    //COM_call_function(agent->update_handle, &t, &dt, 
-	//	      &agent->bc_handle, &agent->gm_handle);
+    std::cout << "Agent Name = " << agent->get_agent_name() << std::endl;
+    COM_call_function(agent->update_handle, &t, &dt, 
+		      &agent->bc_handle, &agent->gm_handle);
   }
 
   agent->current_time = t;

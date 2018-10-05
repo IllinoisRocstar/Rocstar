@@ -449,7 +449,10 @@ namespace Mesquite{
 
       // Loop through vertices of current element
       for( uint j = 0 ; j < nodes_in_elem; ++j){
-	int node_id = ((char*)elist[j] - (char*)NULL);		        	
+	//int node_id = ((char*)elist[j] - (char*)NULL);		        	
+    // MS : negative connectivity table
+	int node_id = elist[j];		        	
+    // MS end
 	pos = itop_map.find(node_id);
 	// current vertex isn't in vert_handles, add it
 	if(pos == itop_map.end()){

@@ -33,6 +33,7 @@ void FaceOffset_3::
 filter_and_identify_ridge_edges( bool filter_curves) 
 {
   // Calculate boundary normals
+  // MS: most probably causes ML issue
   _surf->update_bd_normals( _facenormals, false);
 
   COM::DataItem *maxdianglev = 
