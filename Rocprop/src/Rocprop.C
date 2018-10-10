@@ -123,12 +123,9 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
 
   // If the propagation object is not yet created, create a default one.
   if ( _prop == NULL) {
-    std::cout << "Generating propagation object type ";
     if ( _prop_method == PROP_FO) {
-      std::cout << "Face Offse.\n";
       _prop = new FaceOffset_3( wm, _buf);
     }else{
-      std::cout << "Marker Particles.\n";
       _prop = new MarkerParticles_3( wm, _buf);
     }
   }

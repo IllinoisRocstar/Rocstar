@@ -66,13 +66,11 @@ void PhysicsAction::run(double t, double dt, double alpha)
   // 
   if(!agent->withgm) 
   {
-    std::cout << "Agent Name = " << agent->get_agent_name() << std::endl;
     COM_call_function(agent->update_handle, &t, &dt, 
 		      &agent->bc_handle);
   }
   else
   {
-    std::cout << "Agent Name = " << agent->get_agent_name() << std::endl;
     COM_call_function(agent->update_handle, &t, &dt, 
 		      &agent->bc_handle, &agent->gm_handle);
   }

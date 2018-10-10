@@ -373,9 +373,6 @@ static inline void load_rocprop(const RocmanControl_parameters *param, MPI_Comm 
     sprintf(val, "%f", param->PROP_fangle);
     COM_call_function( PROP_set_option, "fangle", val);
 
-    // MS
-    COM_call_function( PROP_set_option, "verbose", "2");
-
 
     int PROP_initialize = COM_get_function_handle("PROP.initialize");
     int PROP_propagate = COM_get_function_handle("PROP.propagate");

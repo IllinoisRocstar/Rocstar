@@ -219,11 +219,11 @@
          END DO
          mat = MIN(mat, G_APN%nmat)
 
-!        rb_mks = (G_APN%a_p(mat)*(P_mks*9.869232667E-6)**G_APN%n_p(mat))*0.01   ! cm/s to m/s
+         rb_mks = (G_APN%a_p(mat)*(P_mks*9.869232667E-6)**G_APN%n_p(mat))*0.01   ! cm/s to m/s
 !KJM
 !KJM Change the rb_mks calculation to be normalized to 1000psi or 68.046 atm
 !KJM
-         rb_mks = (G_APN%a_p(mat)*(P_mks*9.869232667E-6/68.046)**G_APN%n_p(mat))*0.01
+!         rb_mks = (G_APN%a_p(mat)*(P_mks*9.869232667E-6/68.046)**G_APN%n_p(mat))*0.01
          Tflame = G_APN%Tf_adiabatic(mat)
 
       ELSE 

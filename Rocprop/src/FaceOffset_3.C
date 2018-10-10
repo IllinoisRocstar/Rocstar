@@ -204,50 +204,50 @@ time_stepping( const COM::DataItem *spds, double dt,
   // Filter out isolated ridge vertices and identify ridge edges.
   // MS : This causes ML issue
   filter_and_identify_ridge_edges(!_is_strtd && _wght_scheme==SURF::E2N_ANGLE && dt==0);
-  //mark_weak_vertices();
+  mark_weak_vertices();
 
-  //// Recompute mean normals and offset directions with only primary component
-  //compute_directions( (dt!=0 && !with_nodal_velo) ? disps_buf : NULL, true);
+  // Recompute mean normals and offset directions with only primary component
+  compute_directions( (dt!=0 && !with_nodal_velo) ? disps_buf : NULL, true);
 
-  //if ( dt==0)
-  //  denoise_surface( NULL, disps_buf);
-  //else {
-  //  double zero=0.;
-  //  Rocblas::copy_scalar( &zero, disps_tmp);
-  //  denoise_surface( disps_buf, disps_tmp);
-  //  Rocblas::add( disps_buf, disps_tmp, disps_buf);
-  //}
+  if ( dt==0)
+    denoise_surface( NULL, disps_buf);
+  else {
+    double zero=0.;
+    Rocblas::copy_scalar( &zero, disps_tmp);
+    denoise_surface( disps_buf, disps_tmp);
+    Rocblas::add( disps_buf, disps_tmp, disps_buf);
+  }
 
-  //bool needs_smoothing=(!smoothed || *smoothed);
-  //if ( smoothed) *smoothed = true;
+  bool needs_smoothing=(!smoothed || *smoothed);
+  if ( smoothed) *smoothed = true;
 
-  //if ( !needs_smoothing) {
-  //  Rocblas::copy( disps_buf, _vcenters);
-  //  if ( smoothed && *smoothed) *smoothed=false;
-  //}
-  //else if ( _is_strtd) {
-  //  update_vertex_centers();  // Update vertex centers for ridge vertices
-  //  nulaplacian_smooth( _vnormals, _tangranks, disps_buf,
-  //  		_vcenters, disps_tmp, _weights);
-  //}
-  //else if ( _smoother == SMOOTHER_ANISOTROPIC) {
-  //  // Compute anisotropic vertex centers.
-  //  compute_anisotropic_vertex_centers( disps_buf);
-  //}
-  //update_vertex_centers();  // Update vertex centers for ridge vertices
+  if ( !needs_smoothing) {
+    Rocblas::copy( disps_buf, _vcenters);
+    if ( smoothed && *smoothed) *smoothed=false;
+  }
+  else if ( _is_strtd) {
+    update_vertex_centers();  // Update vertex centers for ridge vertices
+    nulaplacian_smooth( _vnormals, _tangranks, disps_buf,
+    		_vcenters, disps_tmp, _weights);
+  }
+  else if ( _smoother == SMOOTHER_ANISOTROPIC) {
+    // Compute anisotropic vertex centers.
+    compute_anisotropic_vertex_centers( disps_buf);
+  }
+  update_vertex_centers();  // Update vertex centers for ridge vertices
 
-  //// Recompute face normals if propagation under nodal velocity
-  //if ( with_nodal_velo) {
-  //  _surf->compute_normals( _facenormals);
-  //  _surf->update_bd_normals( _facenormals, false);
-  //}
+  // Recompute face normals if propagation under nodal velocity
+  if ( with_nodal_velo) {
+    _surf->compute_normals( _facenormals);
+    _surf->update_bd_normals( _facenormals, false);
+  }
 
-  //// Constrain the displacements and vertex-centers.
-  //obtain_constrained_directions( disps_buf, _vcenters);
-  //if (_bnd_set) {
-  //  bound_nodal_motion( disps_buf);
-  //  _surf->reduce_on_shared_nodes( disps_buf, Manifold::OP_MAXABS);
-  //}
+  // Constrain the displacements and vertex-centers.
+  obtain_constrained_directions( disps_buf, _vcenters);
+  if (_bnd_set) {
+    bound_nodal_motion( disps_buf);
+    _surf->reduce_on_shared_nodes( disps_buf, Manifold::OP_MAXABS);
+  }
 
 #if EXPORT_DEBUG_INFO
   COM::DataItem *ctypes = disps->window()->dataitem( "cnstr_types_nodal");
@@ -282,27 +282,27 @@ time_stepping( const COM::DataItem *spds, double dt,
   //// Second, reduce time step based on stability limit, and rescale
   //// displacements by the reduced time step and wavefrontal expansion.
   double dt_sub = dt; 
-  //if ( _courant>0) {
-  //  for ( ;;) {
-  //    double scale = rescale_displacements( disps_buf, _vcenters);
-  //    
-  //    if ( scale==1) break;
+  if ( _courant>0) {
+    for ( ;;) {
+      double scale = rescale_displacements( disps_buf, _vcenters);
+      
+      if ( scale==1) break;
 
-  //    if ( dt==0 && _verb && _rank==0)
-  //  std::cout << "Rocprop: Scaled back displacement with a factor of " 
-  //  	  << scale << std::endl;
+      if ( dt==0 && _verb && _rank==0)
+    std::cout << "Rocprop: Scaled back displacement with a factor of " 
+    	  << scale << std::endl;
 
-  //    dt_sub *= scale;
-  //    
-  //    if ( !with_nodal_velo || _smoother == SMOOTHER_LAPLACIAN) break;
-  //    // If nodal velocity
-  //    Rocblas::mul_scalar( spds, &dt_sub, disps_buf);
-  //    if (smoothed) *smoothed=false;
-  //  }
-  //}
-  //else if ( dt==0) {
-  //  Rocblas::copy( _vcenters, disps_buf);
-  //}
+      dt_sub *= scale;
+      
+      if ( !with_nodal_velo || _smoother == SMOOTHER_LAPLACIAN) break;
+      // If nodal velocity
+      Rocblas::mul_scalar( spds, &dt_sub, disps_buf);
+      if (smoothed) *smoothed=false;
+    }
+  }
+  else if ( dt==0) {
+    Rocblas::copy( _vcenters, disps_buf);
+  }
 
 #if EXPORT_DEBUG_INFO
   if ( dt>0) {
@@ -311,14 +311,14 @@ time_stepping( const COM::DataItem *spds, double dt,
   }
 #endif
 
-  //_surf->reduce_on_shared_nodes( disps_buf, Manifold::OP_MAXABS);
+  _surf->reduce_on_shared_nodes( disps_buf, Manifold::OP_MAXABS);
 
-  //// Deallocate spds_buf and disps_buf
-  //_buf->delete_dataitem( disps_tmp->name());
-  //_buf->delete_dataitem( disps_buf->name());
-  //if ( spds_buf && spds_buf!=spds)
-  //  _buf->delete_dataitem( spds_buf->name());
-  //_buf->init_done( false);
+  // Deallocate spds_buf and disps_buf
+  _buf->delete_dataitem( disps_tmp->name());
+  _buf->delete_dataitem( disps_buf->name());
+  if ( spds_buf && spds_buf!=spds)
+    _buf->delete_dataitem( spds_buf->name());
+  _buf->init_done( false);
 
   // Finally, return the current time step.
   return dt_sub;
