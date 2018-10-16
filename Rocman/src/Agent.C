@@ -40,7 +40,9 @@
 #include "Interpolate.h"
 #include "basic_actions.h"
 
+#ifdef HAVE_GPROF
 #include <gperftools/heap-checker.h>
+#endif
 
 int Agent::read_by_control_handle=0;
 int Agent::read_files_handle=0;
