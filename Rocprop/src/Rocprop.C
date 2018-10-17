@@ -116,25 +116,31 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
   // If Rocprop is not yet initialized, call the initialization routine.
   SURF::Window_manifold_2 *wm = manifold();
   if ( wm == NULL) 
-  { initialize( pmesh, _parent); wm = manifold(); }
+      initialize( pmesh, _parent); wm = manifold(); 
   
   COM_assertion_msg( pmesh->window() == _win,
 		     "Rocprop was initialized for a different window");
 
   // If the propagation object is not yet created, create a default one.
   if ( _prop == NULL) {
-    if ( _prop_method == PROP_FO)
+    if ( _prop_method == PROP_FO) {
       _prop = new FaceOffset_3( wm, _buf);
-    else
+    }else{
       _prop = new MarkerParticles_3( wm, _buf);
+    }
   }
+
+  // MS
+  _prop->set_verbose(true);
 
   // Save the coordinates into buffers
   COM::DataItem *nc = _buf->dataitem( COM::COM_NC);
   COM::DataItem *oldnc = _buf->dataitem( "oldnc");
   Rocblas::copy( nc, oldnc);
 
+  // MS: set_constraints will cause ML issue
   _prop->set_constraints( _cnstr_types);
+  
 
   // std::cout << "made it HERE" << std::endl;
   // MPI_Barrier(MPI_COMM_WORLD);
@@ -188,7 +194,7 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
 
   COM::DataItem *spd = spds_io ? 
     _buf->inherit( spds_io, "rpr_spd_buf", 
-		   COM::Pane::INHERIT_USE, true, NULL, 0) : NULL;
+          COM::Pane::INHERIT_USE, true, NULL, 0) : NULL;
   _buf->init_done( false);
 
   // Subcycle to take small time steps
@@ -196,6 +202,7 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
   while ( t_rem > 0 || *dt==0) {
     // Time stepping
     int smoothed=(_rediter>0);
+    // MS: time_stepping also causes ML issue
     double max_dt = _prop->time_stepping( spd, t_rem, du, &smoothed);
 
     if ( _verb && _rank==0)
@@ -208,15 +215,15 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
       // If code is present, then set it to nonzero value 
       // if time step is large.
       if ( code) {
-	*code = -1;
-	std::cerr << "Rocprop: Given time step could not be reached" << std::endl;
-	break; 
+    *code = -1;
+    std::cerr << "Rocprop: Given time step could not be reached" << std::endl;
+    break; 
       }
       else if ( dt_elapsed==NULL) {
-	std::cerr << "Rocprop: Time step is smaller than the lower bound "
-		  << *dt*_time_lb << '=' << *dt << '*' << _time_lb 
-		  << "\nMesh is too distorted. Stopping..." << std::endl;
-	COM_assertion( max_dt >= *dt * _time_lb); abort();
+    std::cerr << "Rocprop: Time step is smaller than the lower bound "
+    	  << *dt*_time_lb << '=' << *dt << '*' << _time_lb 
+    	  << "\nMesh is too distorted. Stopping..." << std::endl;
+    COM_assertion( max_dt >= *dt * _time_lb); abort();
       }
     }
     if ( code) *code = 0;
@@ -232,10 +239,10 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
     // by face offsetting with time step equal to 0.
     if ( _prop_method == PROP_FO) {
       for ( int i=smoothed; i<_rediter; ++i) {
-	if ( _verb && _rank==0)
-	  std::cout << "Rocprop: Perform additional mesh smoothing" << std::endl;
-	_prop->time_stepping( NULL, 0, du, NULL);
-	Rocblas::add( nc, du, nc);
+    if ( _verb && _rank==0)
+      std::cout << "Rocprop: Perform additional mesh smoothing" << std::endl;
+    _prop->time_stepping( NULL, 0, du, NULL);
+    Rocblas::add( nc, du, nc);
       }
     }
 
@@ -244,12 +251,15 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
     else if ( *dt==0) break;
   }
 
-  // Compute displacements and recover the original coordinates
+  //// Compute displacements and recover the original coordinates
   Rocblas::sub( nc, oldnc, du);
   Rocblas::copy( oldnc, nc);
 
   // Deallocate spds_buf
-  if ( spd) _buf->delete_dataitem( spd->name());
+  if ( spd) 
+  {
+      _buf->delete_dataitem( spd->name());
+  }
   _buf->init_done( false);
 }
 

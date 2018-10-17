@@ -40,6 +40,10 @@
 #include "Interpolate.h"
 #include "basic_actions.h"
 
+#ifdef HAVE_GPROF
+#include <gperftools/heap-checker.h>
+#endif
+
 int Agent::read_by_control_handle=0;
 int Agent::read_files_handle=0;
 int Agent::obtain_attr_handle=0;
@@ -62,12 +66,16 @@ void PhysicsAction::run(double t, double dt, double alpha)
   agent->run_bcinitaction(t, dt);
 
   // 
-  if(!agent->withgm)
+  if(!agent->withgm) 
+  {
     COM_call_function(agent->update_handle, &t, &dt, 
 		      &agent->bc_handle);
+  }
   else
+  {
     COM_call_function(agent->update_handle, &t, &dt, 
 		      &agent->bc_handle, &agent->gm_handle);
+  }
 
   agent->current_time = t;
 }

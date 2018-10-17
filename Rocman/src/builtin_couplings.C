@@ -278,6 +278,7 @@ FluidBurnAlone::FluidBurnAlone( const char *fluidmodule, const char *burnmodule,
 
     // INIT_INBUFF_FLUID
 //  fluid_agent->add_bcinitaction( new DummyPrint(burn_agent, NULL, fluid_agent, "fluid"));
+  // MS : starts debugging
   fluid_agent->add_bcinitaction( new SetZero( propBufAll+".vm"));
   fluid_agent->add_bcinitaction( new FluidPropagateSurface( fluid_agent, 
                                    burn_agent, 

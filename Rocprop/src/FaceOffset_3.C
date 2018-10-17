@@ -202,6 +202,7 @@ time_stepping( const COM::DataItem *spds, double dt,
   }
   
   // Filter out isolated ridge vertices and identify ridge edges.
+  // MS : This causes ML issue
   filter_and_identify_ridge_edges(!_is_strtd && _wght_scheme==SURF::E2N_ANGLE && dt==0);
   mark_weak_vertices();
 
@@ -227,7 +228,7 @@ time_stepping( const COM::DataItem *spds, double dt,
   else if ( _is_strtd) {
     update_vertex_centers();  // Update vertex centers for ridge vertices
     nulaplacian_smooth( _vnormals, _tangranks, disps_buf,
-			_vcenters, disps_tmp, _weights);
+    		_vcenters, disps_tmp, _weights);
   }
   else if ( _smoother == SMOOTHER_ANISOTROPIC) {
     // Compute anisotropic vertex centers.
@@ -278,8 +279,8 @@ time_stepping( const COM::DataItem *spds, double dt,
   }
 #endif
 
-  // Second, reduce time step based on stability limit, and rescale
-  // displacements by the reduced time step and wavefrontal expansion.
+  //// Second, reduce time step based on stability limit, and rescale
+  //// displacements by the reduced time step and wavefrontal expansion.
   double dt_sub = dt; 
   if ( _courant>0) {
     for ( ;;) {
@@ -288,8 +289,8 @@ time_stepping( const COM::DataItem *spds, double dt,
       if ( scale==1) break;
 
       if ( dt==0 && _verb && _rank==0)
-	std::cout << "Rocprop: Scaled back displacement with a factor of " 
-		  << scale << std::endl;
+    std::cout << "Rocprop: Scaled back displacement with a factor of " 
+    	  << scale << std::endl;
 
       dt_sub *= scale;
       

@@ -1,0 +1,34 @@
+#!/bin/bash
+# this simple bash utility program finds all rocstar processes,
+# tracks memory usage, cpu usage, and plots them into png files
+#
+# NOTE: Make sure to install programs needed by this script
+#           sudo pip install psrecord
+#           sudo apt-get install python-matplotlib python-tk
+#
+# USAGE: just run your rocstar and then run this script anywhere
+#        that you want to generate output files. The scripts should 
+#        automatically exit once rocstar processes are finished
+
+# clean up old files if any
+old=($(ls rocstar_*.png | sed 's/:.*//'))
+nold=${#old[@]}
+echo "Number of old files found ${nold}"
+for (( i=0; i<${nold}; i++ ));
+do
+  rm -rf ${old[$i]}
+done
+
+# monitoring rocstar processes
+pid=($(pgrep rocstar | sed 's/:.*//'))
+nprc=${#pid[@]}
+echo "Number of process found ${nprc}"
+for (( i=0; i<${nprc}; i++ ));
+do
+  pltfn="rocstar_${pid[$i]}.png"
+  echo "Attaching to ${pid[$i]} and plotting to ${pltfn}"
+  psrecord ${pid[$i]} --interval 1 --plot ${pltfn} &
+  PE=$!
+done
+wait $PE
+echo 'Done'

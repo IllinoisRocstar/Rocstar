@@ -78,7 +78,11 @@ CONTAINS
     CALL MFUN(bp,bw)
 
 !!    rb_old = bw%rb
-    rb_old     = merge(bw%rb, zero, bw%Ts >= bp%Tignition)
+!    IF (bflag == 0) THEN                                !KJM
+       rb_old = merge(bw%rb, zero, bw%Ts >= bp%Tignition)
+!    ELSE                                                !KJM
+!       rb_old = bw%rb                                   !KJM
+!    ENDIF                                               !KJM
 
     DO  i=2,nx-1
 
@@ -94,7 +98,11 @@ CONTAINS
 
     Tnp1(nx)=To
 
-    bw%ignited = (bw%Ts > bp%Tignition) 
+!    IF (bflag == 0) THEN                                !KJM
+       bw%ignited = (bw%Ts > bp%Tignition) 
+!    ELSE                                                !KJM
+!       bw%ignited = .TRUE.                              !KJM
+!    ENDIF                                               !KJM
 
     CALL GFUN(bp,bw)
 
@@ -107,7 +115,12 @@ CONTAINS
     ! third        add = 18.0*Tnp1(2)-9.0*Tnp1(3)+2.0*Tnp1(4)
     bw%Ts=(add-rhs)/coe
 
-    bw%ignited = (bw%Ts > bp%Tignition) 
+!    IF (bflag == 0) THEN                                !KJM
+       bw%ignited = (bw%Ts > bp%Tignition) 
+!    ELSE                                                !KJM
+!       bw%ignited = .TRUE.                              !KJM
+!    ENDIF                                               !KJM
+
     bflag = merge(1,0,bw%ignited)
     if(bw%ignited) THEN
        CALL TFUN(bp,bw)
@@ -121,7 +134,12 @@ CONTAINS
 ! EVALUATE burning rate
 
     CALL MFUN(bp,bw)
-    bw%rb = merge(bw%rb, zero, bw%Ts >= bp%Tignition)
+!    IF (bflag == 0) THEN                                !KJM
+       bw%rb = merge(bw%rb, zero, bw%Ts >= bp%Tignition)
+!    ELSE
+!       bw%rb = bw%rb
+!    ENDIF
+
 !
 !    CONVERT the output back to MKS
 !

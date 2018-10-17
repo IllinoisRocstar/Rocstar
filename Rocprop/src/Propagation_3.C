@@ -102,7 +102,7 @@ set_constraints( const COM::DataItem *ct_in) {
     _buf->resize_array( _cnstr_bndry_nodes, 0);
     determine_constraint_boundary( _cnstr_faces, _cnstr_bndry_edges, _cnstr_bndry_nodes);
 
-    // Determine nodal constraints.
+    //// Determine nodal constraints.
     _buf->resize_array( _cnstr_nodes, 0);
 
     // Convert constraints from facial/panel to nodal
@@ -253,7 +253,9 @@ void Propagation_3::
 determine_constraint_boundary( const COM::DataItem *ctypes_faces,
 			       COM::DataItem *ctypes_bndry_edges,
 			       COM::DataItem *ctypes_bndry_nodes) {
+  // MS: this line causes memory leak (ML) issue
   _surf->update_bd_flags( ctypes_faces); // Update facal flags along boundaries
+  // this line end
 
   char zero = 0;
   Rocblas::copy_scalar( &zero, ctypes_bndry_edges);

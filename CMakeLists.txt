@@ -3,6 +3,7 @@ project(Rocstar CXX C Fortran)
 set(BUILD_STATIC FALSE CACHE BOOL "Build static libraries")
 set(ENABLE_MPI TRUE CACHE BOOL "Build with MPI Support")
 set(ENABLE_CGNS TRUE CACHE BOOL "Build with CGNS Support")
+set(ENABLE_PROFILING FALSE CACHE BOOL "Build with profiling Support")
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin CACHE PATH "Single directory for all executables.")
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib CACHE PATH "Single directory for all libraries and archives.")
@@ -27,6 +28,16 @@ if(BUILD_TESTING)
   set(BUILDNAME "${BUILDNAME}" CACHE STRING "Name of build on the dashboard")
   mark_as_advanced(BUILDNAME)
 endif(BUILD_TESTING)
+
+if (ENABLE_PROFILING)
+    find_library(GPROF_LIB tcmalloc_and_profiler)
+    get_filename_component(GPROF_LNKPATH ${GPROF_LIB} PATH)
+    link_directories(${GPROF_LNKPATH})
+    find_file(GPROF_HDR heap-profiler.h path /usr/include/gperftools/)
+    get_filename_component(GPROF_INCPATH ${GPROF_HDR} PATH)
+    include_directories(AFTER ${GPROF_INCPATH})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_GPROF")
+endif (ENABLE_PROFILING)
 
 # finding IMPACT libs and incs
 find_library(SITCOM_LIB SITCOM)
@@ -67,7 +78,9 @@ if (ENABLE_CGNS)
   add_definitions(-DUSE_CGNS)
 endif()
 
-# compiler definitions
+# compiler definitions/flags
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
+
 if(MPI_CXX_COMPILER)
   add_definitions(-D_ROCSTAR_PARALLEL_)
 endif()
@@ -87,7 +100,7 @@ include_directories(./Roccom/include ./Rocman/include)
 add_executable(rocstar src/rocstar.C)
 set_source_files_properties(src/rocstar.C PROPERTIES COMPILE_FLAGS "${MPI_CXX_COMPILE_FLAGS}")
 set_target_properties(rocstar PROPERTIES LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
-target_link_libraries(rocstar Rocman ${IMPACT_LIB} ${MPI_CXX_LIBRARIES})
+target_link_libraries(rocstar Rocman ${IMPACT_LIB} ${MPI_CXX_LIBRARIES} ${GPROF_LIB})
 
 install(TARGETS rocstar RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 
