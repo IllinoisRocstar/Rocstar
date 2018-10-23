@@ -15,7 +15,6 @@ find_path(ROCCOM_INC com.h     HINTS ../IMPACT/COM/include)
 find_path(MAP_INC Rocmap.h     HINTS ../IMPACT/SurfMap/include)
 find_path(SURF_INC Rocsurf.h   HINTS ../IMPACT/SurfUtil/include)
 find_path(SIMPAL_INC Rocblas.h HINTS ../IMPACT/Simpal/include)
-set (ROCCOM_DIR "${ROCCOM_INC}/..")
 set(MESQUITE_DIR ${PROJECT_SOURCE_DIR}/External/mesquite_0_9_5)
 set(ROCMOP2_SRCS src/Rocmop_2.C src/smooth_mesquite_2.C src/smooth_mesquite_ng_2.C
                  src/smooth_medial_2.C)
@@ -50,7 +49,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 #      when generating Rocmop.d and Mesquite.d.
 #CXXFLAGS        += -I$(MESQHOME)/include -I$(BUILD_MESQHOME)/includeLinks \
 #		   -DMESQUITE
-include_directories(include ${ROCCOM_INC} ${MAP_INC} ${SURF_INC} ${SURF_INC}/test ${MAP_INC}/test ${MESQUITE_DIR}/include ${MESQUITE_DIR}/includeLinks ${ROCCOM_DIR}/Rocsurf/test ${SIMPAL_INC})
+include_directories(include ${ROCCOM_INC} ${MAP_INC} ${SURF_INC} ${SURF_INC}/test ${MAP_INC}/test ${MESQUITE_DIR}/include ${MESQUITE_DIR}/includeLinks ${SIMPAL_INC})
 add_definitions(-DMESQUITE)
 
 add_subdirectory(External/mesquite_0_9_5)

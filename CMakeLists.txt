@@ -96,7 +96,7 @@ add_subdirectory(Rocburn)
 add_subdirectory(Rocprep)
 add_subdirectory(testing)
 
-include_directories(./Roccom/include ./Rocman/include)
+include_directories(./Rocman/include)
 add_executable(rocstar src/rocstar.C)
 set_source_files_properties(src/rocstar.C PROPERTIES COMPILE_FLAGS "${MPI_CXX_COMPILE_FLAGS}")
 set_target_properties(rocstar PROPERTIES LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")

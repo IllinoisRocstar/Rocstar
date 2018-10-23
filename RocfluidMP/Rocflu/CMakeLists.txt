@@ -715,7 +715,6 @@ target_link_libraries(rflumap Rocflu Rocmop ${IMPACT_LIB} ${MPI_Fortran_LIBRARIE
 
 SET_TARGET_PROPERTIES(Rocflu rfluinit rflupart rflumap PROPERTIES LINK_FLAGS "${MPI_CXX_LINK_FLAGS} ${MPI_Fortran_LINK_FLAGS}")
 #target_link_libraries(makeflo read write ${MFHDF_LIB} ${HDF4_LIB} ${JPEG_LIB} ${ZLIB})
-#target_link_libraries(rfloprep Rocflo Rocout Rocin Roccomf Roccom)
 
 # Unit test programs
 #read.tst: $(RTST) read.cpp
