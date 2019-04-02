@@ -10,7 +10,7 @@ Rocstar is a multiphysics simulation application designed to do fluid-structure 
 To acquire RocstarMP, you can download it from Illinois Rocstar's GitHub
 or clone it with the following command:
 ```
-$ git clone git@git.illinois.rocstar:rocstar_modern/rocstar.git
+$ git clone https://github.com/IllinoisRocstar/Rocstar.git
 ```
 ## Build Instructions ##
 ### Build Dependencies ###
@@ -27,8 +27,8 @@ Make sure to `apt install` following before you start
 
 Make sure to compile and install following packages before you start compiling RocstarMP:
 
-* IMPACT (available at illinoir rocstar git repo)
-* METIS 4.0.3 (available http://glaros.dtc.umn.edu/gkhome/fsroot/sw/metis/OLD)
+* IMPACT (available [here](https://github.com/IllinoisRocstar/IMPACT))
+* METIS 4.0.3 (available [here](http://glaros.dtc.umn.edu/gkhome/fsroot/sw/metis/OLD))
 
 ### Build RocstarMP ###
 For the following steps we assume `$ROCSTAR_PROJECT_PATH` is the path to RocstarMP, `$ROCSTAR_INSTALL_PATH` is 
@@ -57,7 +57,7 @@ This will execute several tests in `$ROCSTAR_PROJECT_PATH/testing`. See the test
 ### Manually Build Third Party Libraries ###
 
 #### Building IMPACT ####
-A special version of IMPACT (free from IRAD) is used. The project should be obtian from IR's internal git repository.
+The new version of IMPACT project should be obtianed from GitHub [here](https://github.com/IllinoisRocstar/IMPACT).
 Follow directions given at the project page to compile and build IMPACT.
 
 #### Building CGNS ####
