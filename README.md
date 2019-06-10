@@ -41,7 +41,7 @@ Start the build process by:
 ```
 $ cd $ROCSTAR_PROJECT_PATH
 $ mkdir build && cd build
-$ cmake -DMPI_C_COMPILER=/usr/bin/mpicc.mpich -DMPI_CXX_COMPILER=/usr/bin/mpicxx.mpich -DMPI_Fortran_COMPILER=/usr/bin/mpif90.mpich -DCMAKE_C_COMPILER=mpicc.mpich -DCMAKE_CXX_COMPILER=mpicxx.mpich -DCMAKE_Fortran_COMPILER=mpif90.mpich -DCMAKE_INSTALL_PREFIX=$ROCSTAR_INSTALL_PATH -DENABLE_MPI=ON -DENABLE_CGNS=ON -DIMPACT_HDR=$IMPACT_INSTALL_PATH/include/com.h -DMETIS_INC=$METIS_INC_PATH -DMETIS_LIB=$METIS_LIB_PATH -DSITCOM_LIB=$IMPACT_INSTALL_PATH/lib/libSITCOM.so .. 
+$ cmake -DMPI_C_COMPILER=/usr/bin/mpicc.mpich -DMPI_CXX_COMPILER=/usr/bin/mpicxx.mpich -DMPI_Fortran_COMPILER=/usr/bin/mpif90.mpich -DCMAKE_C_COMPILER=mpicc.mpich -DCMAKE_CXX_COMPILER=mpicxx.mpich -DCMAKE_Fortran_COMPILER=mpif90.mpich -DCMAKE_INSTALL_PREFIX=$ROCSTAR_INSTALL_PATH -DENABLE_MPI=ON -DENABLE_CGNS=ON -DIMPACT_INCPATH=$IMPACT_INSTALL_PATH/include/ -DMETIS_INC=$METIS_INC_PATH -DMETIS_LIB=$METIS_LIB_PATH -DSITCOM_LIB=$IMPACT_INSTALL_PATH/lib/libSITCOM.so .. 
 $ make -j6
 $ make install
 ```
