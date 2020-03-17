@@ -68,9 +68,7 @@ SUBROUTINE ReadMixtureSection(regions)
 
   INTEGER :: iReg,nVals
 
-#ifdef RFLU
   INTEGER, PARAMETER :: NVALS_MAX = 2
-#endif
 
   CHARACTER(10) :: keys(NVALS_MAX)
   LOGICAL :: defined(NVALS_MAX)
@@ -90,30 +88,26 @@ SUBROUTINE ReadMixtureSection(regions)
 
   nVals = NVALS_MAX
 
-#ifdef RFLU
   keys(1) = 'FROZENFLAG'
-  keys(2) = 'GASMODEL'     
-#endif
+  keys(2) = 'GASMODEL'
 
-#ifdef RFLU
   CALL ReadSection(global,IF_INPUT,nVals,keys,vals,defined)
 
-  DO iReg = LBOUND(regions,1),UBOUND(regions,1)  
+  DO iReg = LBOUND(regions,1),UBOUND(regions,1)
     IF ( defined(1) .EQV. .TRUE. ) THEN 
       IF ( NINT(vals(1)) == 1 ) THEN 
         regions(iReg)%mixtInput%frozenFlag = .TRUE.
       ELSE 
         regions(iReg)%mixtInput%frozenFlag = .FALSE.
       END IF ! NINT(vals(1))
-    END IF ! defined               
+    END IF ! defined
   END DO ! iReg
 
-  DO iReg = LBOUND(regions,1),UBOUND(regions,1)  
+  DO iReg = LBOUND(regions,1),UBOUND(regions,1)
     IF ( defined(2) .EQV. .TRUE. ) THEN 
       regions(iReg)%mixtInput%gasModel = NINT(vals(2))
-    END IF ! defined               
+    END IF ! defined
   END DO ! iReg
-#endif
 
 ! ******************************************************************************
 ! End

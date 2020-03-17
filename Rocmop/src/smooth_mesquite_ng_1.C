@@ -461,8 +461,8 @@ struct Four_tuple {
   int &operator[](int i) { return (&_a)[i]; }
   const int &operator[](int i) const { return (&_a)[i]; }
   bool operator<( const Four_tuple &x) const {
-    return _a<x._a || (_a==x._a && (_b<x._b || _b==x._b && 
-				    (_c<x._c || _c==x._c && _d<x._d)));
+    return _a<x._a || (_a==x._a && (_b<x._b || (_b==x._b &&
+				    (_c<x._c || (_c==x._c && _d<x._d)))));
   }
 private:
   int _a, _b, _c, _d;
@@ -668,9 +668,9 @@ void Rocmop::determine_physical_border(COM::DataItem* w_is_surface){
 	     (fne.size_of_edges()>3?(adj_pane_set[i][k].find(fne[3]) != aps_it2):1)){
 	    // and if they are
 	    // then this facet is possibly shared with the adjacent node
-	    Four_tuple ns( fne[0], fne[1], fne[2], fne.size_of_edges()>3?fne[3]:-1);
-	    std::sort(&ns[0],&ns[4]);
-	    maybe_shared[i][k].insert(std::make_pair(ns,(*bf_it)));
+	    Four_tuple fns( fne[0], fne[1], fne[2], fne.size_of_edges()>3?fne[3]:-1);
+	    std::sort(&fns[0],&fns[4]);
+	    maybe_shared[i][k].insert(std::make_pair(fns,(*bf_it)));
 	  }
 	}
       }
@@ -1001,9 +1001,9 @@ void Rocmop::determine_physical_border(COM::DataItem* w_is_surface){
 	  if(bf_it != bf_it2)
 	    border_facets[i].erase(fid);
 	}
-	else
-	  ;
-	  //std::cout << "not found\n";
+	else {
+          // std::cout << "not found\n";
+        }
       }
     }
   }

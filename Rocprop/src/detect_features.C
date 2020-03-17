@@ -119,10 +119,10 @@ filter_and_identify_ridge_edges( bool filter_curves)
     // Loop through real elements of the current pane
     Element_node_enumerator ene( pane, 1);
     for ( int j=0, nj=pane->size_of_real_elements(); j<nj; ++j, ene.next()) {
-      int ne=ene.size_of_edges(), uindex=ene[ne-1]-1, vindex=ene[0]-1, windex=0;
+      int ne=ene.size_of_edges()/*, uindex=ene[ne-1]-1*/, vindex=ene[0]-1, windex=0;
       nedges += ne;
 	
-      for ( int k=0; k<ne; ++k, uindex=vindex, vindex=windex) {
+      for ( int k=0; k<ne; ++k/*, uindex=vindex*/, vindex=windex) {
 	windex = ene[ (k+1)%ne]-1;
 
 	Edge_ID eid(j+1,k), eid_opp = (*pm_it)->get_opposite_real_edge( eid);
@@ -239,11 +239,11 @@ filter_and_identify_ridge_edges( bool filter_curves)
       int vi = eid.lid(), vindex = ene[vi]-1;
 
       // Determine the number of strongly attached edges
-      if ( !tranks[vindex] || tranks[vindex] == char(-1) || fangle > _tol_angle_strong ||
-	   ( feg < 0 && fangle == -minvs[vindex] || 
-	     feg > 0 && fangle == maxvs[vindex]) &&
-	   ( feg < -_tol_cos_osta && feg == minta[vindex] || 
-	     feg > _tol_cos_osta && feg == maxta[vindex])) {
+      if (!tranks[vindex] || tranks[vindex] == char(-1) || fangle > _tol_angle_strong ||
+          (((feg < 0 && fangle == -minvs[vindex]) ||
+            (feg > 0 && fangle == maxvs[vindex])) &&
+           ((feg < -_tol_cos_osta && feg == minta[vindex]) ||
+            (feg > _tol_cos_osta && feg == maxta[vindex])))) {
 	++nnf[vindex];
       }
     } // for eit
@@ -291,18 +291,17 @@ filter_and_identify_ridge_edges( bool filter_curves)
       int vi=eid.lid(), ne = ene.size_of_edges();
       int vindex = ene[vi]-1, windex = ene[ (vi+1)%ne]-1;
 
-      if ( (nnf[vindex] && nnf[windex]) &&
-	   ( strong[vindex] || !tranks[vindex] || tranks[vindex] == char(-1) ||
-	     feg < 0 && fangle == -minvs[vindex] || 
-	     feg > 0 && fangle == maxvs[vindex] ||
-	     feg < -_tol_cos_osta && feg == minta[vindex] ||
-	     feg > _tol_cos_osta && feg == maxta[vindex]) ||
-	   nnf[vindex]==2 && nnf[windex]==2 && 
-	   ( (feg_opp=emap_pn.find( eid_opp)->second)< 0 && 
-	     fangle == -minvs[windex] ||
-	     feg_opp > 0 && fangle == maxvs[windex]) &&
-	   ( feg_opp < -_tol_cos_osta && feg_opp == minta[windex] ||
-	     feg_opp > _tol_cos_osta && feg_opp == maxta[windex])) {
+      if (((nnf[vindex] && nnf[windex]) &&
+           (strong[vindex] || !tranks[vindex] || tranks[vindex] == char(-1) ||
+            (feg < 0 && fangle == -minvs[vindex]) ||
+            (feg > 0 && fangle == maxvs[vindex]) ||
+            (feg < -_tol_cos_osta && feg == minta[vindex]) ||
+            (feg > _tol_cos_osta && feg == maxta[vindex]))) ||
+          (nnf[vindex] == 2 && nnf[windex] == 2 &&
+           (((feg_opp = emap_pn.find(eid_opp)->second) < 0 && fangle == -minvs[windex]) ||
+            (feg_opp > 0 && fangle == maxvs[windex])) &&
+           ((feg_opp < -_tol_cos_osta && feg_opp == minta[windex]) ||
+            (feg_opp > _tol_cos_osta && feg_opp == maxta[windex])))) {
 	eset_pn.insert( eid);
 	qses[ eid.eid()-1] |= (1<<eid.lid());
       }
@@ -325,8 +324,8 @@ filter_and_identify_ridge_edges( bool filter_curves)
 	  eit!=eset_pn.end();) {
       Edge_ID eid = *eit, eid_opp = (*pm_it)->get_opposite_real_edge( eid);
 
-      if ( !eid_opp.is_border() && eset_pn.find(eid_opp)==eset_pn.end() ||
-	   eid_opp.is_border() && !(*pm_it)->get_bdedge_flag( eid_opp)) {
+      if ((!eid_opp.is_border() && eset_pn.find(eid_opp) == eset_pn.end()) ||
+          (eid_opp.is_border() && !(*pm_it)->get_bdedge_flag(eid_opp))) {
 	std::set< Edge_ID>::iterator to_delete = eit;
 	++eit;
 	eset_pn.erase( to_delete);
@@ -533,13 +532,13 @@ reclassify_ridge_vertices( const bool upgrade_corners,
 	(pane->dataitem(vecsums_buf->id())->pointer());
 
     for ( int j=0, nj=pane->size_of_real_nodes(); j<nj; ++j) {
-      if ( upgrade_corners && ( nnf[j]>=3 || nnf[j] == 2 &&
-				vss[j].squared_norm() >= tol_sqsin))
+      if (upgrade_corners &&
+          (nnf[j] >= 3 || (nnf[j] == 2 && vss[j].squared_norm() >= tol_sqsin)))
 	tranks[j] = 0;   // Upgrade joints to corners
       else if ( nnf[j] == 0 && std::abs(tranks[j]) == 1)
 	tranks[j] = 2; 	// Downgrade ridge vertices without neighbors
-      else if ( upgrade_ridge && tranks[j] == 2 && nnf[j] >= 2 || 
-		upgrade_corners && tranks[j] == -1)
+      else if ((upgrade_ridge && tranks[j] == 2 && nnf[j] >= 2) ||
+               (upgrade_corners && tranks[j] == -1))
 	tranks[j] = 1; // Upgrade ridge vertices with two or more neighbors
 
       ncrns += !tranks[j];
@@ -591,8 +590,9 @@ build_ridge_neighbor_list( const COM::DataItem *maxtrnangv,
 	  eend=eset_pn.end(); eit!=eend; ++eit) {
     // Make sure that eid_opp is not border
     Edge_ID eid = *eit, eid_opp = (*pm_it)->get_opposite_real_edge( eid);
-    COM_assertion( eset_pn.find(eid_opp)!=eset_pn.end() &&
-		   !eid.is_border());
+    if (eset_pn.find(eid_opp) == eset_pn.end() || eid.is_border()) {
+      COM_abort(EXIT_FAILURE);
+    }
     Element_node_enumerator ene( pane, eid.eid()); 
     int lid=eid.lid(), neighbor = (lid+1)%ene.size_of_edges();
 
@@ -642,18 +642,20 @@ build_ridge_neighbor_list( const COM::DataItem *maxtrnangv,
 	double feg = emap_pn.find( eid)->second;
 
 	// If disjoint, then add edge into obscend_pn.
-	if ( fangle < _tol_eangle &&
-	     ( strong[vid-1] || tranks[vid-1]==1 && 
-	       ( (-feg < _tol_cos_osta || feg != minta[vid-1]) &&
-		 ( feg < _tol_cos_osta || feg != maxta[vid-1]) ||
-		 ( feg<0 || fangle != maxvs[vid-1]) && 
-		 ( feg>0 || fangle != -minvs[vid-1]))) ||
-	     fangle < _tol_angle_strong && 
-	     ( strong[vid-1]==2 || tranks[vid-1]==1 &&
-	       ( std::abs(feg) < _tol_cos_osta ||
-		 feg != minta[vid-1] && feg != maxta[vid-1]) && 
-	       ( feg<0 || fangle != maxvs[vid-1]) && 
-	       ( feg>0 || fangle != -minvs[vid-1]))) {
+        if ((fangle < _tol_eangle &&
+             (strong[vid - 1] ||
+              (tranks[vid - 1] == 1 &&
+               (((-feg < _tol_cos_osta || feg != minta[vid - 1]) &&
+                 (feg < _tol_cos_osta || feg != maxta[vid - 1])) ||
+                ((feg < 0 || fangle != maxvs[vid - 1]) &&
+                 (feg > 0 || fangle != -minvs[vid - 1])))))) ||
+            (fangle < _tol_angle_strong &&
+             (strong[vid - 1] == 2 ||
+              (tranks[vid - 1] == 1 &&
+               (std::abs(feg) < _tol_cos_osta ||
+                (feg != minta[vid - 1] && feg != maxta[vid - 1])) &&
+               (feg < 0 || fangle != maxvs[vid - 1]) &&
+               (feg > 0 || fangle != -minvs[vid - 1]))))) {
 	  obscend_pn[ ait->eid] = std::make_pair( vid, ait->vid);
 	  ait = ach_it->second.erase( ait);
         }
@@ -729,10 +731,10 @@ filter_obscended_ridge( const std::vector<std::map<Edge_ID, double> > &edge_maps
       int cur=rit->second.first, next=rit->second.second, start=cur;
 
       Edge_ID eid = rit->first;
-      bool is_dangling = ( rdgngbs[ (cur-1)*2].vid==next && 
-			   !rdgngbs[ (cur-1)*2+1].vid ||
-			   !rdgngbs[ (cur-1)*2].vid && 
-			   !rdgngbs[ (cur-1)*2+1].vid);
+      bool is_dangling = ((rdgngbs[(cur - 1) * 2].vid == next &&
+                           !rdgngbs[(cur - 1) * 2 + 1].vid) ||
+                          (!rdgngbs[(cur - 1) * 2].vid &&
+                           !rdgngbs[(cur - 1) * 2 + 1].vid));
       bool is_not_joint1 = ( rdgngbs[ (cur-1)*2].vid!=next && 
 			     rdgngbs[ (cur-1)*2+1].vid!=next), is_not_joint2=false;
 
@@ -766,8 +768,9 @@ filter_obscended_ridge( const std::vector<std::map<Edge_ID, double> > &edge_maps
       }
 
       // Check whether the edge is quasi-obscure.
-      if ( (is_dangling || is_not_joint1 && is_not_joint2) && count_ks<=_tol_kstrong ||
-	   is_strong1 && is_strong2 && count_ks==0) {
+      if (((is_dangling || (is_not_joint1 && is_not_joint2)) &&
+           count_ks <= _tol_kstrong) ||
+          (is_strong1 && is_strong2 && count_ks == 0)) {
 	todelete_pn.insert( *rit);
       }
     }

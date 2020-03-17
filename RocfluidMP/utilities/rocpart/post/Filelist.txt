@@ -13,16 +13,16 @@
 ################################################################################
 
 SRCF90+=        PLAG_ModInterfacesPost.F90\
-		BuildVersionString.F90\
-		Average.F90\
-		PLAG_PostProcessing.F90\
-		PLAG_ProcessEulerField.F90\
+                BuildVersionString.F90\
+                Average.F90\
+                PLAG_PostProcessing.F90\
+                PLAG_ProcessEulerField.F90\
                 PLAG_AllocateMemoryPost.F90\
                 PLAG_DeallocateMemoryPost.F90\
                 PLAG_ReadSolutionFilePost.F90\
                 PLAG_WriteTecplotAscii.F90\
-		PLAG_BinSortNozzleInlet.F90\
-		PLAG_BinSortSpatialDist.F90
+                PLAG_BinSortNozzleInlet.F90\
+                PLAG_BinSortSpatialDist.F90
 
 ifdef STATS
   SRCF90+=      PLAG_ReadStatPost.F90\

@@ -92,7 +92,7 @@ MODULE RFLU_ModRoeFlux
 !
 ! Input: 
 !   pRegion     Pointer to region data
-!   fluxPart	Part of flux (central or dissipation)
+!   fluxPart    Part of flux (central or dissipation)
 !
 ! Output: None.
 !

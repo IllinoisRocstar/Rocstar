@@ -670,12 +670,12 @@ FUNCTION RFLU_GetConstrValue(pRegion,pPatch,var,ifl)
 #else
           IF ( pRegion%mixtInput%flowModel == FLOW_EULER ) THEN 
             CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)
-	  ELSE
-	    tb = pPatch%mixt%vals(BCDAT_INJECT_TEMP,dist*ifl)
-	    
-	    RFLU_GetConstrValue = tinj
-	  END IF ! pRegion%mixtInput%flowModel
-#endif	  	  
+          ELSE
+            tb = pPatch%mixt%vals(BCDAT_INJECT_TEMP,dist*ifl)
+
+            RFLU_GetConstrValue = tinj
+          END IF ! pRegion%mixtInput%flowModel
+#endif
         CASE DEFAULT ! defensive coding
           CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)
       END SELECT ! pPatch%bcType   

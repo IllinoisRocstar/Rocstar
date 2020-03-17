@@ -82,83 +82,6 @@ SUBROUTINE ReadProbeSection( global )
 
 ! specify keywords and search for them
 
-#ifdef RFLO
-  defined(:) = .false.
-
-  keys(1) = 'NUMBER'
-  nCols   = 4
-  
-  CALL ReadListSection( global,IF_INPUT,keys(1),nCols,nRows,valsLoc,defined(1) )
-
-  IF (defined(1).eqv..true.) THEN
-    global%nProbes = nRows
-    ALLOCATE( global%probePos(nRows,nCols),stat=errorFlag )
-    errorFlag = global%error
-    IF (global%error /= 0) CALL ErrorStop( global,ERR_ALLOCATE,__LINE__ )
-
-! - support entering 0 for the block and the x, y, z coordinates
-!   instead of the block number and indeces.
-
-    ALLOCATE( global%probeXYZ(nRows,nCols),stat=errorFlag )
-    errorFlag = global%error
-    IF (global%error /= 0) CALL ErrorStop( global,ERR_ALLOCATE,__LINE__ )
-    DO ival=1,global%nProbes
-      IF (valsLoc(ival,1) /= 0.) THEN
-        DO n=1,nCols
-          global%probePos(ival,n) = INT(ABS(valsLoc(ival,n))+0.5_RFREAL)
-        ENDDO
-      ELSE
-
-! ----- they have entered coordinates.  Assign probePos in writeProbe.
-        DO n=1,nCols
-          global%probePos(ival,n) = 0
-          global%probeXYZ(ival,n) = valsLoc(ival,n)
-        ENDDO
-      ENDIF
-    ENDDO
-  ENDIF
-  
-  IF (defined(1).eqv..true.) THEN
-    DEALLOCATE( valsLoc,stat=errorFlag )
-    global%error = errorFlag
-    IF (global%error /= 0) CALL ErrorStop( global,ERR_DEALLOCATE,__LINE__ )
-  ENDIF
-
-! get dump interval
-
-  defined(:) = .false.
-
-  keys(1) = 'WRITIME'
-  keys(2) = 'WRIITER'
-  keys(3) = 'OPENCLOSE'
-
-  CALL ReadSection( global,IF_INPUT,3,keys,valsDump,defined )
-
-  IF (defined(1).eqv..true.) global%probeSaveTime = ABS(valsDump(1))
-  IF (defined(2).eqv..true.) THEN
-    global%probeSaveIter = INT(ABS(valsDump(2))+0.5_RFREAL)
-    global%probeSaveIter = MAX(1,global%probeSaveIter)
-  ENDIF
-  IF (defined(3).eqv..true.) THEN
-    IF (valsDump(3) < 0.5_RFREAL) THEN
-      global%probeOpenClose = .false.
-    ELSE
-      global%probeOpenClose = .true.
-    ENDIF
-  ENDIF
-  IF ((.NOT.(defined(1).eqv..true.)).AND. &
-      (.NOT.(defined(2).eqv..true.)).AND. &
-      (.NOT.(defined(3).eqv..true.))) THEN
-    BACKSPACE(IF_INPUT, IOSTAT=errorFlag)
-    global%error = errorFlag
-    IF (global%error /= ERR_NONE) &
-      CALL ErrorStop( global,ERR_FILE_READ,__LINE__, &
-                     'while backspacing after reading probe section' )
-  ENDIF  ! not defined
-#endif
-
-
-#ifdef RFLU
   defined = .FALSE.
 
   keys(1) = 'NUMBER'
@@ -226,7 +149,6 @@ SUBROUTINE ReadProbeSection( global )
       global%probeOpenClose = .TRUE.
     END IF ! valsDump
   END IF ! defined
-#endif
 
 ! TEMPORARY - See comment above
   END IF ! global%nProbes

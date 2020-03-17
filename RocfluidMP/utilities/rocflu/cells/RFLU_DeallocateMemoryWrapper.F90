@@ -27,7 +27,7 @@
 ! Description: None.
 !
 ! Input:
-!   pRegion	Region pointer
+!   pRegion     Region pointer
 !
 ! Output: None.
 !

@@ -48,16 +48,8 @@ SUBROUTINE UpdateDependentVarsMP(region)
   USE ModError
   USE ModGlobal, ONLY: t_global
   USE ModDataStruct, ONLY: t_region
-#ifdef RFLU
   USE RFLU_ModConvertCv, ONLY: RFLU_ConvertCvCons2Prim, &
                                RFLU_ConvertCvPrim2Cons
-#endif
-
-#ifdef RFLO
-  USE ModInterfaces, ONLY: RFLO_GetDimensDummy,RFLO_GetCellOffset
-
-#include "Indexing.h"
-#endif
 
   USE ModInterfaces, ONLY: MixtureProperties
 
@@ -87,13 +79,8 @@ SUBROUTINE UpdateDependentVarsMP(region)
 
   CHARACTER(CHRLEN) :: RCSIdentString
   INTEGER :: ibc,iec
-#ifdef RFLO
-  INTEGER :: iCOff,idcbeg,idcend,ijCOff,iLev,jdcbeg,jdcend,kdcbeg,kdcend
-#endif
   TYPE(t_global), POINTER :: global
-#ifdef RFLU
   TYPE(t_region), POINTER :: pRegion
-#endif
 
 ! *****************************************************************************
 ! Start
@@ -110,20 +97,8 @@ SUBROUTINE UpdateDependentVarsMP(region)
 ! Set variables
 ! *****************************************************************************
 
-#ifdef RFLO
-  iLev = region%currLevel
-
-  CALL RFLO_GetDimensDummy(region,iLev,idcbeg,idcend,jdcbeg,jdcend,kdcbeg, &
-                           kdcend)
-  CALL RFLO_GetCellOffset(region,iLev,iCOff,ijCOff)
-  ibc = IndIJK(idcbeg,jdcbeg,kdcbeg,iCOff,ijCOff)
-  iec = IndIJK(idcend,jdcend,kdcend,iCOff,ijCOff)
-#endif
-
-#ifdef RFLU
   ibc = 1
   iec = region%grid%nCellsTot
-#endif
 
 ! *****************************************************************************
 ! Update dependent variables
@@ -136,7 +111,6 @@ SUBROUTINE UpdateDependentVarsMP(region)
 
   CALL MixtureProperties(region,ibc,iec,.TRUE.)
 
-#ifdef RFLU
 #ifdef PLAG
 ! =============================================================================
 ! Particles
@@ -148,7 +122,6 @@ SUBROUTINE UpdateDependentVarsMP(region)
     CALL PLAG_nonCvUpdate(pRegion)
     CALL RFLU_ConvertCvPrim2Cons(pRegion,CV_MIXT_STATE_CONS)
   END IF ! plagUsed
-#endif
 #endif
 
 #ifdef SPEC

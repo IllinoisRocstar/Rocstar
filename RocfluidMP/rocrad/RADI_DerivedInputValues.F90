@@ -42,31 +42,15 @@
 !
 !******************************************************************************
 
-#ifdef RFLO
-SUBROUTINE RADI_DerivedInputValues( regions )
-#endif
-#ifdef RFLU
 SUBROUTINE RADI_DerivedInputValues
-#endif
 
   USE ModDataTypes
-#ifdef RFLO  
-  USE ModDataStruct, ONLY : t_region
-#endif
   USE ModGlobal, ONLY     : t_global
   USE ModRadiation, ONLY  : t_radi_input
   USE ModError
   USE ModParameters
   USE RADI_ModParameters
   IMPLICIT NONE
-
-#ifdef RFLO
-! ... parameters
-  TYPE(t_region), POINTER :: regions(:)
-
-! ... loop variables
-  INTEGER :: iReg, l, m, n
-#endif
 
 ! ... local variables
   TYPE(t_global), POINTER     :: global
@@ -77,7 +61,6 @@ SUBROUTINE RADI_DerivedInputValues
 
 !******************************************************************************
 
-  global => regions(1)%global
   CALL RegisterFunction( global,'RADI_DerivedInputValues',&
   'RADI_DerivedInputValues.F90' )
 
@@ -85,97 +68,6 @@ SUBROUTINE RADI_DerivedInputValues
 
   pi    = global%pi
   twopi = 2._RFREAL*pi
-
-#ifdef RFLO
-! global values ---------------------------------------------------------------
-
-! region related data (all levels) --------------------------------------------
-
-  DO iReg=1,global%nRegions
-
-    IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-        regions(iReg)%active==ACTIVE) THEN              ! on my processor
-
-      input => regions(iReg)%radiInput
-
-! --- Stefan-Boltzman constant
-      input%stBoltz = 5.67E-8_RFREAL
-
-! --- set logical value of radiUsed
-
-      IF (input%radiModel /= RADI_MODEL_NONE) THEN
-        regions(iReg)%mixtInput%radiUsed = .TRUE.
-      ENDIF
-
-! --- set number of cv, dv and grad components
-
-      input%nCv   = 0
-      input%nGrad = 0 
-      IF (input%radiModel == RADI_MODEL_FLDTRAN) THEN
-        input%nCv   = 1
-        input%nGrad = 3
-      ENDIF
-
-      input%nDv   = 0
-      IF ((input%radiModel /= RADI_MODEL_ROSS)    .AND. &
-          (input%radiModel /= RADI_MODEL_FLDSRC)  .AND. &
-          (input%radiModel /= RADI_MODEL_FLDTRAN)) THEN
-        input%nDv   = 1
-      ENDIF
-
-! --- discrete ordinates and/or intensity angles of RTE models
-
-      IF ((input%radiModel == RADI_MODEL_RTEGRAY)  .OR. &
-          (input%radiModel == RADI_MODEL_RTEBAND)) THEN
-
-        IF (input%solMethod == RADI_NUM_DOM4) THEN
-          input%nOrdin = 4
-          input%nAng   = input%nOrdin
-        ELSEIF (input%solMethod == RADI_NUM_DOM8) THEN
-          input%nOrdin = 8          
-          input%nAng   = input%nOrdin
-        ELSEIF (input%solMethod == RADI_NUM_DOM16) THEN
-          input%nOrdin = 16          
-          input%nAng   = input%nOrdin
-        ELSEIF (input%solMethod == RADI_NUM_FVM) THEN
-          input%nAng = (input%nPol+1)*(input%nAzi+1)
-        ENDIF ! solMethod
-      ENDIF   ! radiModel
-
-! --- assign angles read from input file to data structure
-
-      ALLOCATE( input%angles(input%nAng,RADI_ANGLE_NCOMP),stat=errorFlag )
-      global%error = errorFlag
-      IF (global%error /= 0) CALL ErrorStop( global,ERR_ALLOCATE,__LINE__ )
-
-      IF ((input%radiModel == RADI_MODEL_ROSS)  .OR. &
-          (input%radiModel == RADI_MODEL_FLDSRC) .OR. &
-          (input%radiModel == RADI_MODEL_FLDTRAN)) THEN
-        READ(input%line(1),*,err=10,end=20) (input%angles(l,RADI_ANGLE_POLAR), &
-                                             l=1,input%nAng )  
-        READ(input%line(2),*,err=10,end=20) (input%angles(l,RADI_ANGLE_AZIMU), &
-                                             l=1,input%nAng )  
-        input%angles = input%angles*global%rad 
-
-      ELSEIF ((input%radiModel == RADI_MODEL_RTEGRAY)  .OR. &
-              (input%radiModel == RADI_MODEL_RTEBAND)) THEN
-        IF (input%solMethod == RADI_NUM_FVM) THEN
-          DO m = 1,input%nPol+1
-            DO l = 1,input%nAzi+1
-              n = (m-1)*(input%nAzi+1) + l
-              input%angles(n,RADI_ANGLE_AZIMU) =   pi*DBLE(l-1)/DBLE(input%nAzi)
-              input%angles(n,RADI_ANGLE_POLAR) =twopi*DBLE(m-1)/DBLE(input%nPol)
-            ENDDO
-          ENDDO
-        ELSE  ! DOM
-
-        ENDIF ! solMethod
-      ENDIF   ! radiModel
-
-    ENDIF ! region active and my processor
-  ENDDO   ! iReg
-  
-#endif
 
 ! finalize --------------------------------------------------------------------
 

@@ -30,7 +30,7 @@
 #include <iostream>
 
 using namespace std;
-USE_MOP_NAMESPACE;
+USE_MOP_NAMESPACE
 
 int main (){
   // Build the reference tetrahedron and triangle

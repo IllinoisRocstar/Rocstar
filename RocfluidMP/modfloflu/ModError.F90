@@ -1266,7 +1266,6 @@ MODULE ModError
 !     Stop the run
 ! ------------------------------------------------------------------------------
 
-#ifdef RFLU
       CALL MPI_Initialized(flag,errorFlag)
 
       IF ( flag .EQV. .TRUE. ) THEN
@@ -1278,18 +1277,7 @@ MODULE ModError
       END IF ! flag
 
       STOP 1
-#endif
 
-#ifdef RFLO
-#ifdef MPI
-      IF (global%nProcAlloc == 1) THEN
-        CALL MPI_Finalize( error )
-      ELSE
-        CALL MPI_Abort( error )
-      ENDIF
-#endif
-      STOP 1
-#endif
     END SUBROUTINE ErrorStop
 
 END MODULE ModError

@@ -26,16 +26,16 @@
 !
 ! Description: None.
 !
-! Input: 
-!   region	Region data
-!   iStage	Runge-Kutta stage
-!   ivBeg	Beginning index for variable update
-!   ivEnd	Ending index for variable update
-!   var		Conserved variables
-!   varOld	Old variables
+! Input:
+!   region      Region data
+!   iStage      Runge-Kutta stage
+!   ivBeg       Beginning index for variable update
+!   ivEnd       Ending index for variable update
+!   var         Conserved variables
+!   varOld      Old variables
 !
 ! Output: 
-!   varOld	Old variables
+!   varOld      Old variables
 !
 ! Notes: None.
 !

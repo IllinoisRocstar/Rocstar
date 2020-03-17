@@ -47,30 +47,15 @@ SUBROUTINE RKInitMP( region, istage )
   USE ModDataStruct, ONLY : t_region
   USE ModGlobal,     ONLY : t_global
   USE ModMixture,    ONLY : t_mixt
-#ifdef RFLO
-#ifdef PEUL
-  USE ModPartEul,    ONLY : t_peul
-#endif
-#endif
-#ifdef RFLU
   USE ModSpecies,    ONLY : t_spec
-#endif
   USE ModError
   USE ModParameters
   USE ModBndPatch, ONLY: t_patch 
 
   USE ModInterfaces, ONLY : RkInitGeneric
-#ifdef RFLU
   USE ModInterfaces, ONLY : RkInitSD
 
   USE RFLU_ModNSCBC, ONLY: RFLU_NSCBC_DecideHaveNSCBC
-#endif
-#ifdef RFLO
-  USE ModInterfaces, ONLY : ScaleGridSpeeds, RFLO_GetDimensDummy, &
-                            RFLO_GetCellOffset
-
-#include "Indexing.h"
-#endif
 
 #ifdef PLAG
   USE ModInterfacesLagrangian, ONLY : PLAG_RkInit
@@ -87,23 +72,12 @@ SUBROUTINE RKInitMP( region, istage )
   INTEGER,        INTENT(IN)            :: istage
 
 ! ... local variables
-#ifdef RFLO
-  INTEGER :: idcbeg, idcend, jdcbeg, jdcend, kdcbeg, kdcend
-  INTEGER :: iLev, iCOff, ijCOff
-#endif
   INTEGER :: ibc, iec
 
   LOGICAL :: moveGrid, peulUsed, specUsed, plagUsed, turbUsed
 
   TYPE(t_mixt),   POINTER :: mixt
-#ifdef RFLO
-#ifdef PEUL
-  TYPE(t_peul),   POINTER :: peul
-#endif
-#endif
-#ifdef RFLU
   TYPE(t_spec),   POINTER :: spec
-#endif
   TYPE(t_global), POINTER :: global
 
   INTEGER :: iPatch
@@ -133,33 +107,16 @@ SUBROUTINE RKInitMP( region, istage )
 
 ! get dimensions and pointers -------------------------------------------------
 
-#ifdef RFLO
-  iLev = region%currLevel
-  CALL RFLO_GetDimensDummy( region,iLev,idcbeg,idcend, &
-                            jdcbeg,jdcend,kdcbeg,kdcend )
-  CALL RFLO_GetCellOffset( region,iLev,iCOff,ijCOff )
-
-  ibc = IndIJK(idcbeg,jdcbeg,kdcbeg,iCOff,ijCOff)
-  iec = IndIJK(idcend,jdcend,kdcend,iCOff,ijCOff)
-  mixt => region%levels(iLev)%mixt
-#ifdef PEUL
-  peul => region%levels(iLev)%peul
-#endif
-#endif
-
-#ifdef RFLU
   ibc = 1
   iec = region%grid%nCellsTot
   mixt => region%mixt
   spec => region%spec
-#endif
 
 ! initialize for flow itself and all multiphysics modules ---------------------
 
   CALL RkInitGeneric(region,istage,ibc,iec,1,CV_MIXT_NEQS, &
                      mixt%cv,mixt%cvOld,mixt%diss)
 
-#ifdef RFLU
 ! loop over patches in a region and initialize boundary variables -------------
   DO iPatch = 1,region%grid%nPatches
     pPatch => region%patches(iPatch)
@@ -169,18 +126,7 @@ SUBROUTINE RKInitMP( region, istage )
                          pPatch%mixt%cv,pPatch%mixt%cvOld,pPatch%mixt%rhs)
     END IF ! pPatch%bcKind
   END DO ! iPatch
-#endif
 
-#ifdef RFLO
-#ifdef PEUL
-  IF ( peulUsed ) THEN
-    CALL RkInitGeneric(region,istage,ibc,iec,1,peul%nCv, &
-                       peul%cv,peul%cvOld,peul%diss)
-  END IF ! peulUsed
-#endif
-#endif
-
-#ifdef RFLU
 #ifdef SPEC
   IF ( specUsed ) THEN
     CALL RkInitGeneric(region,istage,ibc,iec,1,region%specInput%nSpecies, &
@@ -199,7 +145,6 @@ SUBROUTINE RKInitMP( region, istage )
     CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)
 
   END SELECT ! indSd
-#endif
 
 #ifdef PLAG
   IF ( plagUsed ) THEN
@@ -211,14 +156,6 @@ SUBROUTINE RKInitMP( region, istage )
   IF ( turbUsed ) THEN
     CALL TURB_RkInit(region,istage)
   ENDIF ! turbUsed
-#endif
-
-! scale grid speeds (volume change) -------------------------------------------
-
-#ifdef RFLO
-  IF ( moveGrid .EQV. .TRUE. ) THEN
-    CALL ScaleGridSpeeds(region)
-  END IF ! moveGrid
 #endif
 
 ! finalize ====================================================================

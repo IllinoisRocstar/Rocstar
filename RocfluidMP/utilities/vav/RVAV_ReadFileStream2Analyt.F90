@@ -92,8 +92,8 @@ SUBROUTINE RVAV_ReadFileStream2Analyt ( global, regionsS2 )
 
   CALL RegisterFunction( global, 'RVAV_ReadFileStream2Analyt',&
   'RVAV_ReadFileStream2Analyt.F90' )
-	   
-  IF ( global%verbLevel/=VERBOSE_NONE ) &	   
+
+  IF ( global%verbLevel/=VERBOSE_NONE ) &
     WRITE(STDOUT,'(/,A)') 'Reading grid and solution from Stream 2 - ANALYTICAL...' 
 
   global%casename = TRIM(globalRVAV%casename)//'_s2'
@@ -309,7 +309,7 @@ SUBROUTINE RVAV_ReadFileStream2Analyt ( global, regionsS2 )
         DEALLOCATE(cvMax,stat=errorFlag )
         global%error = errorFlag
         IF (global%error /= 0) CALL ErrorStop( global,ERR_DEALLOCATE,__LINE__ )
-	
+
       END IF ! verbLevel
       
     END DO ! iReg 

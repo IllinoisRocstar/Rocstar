@@ -73,12 +73,9 @@ SUBROUTINE ReadFormatsSection( global )
   
   keys(1) = 'GRID'
   keys(2) = 'SOLUTION'
-
-#ifdef RFLU
   keys(3) = 'GRIDSRC'
-#endif   
-  
-  CALL ReadSection( global,IF_INPUT,nVals,keys(1:nVals),vals(1:nVals), & 
+
+  CALL ReadSection( global,IF_INPUT,nVals,keys(1:nVals),vals(1:nVals), &
                     defined(1:nVals) )
 
   IF (defined(1).eqv. .true.) THEN
@@ -92,11 +89,9 @@ SUBROUTINE ReadFormatsSection( global )
     IF (vals(2) > 1.9)                 global%solutFormat = FORMAT_HDF
   ENDIF
 
-#ifdef RFLU
   IF (defined(3).eqv. .true.) THEN
     global%gridSource = NINT(vals(3))
   ENDIF ! defined  
-#endif 
 
 ! finalize
 

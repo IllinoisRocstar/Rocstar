@@ -27,8 +27,8 @@
 ! Description: None.
 !
 ! Input: 
-!   pRegion	Pointer to region data
-!   fluxPart	Part of flux (central or dissipation or both)
+!   pRegion     Pointer to region data
+!   fluxPart    Part of flux (central or dissipation or both)
 !
 ! Output: None.
 !

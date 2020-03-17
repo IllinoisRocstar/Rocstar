@@ -179,10 +179,10 @@ MODULE RFLU_ModSTL
       
       IF ( errorFlag == ERR_NONE ) THEN 
         IF ( writePatchChar == 'y' ) THEN 
-	  writePatchFlag = .TRUE.
-	ELSE
-	  writePatchFlag = .FALSE. 
-	END IF ! choice
+          writePatchFlag = .TRUE.
+        ELSE
+          writePatchFlag = .FALSE.
+        END IF ! choice
       ELSE 
         writePatchFlag = .FALSE.
       END IF ! errorFlag
@@ -199,32 +199,32 @@ MODULE RFLU_ModSTL
       
 ! ----- Triangles --------------------------------------------------------------
       
-	DO ifl = 1,pPatch%nBTris
+        DO ifl = 1,pPatch%nBTris
           WRITE(iFile,'(A,3(1X,E13.6))') 'facet normal', & 
-	                        	 pPatch%fn(XCOORD:ZCOORD,ifl)                                       
+                                         pPatch%fn(XCOORD:ZCOORD,ifl)
           WRITE(iFile,'(A)') 'outer loop'                                         
 
-          DO ivl = 1,3		
+          DO ivl = 1,3
             ivg = pPatch%bTri2v(ivl,ifl)
 
             WRITE(iFile,'(A,3(1X,E13.6))') 'vertex',pGrid%xyz(XCOORD:ZCOORD,ivg)
           END DO ! ivl   
 
           WRITE(iFile,'(A)') 'endloop'          
-          WRITE(iFile,'(A)') 'endfacet'                                              				       
-	END DO ! ifl  
+          WRITE(iFile,'(A)') 'endfacet'
+        END DO ! ifl
 
 ! ----  Quadrilaterals ---------------------------------------------------------
       
-	DO ifl = 1,pPatch%nBQuads
+        DO ifl = 1,pPatch%nBQuads
 
 ! ------- Triangle 1       
 
           WRITE(iFile,'(A,3(1X,E13.6))') 'facet normal', & 
-	                        	 pPatch%fn(XCOORD:ZCOORD,ifl)                                       
+                                         pPatch%fn(XCOORD:ZCOORD,ifl)
           WRITE(iFile,'(A)') 'outer loop'                                         
 
-          DO ivl = 1,3		
+          DO ivl = 1,3
             ivg = pPatch%bQuad2v(ivl,ifl)
 
             WRITE(iFile,'(A,3(1X,E13.6))') 'vertex',pGrid%xyz(XCOORD:ZCOORD,ivg)
@@ -236,7 +236,7 @@ MODULE RFLU_ModSTL
 ! ------- Triangle 2       
 
           WRITE(iFile,'(A,3(1X,E13.6))') 'facet normal', & 
-	                        	 pPatch%fn(XCOORD:ZCOORD,ifl)                                       
+                                         pPatch%fn(XCOORD:ZCOORD,ifl)
           WRITE(iFile,'(A)') 'outer loop'         
 
           DO ivl = 3,5
@@ -252,13 +252,13 @@ MODULE RFLU_ModSTL
           END DO ! ivl         
 
           WRITE(iFile,'(A)') 'endloop'          
-          WRITE(iFile,'(A)') 'endfacet'                                              				       
-	END DO ! ifl
-	
+          WRITE(iFile,'(A)') 'endfacet'
+        END DO ! ifl
+
         IF ( global%verbLevel > VERBOSE_NONE ) THEN 
           WRITE(STDOUT,'(A,5X,A,1X,I2,1X,A)') SOLVER_NAME,'Writing patch', & 
                                               iPatch,'to STL file done.'      
-        END IF ! global%verbLevel 	
+        END IF ! global%verbLevel
       END IF ! writePatchFlag          
     END DO ! iPatch
 

@@ -105,9 +105,6 @@ MODULE ModTurbulence
     REAL(RFREAL), POINTER :: cv(:,:), cvOld(:,:)
     REAL(RFREAL), POINTER :: rhs(:,:), rhsSum(:,:), diss(:,:), dsterm(:,:)
     REAL(RFREAL), POINTER :: lens(:)
-#ifdef RFLO
-    REAL(RFREAL), POINTER :: srad(:,:), epsIrs(:,:)
-#endif
     REAL(RFREAL), POINTER :: tv(:,:)                             ! ranswv
 
 ! - additional Rans/DES data with dual-timestepping
@@ -115,58 +112,26 @@ MODULE ModTurbulence
 
 ! - LES data
 
-#ifdef RFLO
-    REAL(RFREAL), POINTER :: ccCofi1(:,:) ,ccCofi2(:,:) ,ccCofi4(:,:)
-    REAL(RFREAL), POINTER :: ccCofj1(:,:) ,ccCofj2(:,:) ,ccCofj4(:,:)
-    REAL(RFREAL), POINTER :: ccCofk1(:,:) ,ccCofk2(:,:) ,ccCofk4(:,:)
-    REAL(RFREAL), POINTER :: ffCofi1I(:,:),ffCofi2I(:,:),ffCofi4I(:,:)
-    REAL(RFREAL), POINTER :: ffCofi1J(:,:),ffCofi2J(:,:),ffCofi4J(:,:)
-    REAL(RFREAL), POINTER :: ffCofi1K(:,:),ffCofi2K(:,:),ffCofi4K(:,:)
-    REAL(RFREAL), POINTER :: ffCofj1I(:,:),ffCofj2I(:,:),ffCofj4I(:,:)
-    REAL(RFREAL), POINTER :: ffCofj1J(:,:),ffCofj2J(:,:),ffCofj4J(:,:)
-    REAL(RFREAL), POINTER :: ffCofj1K(:,:),ffCofj2K(:,:),ffCofj4K(:,:)
-    REAL(RFREAL), POINTER :: ffCofk1I(:,:),ffCofk2I(:,:),ffCofk4I(:,:)
-    REAL(RFREAL), POINTER :: ffCofk1J(:,:),ffCofk2J(:,:),ffCofk4J(:,:)
-    REAL(RFREAL), POINTER :: ffCofk1K(:,:),ffCofk2K(:,:),ffCofk4K(:,:)
-    REAL(RFREAL), POINTER :: fvolI(:)  ,fvolJ(:)  ,fvolK(:)
-    REAL(RFREAL), POINTER :: fISij(:,:),fJSij(:,:),fKSij(:,:)    !leswv
-#endif
-#ifdef RFLU
     REAL(RFREAL), POINTER :: avgCoI(:,:), bAvgCoI(:,:)
     REAL(RFREAL), POINTER :: ccCofi1(:,:) ,ccCofi2(:,:) ,ccCofi4(:,:)
     REAL(RFREAL), POINTER :: ffCofi1I(:,:),ffCofi2I(:,:),ffCofi4I(:,:)
     REAL(RFREAL), POINTER :: bffCofi1I(:,:),bffCofi2I(:,:),bffCofi4I(:,:)
     REAL(RFREAL), POINTER :: fvolI(:)  ,bfVolI(:)
     REAL(RFREAL), POINTER :: fISij(:,:),bfISij(:,:)              !leswv
-#endif
     REAL(RFREAL), POINTER :: lij(:,:),mij(:,:)                   !leswv
     REAL(RFREAL), POINTER :: fVar(:,:),ffVar(:,:),ccVar(:,:)     !leswv
     REAL(RFREAL), POINTER :: trace(:),coef(:,:),mueT(:,:)        !leswv
-#ifdef RFLU
     REAL(RFREAL), POINTER :: bLij(:,:),bMij(:,:)                 !leswv
     REAL(RFREAL), POINTER :: bfVar(:,:),bffVar(:,:)              !leswv
     REAL(RFREAL), POINTER :: bCoef(:,:),bMueT(:,:)               !leswv
-#endif
 
 ! - common LES and RaNS/DES data
 
-#ifdef RFLO
-    REAL(RFREAL), POINTER :: gradi(:,:),gradj(:,:),gradk(:,:)    !altwv
-    REAL(RFREAL), POINTER :: mISij(:,:),mJSij(:,:),mKSij(:,:)    !comwv
-    REAL(RFREAL), POINTER :: workI(:,:),workJ(:,:),workK(:,:)    !comwv
-#endif
-#ifdef RFLU
     REAL(RFREAL), POINTER :: gradi(:,:,:),bGradi(:,:,:)          !altwv
     REAL(RFREAL), POINTER :: mISij(:,:),bmISij(:,:)              !comwv
-#endif
     REAL(RFREAL), POINTER :: dv(:,:)                             !altv
     REAL(RFREAL), POINTER :: sv(:,:),vort(:,:)                   !comv
-#ifdef RFLO
-    REAL(RFREAL), POINTER :: zofi(:,:,:),zofj(:,:,:),zofk(:,:,:) !comwv
-#endif
-#ifdef RFLU
     REAL(RFREAL), POINTER :: zofi(:,:,:),bZofi(:,:,:)            !comwv
-#endif
 
 ! - statistics data
 

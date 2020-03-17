@@ -147,7 +147,7 @@ CONTAINS
     END DO  !iReg
 
     CALL MPI_ALLREDUCE(BulkVarsLocal, BulkVarsGlobal,nVars, &
-	         MPI_RFREAL,MPI_SUM,global%mpiComm,global%error)
+                 MPI_RFREAL,MPI_SUM,global%mpiComm,global%error)
     IF ( global%error /= ERR_NONE ) THEN
       CALL ErrorStop(global,ERR_MPI_TROUBLE,__LINE__)
     END IF ! global%errorFlag
@@ -377,7 +377,7 @@ CONTAINS
 ! Description: None.
 !
 ! Input:
-!   pRegion      	Pointer to region data
+!   pRegion     Pointer to region data
 !
 ! Output: None.
 !
@@ -450,7 +450,7 @@ CONTAINS
 ! Description: None.
 !
 ! Input:
-!   pRegion      	Pointer to region data
+!   pRegion     Pointer to region data
 !
 ! Output: None.
 !

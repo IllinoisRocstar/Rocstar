@@ -45,12 +45,7 @@ SUBROUTINE ReadNumericsSection( regions )
   USE ModDataTypes
   USE ModDataStruct, ONLY : t_region
   USE ModGlobal, ONLY     : t_global
-#ifdef RFLO  
-  USE ModInterfaces, ONLY : ReadRegionSection
-#endif
-#ifdef RFLU
   USE ModInterfaces, ONLY : ReadSection
-#endif
   USE ModError
   USE ModParameters
   IMPLICIT NONE
@@ -61,14 +56,8 @@ SUBROUTINE ReadNumericsSection( regions )
 ! ... local variables
   INTEGER :: nVals
 
-#ifdef RFLO
-  INTEGER :: brbeg, brend
-  INTEGER, PARAMETER :: NVALS_MAX = 11
-#endif
-#ifdef RFLU
   INTEGER :: iReg
   INTEGER, PARAMETER :: NVALS_MAX = 16
-#endif
 
   CHARACTER(10) :: keys(NVALS_MAX)
 
@@ -89,74 +78,6 @@ SUBROUTINE ReadNumericsSection( regions )
 
   nVals = NVALS_MAX
 
-#ifdef RFLO
-  keys( 1) = 'CFL'
-  keys( 2) = 'SMOOCF'
-  keys( 3) = 'DISCR'
-  keys( 4) = 'ORDER'
-  keys( 5) = 'LIMFAC'
-  keys( 6) = 'ENTROPY'
-  keys( 7) = 'K2'
-  keys( 8) = '1/K4'
-  keys( 9) = 'PSWTYPE'
-  keys(10) = 'PSWOMEGA'
-  keys(11) = 'FEAVERAG'
-
-  CALL ReadRegionSection( global,IF_INPUT,nVals,keys(1:nVals),vals(1:nVals), & 
-                          brbeg,brend,defined(1:nVals) )
-
-  IF (defined(3).eqv..true.) THEN
-    SELECT CASE(INT(vals(3)+0.5_RFREAL))
-    CASE (0)
-      regions(brbeg:brend)%mixtInput%spaceDiscr = DISCR_CEN_SCAL
-    CASE (1)
-      regions(brbeg:brend)%mixtInput%spaceDiscr = DISCR_UPW_ROE
-    CASE (2)
-      regions(brbeg:brend)%mixtInput%spaceDiscr = DISCR_UPW_MAPS
-    END SELECT
-  ENDIF
-  IF (defined(4).eqv..true.) THEN
-    SELECT CASE(INT(vals(4)+0.5_RFREAL))
-    CASE (1)
-      regions(brbeg:brend)%mixtInput%spaceOrder = DISCR_ORDER_1
-    CASE (2)
-      regions(brbeg:brend)%mixtInput%spaceOrder = DISCR_ORDER_2
-    CASE (4)
-      regions(brbeg:brend)%mixtInput%spaceOrder = DISCR_ORDER_4
-    END SELECT
-  ENDIF
-  IF (defined(8).eqv..true.) THEN
-    IF (vals(8) > 1.E-10_RFREAL) THEN
-      regions(brbeg:brend)%mixtInput%vis4 = 1._RFREAL/vals(8)
-    ELSEIF (vals(8) > 0._RFREAL .AND. vals(8) <= 1.E-10_RFREAL) THEN
-      regions(brbeg:brend)%mixtInput%vis4 = 1.E+10_RFREAL
-    ELSEIF (vals(8) <= 0._RFREAL ) THEN
-      regions(brbeg:brend)%mixtInput%vis4 = 0.0_RFREAL
-    ENDIF
-  ENDIF
-  IF (defined(9).eqv..true.) THEN
-    IF (vals(9) < 0.5_RFREAL) THEN
-      regions(brbeg:brend)%mixtInput%pSwitchType = PSWITCH_STD
-    ELSE
-      regions(brbeg:brend)%mixtInput%pSwitchType = PSWITCH_TVD
-    ENDIF
-  ENDIF
-  IF (defined( 1).eqv..true.) regions(brbeg:brend)%mixtInput%cfl          = ABS(vals(1))
-  IF (defined( 2).eqv..true.) regions(brbeg:brend)%mixtInput%smoocf       = vals(2)
-  IF (defined( 5).eqv..true.) regions(brbeg:brend)%mixtInput%limfac       = ABS(vals(5))
-  IF (defined( 6).eqv..true.) regions(brbeg:brend)%mixtInput%epsentr      = ABS(vals(6))
-  IF (defined( 7).eqv..true.) regions(brbeg:brend)%mixtInput%vis2         = ABS(vals(7))
-  IF (defined(10).eqv..true.) regions(brbeg:brend)%mixtInput%pSwitchOmega = ABS(vals(10))
-  IF (defined(11).eqv..true.) THEN
-    IF (vals(11) < 0.5_RFREAL) THEN
-      regions(brbeg:brend)%mixtInput%faceEdgeAvg = FE_AVG_UNIFORM
-    ELSE
-      regions(brbeg:brend)%mixtInput%faceEdgeAvg = FE_AVG_LINEAR
-    ENDIF
-  ENDIF
-#endif
-
-#ifdef RFLU
   keys( 1) = 'CFL'
   keys( 2) = 'DISCR'
   keys( 3) = 'ORDER'
@@ -272,7 +193,6 @@ SUBROUTINE ReadNumericsSection( regions )
       regions(iReg)%mixtInput%spaceOrderBFaces = ABS(vals(16))
     END DO ! iReg
   END IF ! defined                 
-#endif 
 
 ! finalize
 

@@ -13,11 +13,11 @@
 ################################################################################
 
 SRCF90+=        RFLU_ModAllocateMemory.F90\
-		RFLU_ModAUSMFlux.F90\
+                RFLU_ModAUSMFlux.F90\
                 RFLU_ModBessel.F90\
                 RFLU_ModBFaceGradAccessList.F90\
-		RFLU_ModBilinearPatch.F90\
-		RFLU_ModBoundaryTests.F90\
+                RFLU_ModBilinearPatch.F90\
+                RFLU_ModBoundaryTests.F90\
                 RFLU_ModBoundLists.F90\
                 RFLU_ModBoundXvUtils.F90\
                 RFLU_ModBoundConvertCv.F90\
@@ -25,7 +25,7 @@ SRCF90+=        RFLU_ModAllocateMemory.F90\
                 RFLU_ModCellMapping.F90\
                 RFLU_ModColoring.F90\
                 RFLU_ModCommLists.F90\
-		RFLU_ModConstraintUtils.F90\
+                RFLU_ModConstraintUtils.F90\
                 RFLU_ModConvertCv.F90\
                 RFLU_ModCopyData.F90\
                 RFLU_ModDeallocateMemory.F90\
@@ -43,13 +43,13 @@ SRCF90+=        RFLU_ModAllocateMemory.F90\
                 RFLU_ModForcesMoments.F90\
                 RFLU_ModGatherData.F90\
                 RFLU_ModGeometry.F90\
-		RFLU_ModGeometryTools.F90\
+                RFLU_ModGeometryTools.F90\
                 RFLU_ModGrid.F90\
                 RFLU_ModGridSpeedUtils.F90\
-		RFLU_ModGridUtils.F90\
+                RFLU_ModGridUtils.F90\
                 RFLU_ModHashTable.F90\
                 RFLU_ModHLLCFlux.F90\
-		RFLU_ModInCellTest.F90\
+                RFLU_ModInCellTest.F90\
                 RFLU_ModInterfacesCommon.F90\
                 RFLU_ModInterfacesLibrary.F90\
                 RFLU_ModInterfacesSolver.F90\
@@ -61,15 +61,15 @@ SRCF90+=        RFLU_ModAllocateMemory.F90\
                 RFLU_ModOctree.F90\
                 RFLU_ModOLES.F90\
                 RFLU_ModPatchCoeffs.F90\
-		RFLU_ModPatchUtils.F90\
-		RFLU_ModProbes.F90\
+                RFLU_ModPatchUtils.F90\
+                RFLU_ModProbes.F90\
                 RFLU_ModReadBcInputFile.F90\
                 RFLU_ModReadWriteBcDataFile.F90\
                 RFLU_ModReadWriteFlow.F90\
                 RFLU_ModReadWriteGrid.F90\
                 RFLU_ModReadWriteGridSpeeds.F90\
                 RFLU_ModRelatedPatches.F90\
-		RFLU_ModRegionMapping.F90\
+                RFLU_ModRegionMapping.F90\
                 RFLU_ModRenumberings.F90\
                 RFLU_ModRenumberList.F90\
                 RFLU_ModRepair3D.F90\
@@ -83,15 +83,15 @@ SRCF90+=        RFLU_ModAllocateMemory.F90\
                 RFLU_ModStencilsFaces.F90\
                 RFLU_ModStencilsVert.F90\
                 RFLU_ModStencilsUtils.F90\
-		RFLU_ModSymmetryPeriodic.F90\
-		RFLU_ModTETMESH.F90\
+                RFLU_ModSymmetryPeriodic.F90\
+                RFLU_ModTETMESH.F90\
                 RFLU_ModTime.F90\
-		RFLU_ModTimeZoom.F90\
+                RFLU_ModTimeZoom.F90\
                 RFLU_ModTopologyUtils.F90\
                 RFLU_ModVertexLists.F90\
                 RFLU_ModViscousFlux.F90\
                 RFLU_ModWeights.F90\
-		RFLU_ModWENO.F90
+                RFLU_ModWENO.F90
 
 ifdef GENX
   SRCF90+=      RFLU_ModGENXAdmin.F90\
@@ -102,9 +102,9 @@ ifdef GENX
 endif
 
 ifdef PETSC
-  SRCF90+=	RFLU_ModNewtonKrylov.F90\
-		RFLU_ModPETScNewtonKrylov.F90\
-		RFLU_ModPETScAdmin.F90
+  SRCF90+=      RFLU_ModNewtonKrylov.F90\
+                RFLU_ModPETScNewtonKrylov.F90\
+                RFLU_ModPETScAdmin.F90
 endif
 
 ################################################################################

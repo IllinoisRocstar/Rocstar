@@ -40,11 +40,11 @@
 
 using namespace std;
 
-COM_EXTERN_MODULE( Simpal);
-COM_EXTERN_MODULE( SurfMap);
-COM_EXTERN_MODULE( Rocprop);
-COM_EXTERN_MODULE( SurfUtil);
-COM_EXTERN_MODULE( SimOut);
+COM_EXTERN_MODULE(Simpal)
+COM_EXTERN_MODULE(SurfMap)
+COM_EXTERN_MODULE(Rocprop)
+COM_EXTERN_MODULE(SurfUtil)
+COM_EXTERN_MODULE(SimOut)
 
 void load_modules() {
   COM_LOAD_MODULE_STATIC_DYNAMIC(Simpal, "BLAS");
@@ -448,12 +448,13 @@ int main(int argc, char *argv[]) {
   COM_call_function( PROP_init, &pmesh);
   init_parameters( cntr_param);
 
-  if ( wname.substr(0,6) == "acmflu") 
-    init_constraints_acmflu( wname);
-  else if ( wname.substr(0,3) == "acm") 
-    init_constraints_acmfrac( wname);
-  else if ( wname.substr(0,4) == "star") 
-    ; // init_constraints_starslice( wname);
+  if (wname.substr(0, 6) == "acmflu")
+    init_constraints_acmflu(wname);
+  else if (wname.substr(0, 3) == "acm")
+    init_constraints_acmfrac(wname);
+  else if (wname.substr(0, 4) == "star") {
+    //init_constraints_starslice(wname);
+  }
 
   if ( cntr_param.perturb > 0)
     COM_call_function( PROP_perturb, &pmesh, &cntr_param.perturb);

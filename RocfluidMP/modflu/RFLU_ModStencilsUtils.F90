@@ -471,8 +471,8 @@ MODULE RFLU_ModStencilsUtils
 !   x2csBeg             Beginning index for last layer of cells in stencil
 !   x2csEnd             Ending index for last layer of cells in stencil
 !   x2cs                Stencil before addition of cell layer
-!   rc			Location for which stencil is constructed
-!   dir			Direction in which stencil is to be constructed
+!   rc                  Location for which stencil is constructed
+!   dir                 Direction in which stencil is to be constructed
 !
 ! Output:
 !   degr                Degree of stencil after addition of cell layer

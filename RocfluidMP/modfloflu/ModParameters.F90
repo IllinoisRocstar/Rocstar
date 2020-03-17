@@ -150,17 +150,6 @@ MODULE ModParameters
  
   INTEGER, PARAMETER :: REGION_INDEX_OFFSET = 100
  
-#ifdef RFLO 
-  INTEGER, PARAMETER :: DEGENERAT_NONE          =  0, & ! degenerative  
-                        DEGENERAT_EDGE_IN_PATCH =  1, & ! edges/corners      
-                        DEGENERAT_CORN_IN_EDGE  =  1, &                     
-                        DEGENERAT_CORN_IN_PATCH =  2, &                     
-                        DEGENERAT_DETACH        = -1                        
-
-  INTEGER, PARAMETER :: EDGE_INTERACT_FULL      =  0, & ! all edgeCells interior
-                        EDGE_INTERACT_PART      =  1
-#endif 
- 
 ! ******************************************************************************
 ! Coordinate moments 
 ! ******************************************************************************
@@ -187,7 +176,6 @@ MODULE ModParameters
                         CV_MIXT_ENER = 5, &    ! rho * E
                         CV_MIXT_NEQS = 5       ! total no. of equations
 
-#ifdef RFLU
   INTEGER, PARAMETER :: CV_MIXT_XVEL = 2, &    ! u
                         CV_MIXT_YVEL = 3, &    ! v
                         CV_MIXT_ZVEL = 4, &    ! w
@@ -201,22 +189,11 @@ MODULE ModParameters
                         
   INTEGER, PARAMETER :: VAR_INFO_POS    = 1, & 
                         VAR_INFO_POSNEG = 2                      
-#endif 
 
-#ifdef RFLO
-  INTEGER, PARAMETER :: DV_MIXT_UVEL = 1, &    ! velocity components
-                        DV_MIXT_VVEL = 2, &
-                        DV_MIXT_WVEL = 3, &
-                        DV_MIXT_TEMP = 4, &    ! static temperature
-                        DV_MIXT_PRES = 5, &    ! static pressure
-                        DV_MIXT_SOUN = 6       ! speed of sound
-#endif
-#ifdef RFLU
   INTEGER, PARAMETER :: DV_MIXT_PRES = 1, &    ! static pressure
                         DV_MIXT_TEMP = 2, &    ! static temperature
                         DV_MIXT_SOUN = 3, &     ! speed of sound
                         DV_MIXT_NVAR = 3
-#endif
 
   INTEGER, PARAMETER :: TV_MIXT_MUEL = 1, &    ! laminar viscosity
                         TV_MIXT_TCOL = 2, &    ! laminar thermal conductivity
@@ -226,8 +203,7 @@ MODULE ModParameters
   INTEGER, PARAMETER :: GV_MIXT_CP   = 1, &    ! heat coeff. at const. pressure
                         GV_MIXT_MOL  = 2       ! molecular weight
 
-#ifdef RFLU
-  INTEGER, PARAMETER :: PV_MIXT_SCHL =  1, & 
+  INTEGER, PARAMETER :: PV_MIXT_SCHL =  1, &
                         PV_MIXT_SHAD =  2, & 
                         PV_MIXT_INTF =  3, & 
                         PV_MIXT_XVOR =  4, & 
@@ -249,23 +225,7 @@ MODULE ModParameters
                         PV_PLAG_TEMP = 20, & 
                         PV_PLAG_MASS = 21, &   
                         PV_XXXX_NVAR = 21
-#endif
 
-#ifdef RFLO
-  INTEGER, PARAMETER :: GR_MIXT_UX   =  1, &   ! Gradients: du/dx
-                        GR_MIXT_VX   =  2, &   ! dv/dx
-                        GR_MIXT_WX   =  3, &   ! dw/dx
-                        GR_MIXT_TX   =  4, &   ! dT/dx
-                        GR_MIXT_UY   =  5, &   ! du/dy
-                        GR_MIXT_VY   =  6, &   ! dv/dy
-                        GR_MIXT_WY   =  7, &   ! dw/dy
-                        GR_MIXT_TY   =  8, &   ! dT/dy
-                        GR_MIXT_UZ   =  9, &   ! du/dz
-                        GR_MIXT_VZ   = 10, &   ! dv/dz
-                        GR_MIXT_WZ   = 11, &   ! dw/dz
-                        GR_MIXT_TZ   = 12      ! dT/dz
-#endif
-#ifdef RFLU
   INTEGER, PARAMETER :: GRC_MIXT_DENS =  1, &   ! dr/dx, dr/dy, or dr/dz
                         GRC_MIXT_XVEL =  2, &   ! du/dx, du/dy, or du/dz  
                         GRC_MIXT_YVEL =  3, &   ! dv/dx, dv/dy, or dv/dz 
@@ -286,8 +246,7 @@ MODULE ModParameters
                         GRF_MIXT_TEMP =  4      ! dT/dx, dT/dy, or dT/dz
                         
   INTEGER, PARAMETER :: BF2BG_BEG = 1, & 
-                        BF2BG_END = 2                         
-#endif
+                        BF2BG_END = 2
 
 ! ******************************************************************************
 ! Species
@@ -928,10 +887,6 @@ MODULE ModParameters
                         MODULE_TYPE_POSTPROC = 3, & 
                         MODULE_TYPE_INIT     = 4 
 
-#ifdef RFLO
-  INTEGER, PARAMETER :: REGOFF = 100 ! offset for region number
-#endif
-
 ! ******************************************************************************
 ! Preprocessing 
 ! ******************************************************************************
@@ -961,19 +916,9 @@ MODULE ModParameters
 ! ******************************************************************************
 
 #ifdef GENX
-#ifdef RFLO
-  CHARACTER(7), PARAMETER :: SOLVER_NAME = 'Rocflo:'
-#endif 
-#ifdef RFLU
   CHARACTER(7), PARAMETER :: SOLVER_NAME = 'Rocflu:'
-#endif
 #else
-#ifdef RFLO
   CHARACTER(0), PARAMETER :: SOLVER_NAME = ''
-#endif 
-#ifdef RFLU
-  CHARACTER(0), PARAMETER :: SOLVER_NAME = ''
-#endif
 #endif
 
 END MODULE ModParameters

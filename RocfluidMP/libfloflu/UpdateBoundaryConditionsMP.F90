@@ -49,21 +49,6 @@ SUBROUTINE UpdateBoundaryConditionsMP( regions,istage )
   USE ModError
   USE ModMPI
   USE ModParameters
-#ifdef RFLO
-  USE RFLO_ModBoundaryConditions, ONLY : RFLO_BoundaryConditionsSet, &
-        RFLO_BoundaryConditionsRecv
-  USE ModInterfaces, ONLY : RFLO_ClearSendRequests, &
-        RFLO_GetBoundaryValues, RFLO_SendBoundaryValues,     &
-        RFLO_SendBoundaryValuesAlpha, UpdateTbc
-
-#ifdef TURB
-  USE ModInterfacesTurbulence, ONLY : TURB_RFLO_RansBndConditionsSet, &
-        TURB_RFLO_RansBndConditionsRecv, TURB_RFLO_RansClearSendRequests
-#endif
-!#ifdef PERI
-!  USE PERI_ModHybridDES, ONLY : PERI_CoMeanCorrection
-!#endif
-#endif
 
 #ifdef PLAG
   USE ModInterfacesLagrangian, ONLY : PLAG_PatchUpdateWrapper, &
@@ -119,107 +104,6 @@ SUBROUTINE UpdateBoundaryConditionsMP( regions,istage )
     subdt   = (ark(istage) - ark(istage - 1))*global%dtMin
     subtime = global%currentTime + ark(istage)*global%dtMin
   ENDIF ! istage
-
-! update boundary conditions ------------------------------------------------
-
-#ifdef RFLO
-#ifdef GENX
-  time  = global%currentTime + global%dtMin*trk(istage)
-  alpha = (time-global%timeStamp)/global%dTimeSystem
-
-! - send fluids density at interface
-  CALL COM_call_function( global%genxHandleBc,2,alpha,1 )
-
-  DO iReg=1,global%nRegions
-    IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-        regions(iReg)%active==ACTIVE) THEN              ! on my processor
-      IF (regions(iReg)%mixtInput%externalBc) THEN
-        CALL RFLO_SendBoundaryValuesAlpha( regions(iReg) )
-      ENDIF
-    ENDIF
-  ENDDO
-
-! - get BC values at the interface; set BC values in dummy cells
-
-  CALL COM_call_function( global%genxHandleBc,2,alpha,2 )
-#endif
-
-  DO iReg=1,global%nRegions
-    IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-        regions(iReg)%active==ACTIVE) THEN              ! on my processor
-      IF (regions(iReg)%mixtInput%externalBc) THEN
-        CALL RFLO_GetBoundaryValues( regions(iReg) )
-      ENDIF
-      CALL UpdateTbc( regions(iReg),subtime,subdt,istage==global%nrkSteps )
-      CALL RFLO_BoundaryConditionsSet( regions,iReg )
-#ifdef PEUL
-      IF (global%peulUsed) &
-        CALL PEUL_BoundaryConditionsSet( regions,iReg )
-#endif
-#ifdef TURB
-      IF ((regions(iReg)%mixtInput%flowModel == FLOW_NAVST) .AND. &
-          (regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE)) &
-        CALL TURB_RFLO_RansBndConditionsSet( regions,iReg )
-#endif
-    ENDIF
-  ENDDO
-
-! - receive variables from other processors; send BC data to external driver --
-
-  DO iReg=1,global%nRegions
-    IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-        regions(iReg)%active==ACTIVE) THEN              ! on my processor
-      CALL RFLO_BoundaryConditionsRecv( regions,iReg )
-#ifdef PEUL
-      IF (global%peulUsed) &
-        CALL PEUL_BoundaryConditionsRecv( regions,iReg )
-#endif
-#ifdef TURB
-      IF ((regions(iReg)%mixtInput%flowModel == FLOW_NAVST) .AND. &
-          (regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE)) &
-        CALL TURB_RFLO_RansBndConditionsRecv( regions,iReg )
-#endif
-    ENDIF
-  ENDDO
-
-! - clear send requests -------------------------------------------------------
-
-  DO iReg=1,global%nRegions
-    IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-        regions(iReg)%active==ACTIVE) THEN              ! on my processor
-      CALL RFLO_ClearSendRequests( regions,iReg,.false. )
-#ifdef PEUL
-      IF (global%peulUsed) &
-        CALL PEUL_ClearSendRequests( regions,iReg )
-#endif
-#ifdef TURB
-      IF ((regions(iReg)%mixtInput%flowModel == FLOW_NAVST) .AND. &
-          (regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE)) &
-        CALL TURB_RFLO_RansClearSendRequests( regions,iReg )
-#endif
-    ENDIF
-  ENDDO
-
-#ifdef PLAG
-  CALL PLAG_CECellsWrapper( regions )
-
-  CALL PLAG_PatchUpdateWrapper( regions )
-#endif
-
-! - post-BC operations of physical modules ------------------------------------
-
-#ifdef PERI
-!  DO iReg=1,global%nRegions
-!    IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-!        regions(iReg)%active==ACTIVE) THEN              ! on my processor
-!      IF (regions(iReg)%periInput%flowKind /= OFF) THEN
-!        CALL PERI_CoMeanCorrection( regions(iReg) ) 
-!      ENDIF
-!    ENDIF
-!  ENDDO
-#endif
-
-#endif
 
 ! finalize ====================================================================
 

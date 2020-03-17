@@ -51,11 +51,6 @@ SUBROUTINE NumericalDissipation(region)
   USE ModError
   USE ModParameters
 
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_CentralDissipation, RFLO_RoeDissipFirst, &
-                            RFLO_RoeDissipSecond
-#endif
-
   IMPLICIT NONE
 
 ! ******************************************************************************
@@ -75,9 +70,7 @@ SUBROUTINE NumericalDissipation(region)
   INTEGER :: spaceDiscr, spaceOrder
   
   TYPE(t_global), POINTER :: global  
-#ifdef RFLU
   TYPE(t_region), POINTER :: pRegion
-#endif
 
 ! ******************************************************************************
 ! Start
@@ -88,9 +81,7 @@ SUBROUTINE NumericalDissipation(region)
   CALL RegisterFunction( global,'NumericalDissipation',&
   'NumericalDissipation.F90' )
 
-#ifdef RFLU
   pRegion => region
-#endif
 
 ! ******************************************************************************
 ! Get dimensions and pointers
@@ -98,31 +89,6 @@ SUBROUTINE NumericalDissipation(region)
 
   spaceDiscr = region%mixtInput%spaceDiscr
   spaceOrder = region%mixtInput%spaceOrder
-
-#ifdef RFLO
-! ******************************************************************************
-! 2nd-order central scheme 
-! ******************************************************************************
-
-  IF (spaceDiscr==DISCR_CEN_SCAL .AND. &
-      (spaceOrder==DISCR_ORDER_1 .OR. spaceOrder==DISCR_ORDER_2)) THEN
-    CALL RFLO_CentralDissipation( region )
-  ENDIF
-#endif
-
-#ifdef RFLO
-! ******************************************************************************
-! Roe upwind scheme-
-! ******************************************************************************
-
-  IF (spaceDiscr == DISCR_UPW_ROE) THEN
-    IF (spaceOrder == DISCR_ORDER_1) THEN
-      CALL RFLO_RoeDissipFirst( region )
-    ELSE IF (spaceOrder == DISCR_ORDER_2) THEN
-      CALL RFLO_RoeDissipSecond( region )
-    ENDIF
-  ENDIF
-#endif
 
 ! ******************************************************************************
 ! End

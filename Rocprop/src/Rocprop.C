@@ -110,7 +110,7 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
 			 double *dt_elapsed,
 			 int *code)
 {
-  COM_assertion_msg(false,"Made it here.");
+//  COM_assertion_msg(false,"Made it here.");
   COM_assertion_msg( validate_object()==0, "Invalid object");
 
   // If Rocprop is not yet initialized, call the initialization routine.

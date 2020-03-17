@@ -126,82 +126,9 @@ MODULE ModInterfacesTurbulence
 
   SUBROUTINE TURB_CoViscousFluxes( region )
     USE ModDataStruct, ONLY : t_region
-#ifdef RFLO
-    TYPE(t_region), TARGET :: region
-#endif
-#ifdef RFLU
     TYPE(t_region), POINTER :: region
-#endif
   END SUBROUTINE TURB_CoViscousFluxes
 
-#ifdef RFLO
-! =============================================================================
-! Rocflo-specific routines
-! =============================================================================
-
-  SUBROUTINE TURB_RFLO_RansAllocDataBuffers( regions,iReg )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    INTEGER :: iReg
-  END SUBROUTINE TURB_RFLO_RansAllocDataBuffers
-
-  SUBROUTINE TURB_RFLO_RansBndConditionsRecv( regions,iReg )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    INTEGER :: iReg
-  END SUBROUTINE TURB_RFLO_RansBndConditionsRecv
-
-  SUBROUTINE TURB_RFLO_RansBndConditionsSend( regions,iReg )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    INTEGER :: iReg
-  END SUBROUTINE TURB_RFLO_RansBndConditionsSend
-
-  SUBROUTINE TURB_RFLO_RansBndConditionsSet( regions,iReg )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    INTEGER :: iReg
-  END SUBROUTINE TURB_RFLO_RansBndConditionsSet
-
-  SUBROUTINE TURB_RFLO_RansClearSendRequests( regions,iReg )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    INTEGER :: iReg
-  END SUBROUTINE TURB_RFLO_RansClearSendRequests
-
-  SUBROUTINE TURB_RFLO_RansResSmoothing( region )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region) :: region
-  END SUBROUTINE TURB_RFLO_RansResSmoothing
-
-  SUBROUTINE TURB_RFLO_RansResSmoothingCoeff( region )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region) :: region
-  END SUBROUTINE TURB_RFLO_RansResSmoothingCoeff
-
-  SUBROUTINE TURB_RFLO_RansSpectralRadii( region )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region) :: region
-  END SUBROUTINE TURB_RFLO_RansSpectralRadii
-
-  SUBROUTINE TURB_RFLO_ReadSolution( regions )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-  END SUBROUTINE TURB_RFLO_ReadSolution
-
-  SUBROUTINE TURB_RFLO_ReadSolutionRegion( iReg,regions )
-    USE ModDataStruct, ONLY : t_region
-    INTEGER        :: iReg
-    TYPE(t_region), POINTER :: regions(:)
-  END SUBROUTINE TURB_RFLO_ReadSolutionRegion
-
-  SUBROUTINE TURB_RFLO_WriteSolution( regions )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-  END SUBROUTINE TURB_RFLO_WriteSolution
-#endif
-
-#ifdef RFLU
 ! =============================================================================
 ! Rocflu-specific routines
 ! =============================================================================
@@ -230,7 +157,6 @@ MODULE ModInterfacesTurbulence
     USE ModDataStruct, ONLY : t_region
     TYPE(t_region), POINTER :: region
   END SUBROUTINE TURB_RFLU_WriteSolutionBinary
-#endif
 
   END INTERFACE
 

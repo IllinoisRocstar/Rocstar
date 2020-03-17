@@ -80,7 +80,7 @@ SUBROUTINE RVAV_ComputeSimilarField( global, iNodes,jNodes,kNodes, &
     
       SELECT CASE (variableIndex)
          CASE (RVAV_U)
-	     
+
              DO k = 1, kNodes
              DO i = 1, iNodes
                uCenterLine = globalRVAV%evS1(i,jNodes,k)
@@ -90,7 +90,7 @@ SUBROUTINE RVAV_ComputeSimilarField( global, iNodes,jNodes,kNodes, &
              ENDDO ! i
              ENDDO ! k
          CASE (RVAV_V)
-	     
+
              DO k = 1, kNodes
              DO i = 1, iNodes
                vInjection = globalRVAV%evS1(i,1,k)
@@ -125,7 +125,7 @@ SUBROUTINE RVAV_ComputeSimilarField( global, iNodes,jNodes,kNodes, &
              ENDDO ! k
 
       END SELECT ! variableIndex
-	
+
   END SELECT ! similarityType          
 
 ! finalize --------------------------------------------------------------------

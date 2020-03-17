@@ -88,7 +88,7 @@ MODULE RFLU_ModWeights
 !
 ! Input:
 !   pRegion     Pointer to region
-!   pPatch	Pointer to patch
+!   pPatch      Pointer to patch
 !   orderInput  Desired order
 !
 ! Output: None.
@@ -228,7 +228,7 @@ MODULE RFLU_ModWeights
 !
 ! Input:
 !   pRegion     Pointer to region
-!   pPatch 	Pointer to patch
+!   pPatch      Pointer to patch
 !   order       Desired order
 !
 ! Output: None.
@@ -736,7 +736,7 @@ MODULE RFLU_ModWeights
 !
 ! Input:
 !   pRegion     Pointer to region
-!   pPatch	Pointer to patch
+!   pPatch      Pointer to patch
 !   orderInput  Desired order 
 !
 ! Output: None.
@@ -911,7 +911,7 @@ MODULE RFLU_ModWeights
 !
 ! Input:
 !   pRegion     Pointer to region
-!   pPatch	Pointer to patch 
+!   pPatch      Pointer to patch
 !   order       Desired order
 !
 ! Output: None.
@@ -1889,8 +1889,8 @@ MODULE RFLU_ModWeights
 ! Description: None.
 !
 ! Input:
-!   pRegion             Pointer to region
-!   pPatch		Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -1989,7 +1989,7 @@ MODULE RFLU_ModWeights
 !
 ! Input:
 !   pRegion     Pointer to region
-!   pPatch	Pointer to patch
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -2414,7 +2414,7 @@ MODULE RFLU_ModWeights
 !
 ! Input:
 !   pRegion     Pointer to region
-!   pPatch	Pointer to patch
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !

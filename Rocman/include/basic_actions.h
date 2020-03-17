@@ -25,26 +25,30 @@
 #ifndef _BASIC_ACTIONS_H_
 #define _BASIC_ACTIONS_H_
 
-#include "rocman.h"
+#include "RocstarAction.h"
 
+#include "SurfDiver.h"
+
+class RocstarAgent;
 class FluidAgent;
 class SolidAgent;
 class BurnAgent;
 
 class DummyAction : public Action {
 public:
-  DummyAction() : Action(0, (const char **)NULL, NULL, NULL, (char *)"DummyAction") {}
-  void init(double t) {}
-  void run(double t, double dt, double alpha) {}
+  DummyAction() : Action("DummyAction") {}
+  void init(double t) override {}
+  void run(double t, double dt, double alpha) override {}
+  void finalize() override {}
 };
 
-class SetValueDouble : public Action {
+class SetValueDouble : public RocstarAction {
  public:
   SetValueDouble(const std::string at, const double val);
   void init(double t);
   void run(double t, double dt, double alpha);
-private:
-  int    attr_hdl;
+ private:
+  int attr_hdl;
   double v;
 };
 
@@ -53,99 +57,82 @@ class SetZero : public SetValueDouble {
   SetZero(const std::string at);
 };
 
-class CopyValue: public Action {
+class CopyValue : public RocstarAction {
  public:
-  CopyValue(const std::string from, const std::string to, int *cond=NULL);
+  CopyValue(const std::string from, const std::string to, bool cond = false);
   void init(double t);
   void run(double t, double dt, double alpha);
-private:
-  int    from_hdl, to_hdl;
-  int * condition;
+ private:
+  int from_hdl, to_hdl;
+  bool condition;
 };
 
-class DummyPrint: public Action {
+class DummyPrint : public RocstarAction {
  public:
   DummyPrint(BurnAgent *bag, SolidAgent *sag, FluidAgent *fag, const std::string l);
   void init(double t);
   void run(double t, double dt, double alpha);
-private:
+ private:
   BurnAgent *bagent;
   SolidAgent *sagent;
   FluidAgent *fagent;
   std::string label;
 };
 
-class BCInvoker: public Action {
+/* AEG: Invokers removed.
+class BCInvoker : public RocstarAction {
  public:
-  BCInvoker(Agent *ag, int l=1);
+  BCInvoker(RocstarAgent *ag, int l = 1);
   void init(double t);
   void run(double t, double dt, double alpha);
-private:
-  Agent *agent;
+ private:
+  RocstarAgent *agent;
   int level;
 };
 
-class GMInvoker: public Action {
+class GMInvoker : public RocstarAction {
  public:
-  GMInvoker(Agent *ag);
+  GMInvoker(RocstarAgent *ag);
   void init(double t);
   void run(double t, double dt, double alpha);
-private:
-  Agent *agent;
+ private:
+  RocstarAgent *agent;
 };
 
-class BCInitInvoker: public Action {
+class BCInitInvoker : public RocstarAction {
  public:
-  BCInitInvoker(Agent *ag);
+  BCInitInvoker(RocstarAgent *ag);
   void init(double t);
   void run(double t, double dt, double alpha);
-private:
-  Agent *agent;
+ private:
+  RocstarAgent *agent;
 };
-
-// stop and run surfdiver
-class SurfDiver: public Action {
- public:
-  SurfDiver(FluidAgent *fag, SolidAgent *sag);
-  void init(double t);
-  virtual void run(double t, double dt, double alpha);
- protected:
-  //void read_file( const char *fname, const string &wname, double alpha);
-  FluidAgent *fagent;
-  SolidAgent *sagent;
-  std::string outdir;
-  std::string fluid_mesh_str, solid_mesh_str;
-  int fluid_mesh, solid_mesh;
-  int RFC_transfer, RFC_interpolate, RFC_readcntr, RFC_overlay; 
-  int RFC_write, RFC_read;
-};
-
-// run surfdiver if overlay mesh is missing
-class SurfDiverAfterRemeshing: public SurfDiver {
- public:
-  SurfDiverAfterRemeshing(FluidAgent *fag, SolidAgent *sag):
-         SurfDiver(fag, sag) {}
-  virtual void run(double t, double dt, double alpha);
-};
+*/
 
 // POST_UPDATE_FLUID
-class ComputeFluidLoad_ALE: public Action {
-  public:								
-    explicit ComputeFluidLoad_ALE( FluidAgent *fag, SolidAgent *sag, const std::string f_pf, const std::string fb_mdot, const std::string b_rb, const std::string f_ts);
-    void init(double t);
-    void run(double t, double dt, double alpha);
-  private:
-    int traction_mode;
-    FluidAgent *fagent;
-    SolidAgent *sagent;
-    int f_pf_hdl, f_tf_hdl, f_ts_hdl;
-    int fb_ts_hdl, fb_pf_hdl;
-    int fb_mdot_hdl, fb_rhof_alp_hdl, fb_mdot_tmp_hdl;
-    int b_rb_hdl, fb_nf_alp_hdl, fb_tf_hdl;
+class ComputeFluidLoad_ALE : public RocstarAction {
+ public:
+  explicit ComputeFluidLoad_ALE(FluidAgent *fag,
+                                SolidAgent *sag,
+                                const std::string f_pf,
+                                const std::string fb_mdot,
+                                const std::string b_rb,
+                                const std::string f_ts
+  );
+  void init(double t);
+  void run(double t, double dt, double alpha);
+ private:
+  int traction_mode;
+  FluidAgent *fagent;
+  SolidAgent *sagent;
+  int f_pf_hdl, f_tf_hdl, f_ts_hdl;
+  int fb_ts_hdl, fb_pf_hdl;
+  int fb_mdot_hdl, fb_rhof_alp_hdl, fb_mdot_tmp_hdl;
+  int b_rb_hdl, fb_nf_alp_hdl, fb_tf_hdl;
 };
 
 // UPDATE_INBUF_GM_FLUID
-class ComputeMeshMotion : public Action {
+class ComputeMeshMotion : public RocstarAction {
  public:
   ComputeMeshMotion(FluidAgent *ag, const std::string a_vm, const std::string f_du_alp, double z);
   void init(double t);
@@ -156,10 +143,11 @@ class ComputeMeshMotion : public Action {
   int a_vm_hdl, f_du_alp_hdl, f_zoom_hdl;
 };
 
-class ComputeFaceCenters : public Action {
+class ComputeFaceCenters : public RocstarAction {
  public:
   ComputeFaceCenters(BurnAgent *ag, const std::string b_nc, const std::string b_cnts,
-		     const std::string b_nrml="");
+                     const std::string b_nrml = ""
+  );
   void init(double t);
   void run(double t, double dt, double alpha);
  private:
@@ -168,9 +156,11 @@ class ComputeFaceCenters : public Action {
   int SURF_n2f, SURF_fn;
 };
 
-class FluidPropagateSurface : public Action {
+class FluidPropagateSurface : public RocstarAction {
  public:
-  FluidPropagateSurface(FluidAgent *ag, BurnAgent *bag, const std::string b_rb, const std::string a_vm, double z);
+  FluidPropagateSurface(FluidAgent *ag, BurnAgent *bag, const std::string b_rb,
+                        const std::string a_vm, double z
+  );
   void init(double t);
   void run(double t, double dt, double alpha);
  private:
@@ -186,9 +176,14 @@ class FluidPropagateSurface : public Action {
   int PROPCON_burnout, PROPCON_burnout_filter;
 };
 
-class MassTransfer: public Action {
+class MassTransfer : public RocstarAction {
  public:
-  MassTransfer(FluidAgent *ag, BurnAgent *bag, const std::string b_rhos, const std::string b_rb, const std::string f_mdot);
+  MassTransfer(FluidAgent *ag,
+               BurnAgent *bag,
+               const std::string b_rhos,
+               const std::string b_rb,
+               const std::string f_mdot
+  );
   void init(double t);
   void run(double t, double dt, double alpha);
  private:
@@ -197,9 +192,11 @@ class MassTransfer: public Action {
   int f_mdot_hdl, b_rhos_hdl, b_rb_hdl, fb_mdot_hdl;
 };
 
-class ZoomInterface : public Action {
+class ZoomInterface : public RocstarAction {
  public:
-  ZoomInterface(FluidAgent *ag, BurnAgent *bag, const std::string fb_mdot_alp, double z);
+  ZoomInterface(FluidAgent *ag, BurnAgent *bag,
+                const std::string fb_mdot_alp, double z
+  );
   void init(double t);
   void run(double t, double dt, double alpha);
  private:
@@ -209,9 +206,11 @@ class ZoomInterface : public Action {
   double zoom;
 };
 
-class ComputeRhofvf : public Action {
+class ComputeRhofvf : public RocstarAction {
  public:
-  ComputeRhofvf(FluidAgent *ag, std::string f_vs_alp, std::string f_rhof_alp, std::string f_rhofvf_alp);
+  ComputeRhofvf(FluidAgent *ag, std::string f_vs_alp, std::string f_rhof_alp,
+                std::string f_rhofvf_alp
+  );
   void init(double t);
   void run(double t, double dt, double alpha);
  private:
@@ -220,9 +219,15 @@ class ComputeRhofvf : public Action {
   int f_vs_alp_hdl, f_rhof_alp_hdl, f_rhofvf_alp_hdl;
 };
 
-class ComputeBurnPane : public Action {
+class ComputeBurnPane : public RocstarAction {
  public:
-  ComputeBurnPane(FluidAgent *ag, BurnAgent *bag, SolidAgent *sag, const std::string fb_mdot_alp, const std::string rhofvf_alp, double z);
+  ComputeBurnPane(FluidAgent *ag,
+                  BurnAgent *bag,
+                  SolidAgent *sag,
+                  const std::string fb_mdot_alp,
+                  const std::string rhofvf_alp,
+                  double z
+  );
   void init(double t);
   void run(double t, double dt, double alpha);
  private:
@@ -235,7 +240,7 @@ class ComputeBurnPane : public Action {
 };
 
 // copy mesh from parent window to fluid face
-class CopyBurnFromParentMesh : public Action {
+class CopyBurnFromParentMesh : public RocstarAction {
  public:
   CopyBurnFromParentMesh(BurnAgent *bag, FluidAgent *fag);
   void init(double t);
@@ -247,33 +252,35 @@ class CopyBurnFromParentMesh : public Action {
 };
 
 // copy bflag from rocburn if not at time 0
-class CopyBflagFromBurn : public Action {
+class CopyBflagFromBurn : public RocstarAction {
  public:
   CopyBflagFromBurn(BurnAgent *bag);
   void init(double t);
   void run(double t, double dt, double alpha);
  private:
   BurnAgent *bagent;
-  std::string  parent_bflag, burn_bflag;
+  std::string parent_bflag, burn_bflag;
 };
 
 // compute pconn for the whole surface, which will be used by surface propagation
-class ComputePconn : public Action {
+class ComputePconn : public RocstarAction {
  public:
-  ComputePconn(Agent *ag, std::string a_mesh, std::string a_pconn, std::string p_pmesh, int *cond=NULL);
+  ComputePconn(RocstarAgent *ag, std::string a_mesh, std::string a_pconn,
+               std::string p_pmesh, bool cond = false
+  );
   void init(double t);
   void run(double t, double dt, double alpha);
  private:
-  Agent *agent;
+  RocstarAgent *agent;
   std::string a_mesh_str, a_pconn_str, p_pmesh_str;
   int a_mesh_hdl, a_pconn_hdl, p_pmesh_hdl;
   int MAP_compute_pconn;
   int PROP_initialize;
-  int *cond_addr;
+  bool condition;
 };
 
 /*
-class InitBurnBuffer : public Action {
+class InitBurnBuffer : public RocstarAction {
  public:
   InitBurnBuffer(FluidAgent *ag, BurnAgent *bag, double z);
   void init(double t);
@@ -286,9 +293,11 @@ class InitBurnBuffer : public Action {
 };
 */
 
-class SolidPropagateSurface_ALE : public Action {
+class SolidPropagateSurface_ALE : public RocstarAction {
  public:
-  SolidPropagateSurface_ALE(SolidAgent *ag, const std::string p_rb, const std::string a_vbar, double z);
+  SolidPropagateSurface_ALE(SolidAgent *ag, const std::string p_rb,
+                            const std::string a_vbar, double z
+  );
   void init(double t);
   void run(double t, double dt, double alpha);
  private:
@@ -301,22 +310,14 @@ class SolidPropagateSurface_ALE : public Action {
   int PROPCON_find_intersections, PROPCON_constrain_displacements;
 };
 
-class Reset_du_alp : public Action {
+class Reset_du_alp : public RocstarAction {
  public:
   Reset_du_alp(FluidAgent *fag);
   void init(double t);
   void run(double t, double dt, double alpha);
-private:
+ private:
   FluidAgent *fagent;
-  int    du_alp_hdl;
+  int du_alp_hdl;
 };
 
-#endif
-
-
-
-
-
-
-
-
+#endif //_BASIC_ACTIONS_H_

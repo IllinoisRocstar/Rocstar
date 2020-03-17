@@ -24,54 +24,41 @@
 #ifndef _BURNAGENT_H_
 #define _BURNAGENT_H_
 
-#include "Agent.h"
+#include "RocstarAgent.h"
 
-class BurnAgent: public Agent {
+class BurnAgent : public RocstarAgent {
 public:
+  BurnAgent(RocstarCoupling *coup, std::string mod, std::string obj,
+            MPI_Comm com, std::string parent);
 
-  BurnAgent(Coupling *coup, std::string mod, std::string obj, MPI_Comm com, const std::string parent);
+  void read_restart_data() override;
+  void output_visualization_files(double t) override;
 
-  virtual void input( double t);
+private:
+  int tbl_flag;
 
-  virtual void load_module();
-  virtual void unload_module();
-  virtual void init_module(double t, double dt);
-  virtual void finalize();
-
-  virtual void read_restart_data();
-  virtual void output_restart_files( double t);
-  virtual void output_visualization_files( double t);
-
-  virtual void create_buffer_all();
-protected:
-  // Window name.
-  static const char *window_name;  
-  int  tbl_flag;
 public:
-  std::string parentWin;  
-//  std::string iburn_i;
+  std::string parentWin;
 
-  std::string iburn_all;		// for registering dataitems
-  std::string iburn_ng;		
+public:
+  const std::string &get_surf_all() const { return surf_all; }
+  std::string iburn_ng;
 
-    // for input
-  std::string iburn;
-  std::string burn;
-
-   // Rocin windows
-  std::string burnSurfIN;
-  std::string burnVolIN;
-
+private:
   std::string burnIntBak;
 
   std::string burnBufOUT;
+
+public:
   bool ignmodel;
+
+private:
+  void finalize_windows() override;
+
+  void parse_ic_options(void *option_data) override;
+  void input_fallback_surf(const std::string &surface_window_in) override;
+  void input_fallback_vol(const std::string &volume_window_in) override;
+  void create_buffer_all() override;
 };
 
 #endif
-
-
-
-
-
-

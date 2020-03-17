@@ -189,6 +189,14 @@ SUBROUTINE rfluinit(caseString,verbLevel)
   CALL RFLU_GENX_HardCodeWindowName(global)
 #endif
 
+  ! AEG: MPI_Init is missing when in GENX mode.
+  CALL MPI_Init(errorFlag)
+  global%error = errorFlag
+  IF ( global%error /= ERR_NONE ) THEN
+    CALL ErrorStop(global,ERR_MPI_OUTPUT,__LINE__)
+  END IF ! global%error
+  ! AEG end
+
 ! ******************************************************************************
 ! Print header and write version string
 ! ******************************************************************************

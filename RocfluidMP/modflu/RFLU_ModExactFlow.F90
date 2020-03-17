@@ -83,7 +83,7 @@ MODULE RFLU_ModExactFlow
 !   global      Pointer to global data
 !   x           x-coordinate
 !   y           y-coordinate
-!   z		z-coordinate
+!   z           z-coordinate
 !
 ! Output: 
 !   d           Density

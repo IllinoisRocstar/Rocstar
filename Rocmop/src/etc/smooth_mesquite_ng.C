@@ -616,7 +616,7 @@ void Rocmop::determine_physical_border(COM::Attribute* w_is_surface){
 	ind2lid[i][j].insert(std::make_pair(k,vs[index+2+k]));
       }
     } 
-#if 0
+#if ENABLE_DEBUG // M.A.P. --> previously disabled
 
     std::cout << "Pane " << allpanes[i]->id() << " lid2ind = \n";
     for(int j=0; j < count; ++j){
@@ -675,7 +675,7 @@ void Rocmop::determine_physical_border(COM::Attribute* w_is_surface){
       }
     }
     
-#if 0
+#if ENABLE_DEBUG // M.A.P --> previously disabled
     // print out the list of possibly shared nodes:
     std::cout << "Pane " << allpanes[i]->id() << " possibly shared panes\n";
     for(int j = 0; j<count; ++j){
@@ -761,7 +761,7 @@ void Rocmop::determine_physical_border(COM::Attribute* w_is_surface){
       send_sizes[i] += my_buff[j];
     }
 #endif
-#if 0
+#if ENABLE_DEBUG // M.A.P. --> previously disabled
     std::cout << "pconn_offset = " << pconn_offset << "\n";
     std::cout << "total size = " << my_size << "\n";
     std::cout << "ghost sized = " << my_size - pconn_offset << "\n\n";
@@ -769,7 +769,7 @@ void Rocmop::determine_physical_border(COM::Attribute* w_is_surface){
   }
   wrk_window->init_done();
 
-#if 0
+#if ENABLE_DEBUG // M.A.P. --> previously disabled
   //print out pconn, for debugging.
   for(int i=0; i<total_npanes; ++i){
     std::cout << "FALSE pconn for pane " << allpanes[i]->id() << std::endl;
@@ -796,7 +796,7 @@ void Rocmop::determine_physical_border(COM::Attribute* w_is_surface){
 			false_pconn);
 
   //print out pconn, for debugging.
-#if 0
+#if ENABLE_DEBUG // M.A.P. --> previously disabled
   for(int i=0; i<total_npanes; ++i){
     COM::Attribute *my_pconn = allpanes[i]->attribute(w_false_pconn_id);
     int* ptr = (int*)my_pconn->pointer();
@@ -852,7 +852,7 @@ void Rocmop::determine_physical_border(COM::Attribute* w_is_surface){
     // + recv_size+send_size      // number of nodes in facet lists
     int pconn_size = 3*(pconn_offset)+3+4*count+recv_size+send_size;
 
-#if 0
+#if ENABLE_DEBUG // M.A.P. --> previously disabled
 
     std::cout << " SIZES\nrecv_size = " << recv_size << " send_size = " << send_size
 	      << " pconn size = " << pconn_size << "\n"
@@ -920,7 +920,7 @@ void Rocmop::determine_physical_border(COM::Attribute* w_is_surface){
     }
   }
 
-#if 0
+#if ENABLE_DEBUG // M.A.P. --> previously disabled
   //print out pconn, for debugging.
   for(int i=0; i<total_npanes; ++i){
     std::cout << "Facet list FALSE pconn for pane " << allpanes[i]->id() << std::endl;
@@ -945,7 +945,7 @@ void Rocmop::determine_physical_border(COM::Attribute* w_is_surface){
   Rocmap::update_ghosts(com_buff,
 			false_pconn);
 
-#if 0
+#if ENABLE_DEBUG // M.A.P. --> previously disabled
   //print out pconn, for debugging.
   for(int i=0; i<total_npanes; ++i){
     std::cout << "Updated Facet list buffer for pane " << allpanes[i]->id() << std::endl;
@@ -1049,18 +1049,18 @@ void Rocmop::determine_physical_border(COM::Attribute* w_is_surface){
     //    std::cout << "\n\n";
   }
 
-#if 0
+#if ENABLE_DEBUG
   for(int i = 0; i < total_npanes; ++i){
     COM::Attribute *p_pconn = allpanes[i]->attribute(COM::COM_PCONN);
-    //    std::cout << "PANE " << allpanes[i]->id() << "'s real pconn size = "
-    //	      << p_pconn->size_of_real_items() << " and ghost size = "
-    //	      << p_pconn->size_of_items()-p_pconn->size_of_real_items() << "\n\n";
+    std::cout << "PANE " << allpanes[i]->id() << "'s real pconn size = "
+      	      << p_pconn->size_of_real_items() << " and ghost size = "
+      	      << p_pconn->size_of_items()-p_pconn->size_of_real_items() << "\n\n";
 
-    //int* ptr = (int*)p_pconn->pointer();
-    //for(int j=0, nj=p_pconn->size_of_items(); j<nj; ++j){
-      //      std::cout << ptr[j] << " ";
-    //}
-    //    std::cout << "\n\n";
+    int* ptr = (int*)p_pconn->pointer();
+    for(int j=0, nj=p_pconn->size_of_items(); j<nj; ++j){
+          std::cout << ptr[j] << " ";
+    }
+        std::cout << "\n\n";
   }
 #endif
 

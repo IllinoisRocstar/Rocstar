@@ -50,8 +50,9 @@
 
     USE M_Rocburn_ZN_Global_Data
 
+    USE mpi
+
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
 
 !
 !   Global data for Rocburn_1D_ZN passed as a pointer

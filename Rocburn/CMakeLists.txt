@@ -1,52 +1,42 @@
-cmake_minimum_required (VERSION 2.8)
-project(Rocburn)
-enable_language(C CXX Fortran)
-load_cache(../)
-set (ROCSTAR TRUE CACHE BOOL "Build as Rocstar Module")
-if(NOT ENABLE_MPI)
-  add_definitions( -DDUMMY_MPI )
-else()
-  find_package(MPI REQUIRED)
-  add_definitions( -DMPICH_IGNORE_CXX_SEEK -DMPI)
-  include_directories(${MPI_INCLUDE_PATH})
-endif()
-#find_library(HDF4_LIB df HINTS /usr/lib/hdf /usr/lib64/hdf)
-#find_library(MFHDF_LIB mfhdf HINTS /usr/lib/hdf /usr/lib64/hdf)
-find_library(ZLIB z)
-find_library(JPEG_LIB jpeg)
-find_path(HDF4_INC hdf.h HINTS /usr/include/hdf)
-find_library(BLOCKSOLVE_LIBRARY blocksolve95)
-find_path(BLOCKSOLVE_INC blocksolve95.h)
-find_library(METIS_LIB metis)
-find_path(METIS_INC metis.h)
+cmake_minimum_required(VERSION 3.0)
+# project(Rocburn C CXX Fortran)
 
-#INCLUDE(CTest)
-find_path(ROCCOM_INC com.h HINTS ../../IMPACT/COM/include)
-find_path(ROCMAN_INC rocman.h HINTS ../../Rocman/include)
+set(CORE_SRCS
+    01.burn_interface_data.f90
+    calcdist.f90
+    rocburn_2D.f90
+    Rocburn_load_module.f90)
+set(APN_SRCS
+    Rocburn_APN/02.burn_APN_global_data.f90
+    Rocburn_APN/APN_input_0d.f90
+    Rocburn_APN/Rocburn_1D_APN.f90)
+set(ZN_SRCS
+    Rocburn_ZN/02.burn_ZN_global_data.f90
+    Rocburn_ZN/Rocburn_1D_ZN.f90
+    Rocburn_ZN/ZN_calc_burning_rate.f90
+    Rocburn_ZN/ZN_gen_grid.f90
+    Rocburn_ZN/ZN_input_0d.f90
+    Rocburn_ZN/ZN_ssWSB.f90)
+set(PY_SRCS
+    Rocburn_PY/data_py.f90
+    Rocburn_PY/init_py.f90
+    Rocburn_PY/Rocburn_py.f90
+    Rocburn_PY/setup_py.f90
+    Rocburn_PY/update_py.f90)
+set(LIB_SRCS
+    ${CORE_SRCS}
+    ${APN_SRCS}
+    ${ZN_SRCS}
+    ${PY_SRCS})
 
-file (GLOB CORE_SRCS ./*.f90)
-file (GLOB APN_SRCS  ./Rocburn_APN/*.f90)
-file (GLOB ZN_SRCS   ./Rocburn_ZN/*.f90)
-file (GLOB PY9_SRCS  ./Rocburn_PY/*.f90)
-file (GLOB PYF_SRCS  ./Rocburn_PY/*.f)
-set(LIB_SRCS ${CORE_SRCS} ${APN_SRCS} ${ZN_SRCS} ${PY9_SRCS} ${PYF_SRCS})
-set(ALL_SRCS ${LIB_SRCS})
-set_source_files_properties(${ALL_SRCS} PROPERTIES COMPILE_FLAGS "-fPIC ${MPI_Fortran_COMPILE_FLAGS}" )
+add_library(Rocburn ${LIB_SRCS})
+target_link_libraries(Rocburn IMPACT::SITCOMF)
+set_target_properties(Rocburn PROPERTIES VERSION ${ROCSTAR_VERSION}
+        SOVERSION ${ROCSTAR_MAJOR_VERSION})
 
-# rpath settings
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-include_directories(${ROCCOM_INC} ${ROCMAN_INC} ${HDF4_INC} ${METIS_INC})
-add_definitions(-DUSE_HDF=1)
-
-if(NOT BUILD_STATIC)
-  add_library(Rocburn SHARED ${LIB_SRCS})
-else()
-  add_library(Rocburn STATIC ${LIB_SRCS})
-  add_definitions( -DSTATIC_LINK )
-endif()
-target_link_libraries(Rocburn ${IMPACT_LIB} ${MPI_Fortran_LIBRARIES})
-set_target_properties(Rocburn PROPERTIES LINK_FLAGS "${MPI_Fortran_LINK_FLAGS}")
-
-INSTALL(TARGETS Rocburn RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+install(TARGETS Rocburn
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)

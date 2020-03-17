@@ -27,7 +27,7 @@
 ! Description: None.
 !
 ! Input: 
-!   region	grid dimensions and topology
+!   region      grid dimensions and topology
 !
 ! Output: None.
 !

@@ -54,13 +54,13 @@ SUBROUTINE PLAG_WriteStatTecAscii( regions, iReg)
   USE ModPartLag,    ONLY : t_plag
   USE PLAG_ModInterfacesPost, ONLY : RFLO_CopyGeometryDummy,   &
                                      RFLO_GenerateCoarseGrids, &
-				     RFLO_GetCellOffset,       &
-				     RFLO_GetDimensPhysNodes,  &
+                                     RFLO_GetCellOffset,       &
+                                     RFLO_GetDimensPhysNodes,  &
                                      RFLO_GetDimensDummy,      &
                                      RFLO_GetDimensDummyNodes, &
-				     RFLO_GetNodeOffset,       &
-				     RFLO_GetCellOffset,       &
-				     RFLO_GetDimensPhys,       &
+                                     RFLO_GetNodeOffset,       &
+                                     RFLO_GetCellOffset,       &
+                                     RFLO_GetDimensPhys,       &
                                      RFLO_ReadGridRegion, Aver
 
   USE ModParameters
@@ -236,7 +236,7 @@ SUBROUTINE PLAG_WriteStatTecAscii( regions, iReg)
      WRITE(fnameTec,'(A,ES11.5,A)') &
      TRIM(global%casename)//'.plag_stats_',currentTime,'.dat'
      OPEN(IF_PLOT_PLAGSTAT_TEC,FILE=fnameTec,STATUS='unknown',FORM='formatted',&
-	  iostat=errorFlag)
+          iostat=errorFlag)
      global%error = errorFlag
      IF (global%error /= 0) &
        CALL ErrorStop( global,ERR_FILE_OPEN,__LINE__,fnameTec )     

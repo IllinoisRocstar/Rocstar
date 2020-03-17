@@ -27,9 +27,9 @@
 ! Description: None.
 !
 ! Input: 
-!   caseString	String with casename
-!   stampString	String with iteration or time stamp
-!   verbLevel	Verbosity level
+!   caseString  String with casename
+!   stampString String with iteration or time stamp
+!   verbLevel   Verbosity level
 !
 ! Output: None.
 !

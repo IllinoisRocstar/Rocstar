@@ -27,7 +27,7 @@
 ! Description: None.
 !
 ! Input: 
-!   pRegion	Pointer to serial region
+!   pRegion     Pointer to serial region
 !
 ! Output: None.
 !
@@ -181,8 +181,8 @@ SUBROUTINE PLAG_RFLU_InitSolSerial_3D(pRegion)
       icg = cc(icl)
 
       IF ( RFLU_ICT_TestInCell(pRegion,xPcl,yPcl,zPcl,icg) .EQV. .TRUE. ) THEN
-	pPlag%aiv(AIV_PLAG_ICELLS,iPcl) = icg
-	pPlag%aiv(AIV_PLAG_REGINI,iPcl) = pRegion%iRegionGlobal                         
+        pPlag%aiv(AIV_PLAG_ICELLS,iPcl) = icg
+        pPlag%aiv(AIV_PLAG_REGINI,iPcl) = pRegion%iRegionGlobal
 
         EXIT cellLoop
       END IF ! RFLU_ICT_TestInCell

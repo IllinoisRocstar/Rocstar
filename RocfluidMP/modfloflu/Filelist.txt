@@ -12,77 +12,77 @@
 #
 ################################################################################
 
-SRCF90+=	ModBndPatch.F90\
-		ModBuildFileNames.F90\
-		ModDataStruct.F90\
-		ModDataTypes.F90\
-		ModError.F90\
-		ModGlobal.F90\
-		ModGrid.F90\
+SRCF90+=        ModBndPatch.F90\
+                ModBuildFileNames.F90\
+                ModDataStruct.F90\
+                ModDataTypes.F90\
+                ModError.F90\
+                ModGlobal.F90\
+                ModGrid.F90\
                 ModInteract.F90\
                 ModInterfacesBcond.F90\
                 ModInterfacesIO.F90\
                 ModInterfacesMixt.F90\
                 ModInterfacesUtil.F90\
-		ModInterfaces.F90\
-		ModMaterials.F90\
-		ModMixture.F90\
-		ModMPI.F90\
-		ModParameters.F90\
+                ModInterfaces.F90\
+                ModMaterials.F90\
+                ModMixture.F90\
+                ModMPI.F90\
+                ModParameters.F90\
                 ModPartEul.F90\
                 ModPartLag.F90\
                 ModPeriodic.F90\
                 ModRadiation.F90\
-		ModRandom.F90\
-		ModSortSearch.F90\
+                ModRandom.F90\
+                ModSortSearch.F90\
                 ModSpecies.F90\
-		ModStencil.F90\
-		ModTools.F90\
+                ModStencil.F90\
+                ModTools.F90\
                 ModTurbulence.F90
 ifdef RFLU
-  SRCF90+= 	ModBorder.F90\
+  SRCF90+=      ModBorder.F90\
                 ModColoring.F90\
-		ModPlotting.F90
+                ModPlotting.F90
 endif
-                
+
 ifdef GENX
-  SRCF90+=	ModGenx.F90
-endif                
+  SRCF90+=      ModGenx.F90
+endif
 
 ifdef INRT
-  SRCF90+=	ModInterfacesInteract.F90
+  SRCF90+=      ModInterfacesInteract.F90
 endif
 
 ifdef PEUL
-  SRCF90+=	ModInterfacesEulerian.F90
+  SRCF90+=      ModInterfacesEulerian.F90
 endif
 
 ifdef PLAG
-  SRCF90+=	ModInterfacesLagrangian.F90
+  SRCF90+=      ModInterfacesLagrangian.F90
 endif
 
 ifdef PERI
-  SRCF90+=	ModInterfacesPeriodic.F90  		
+  SRCF90+=      ModInterfacesPeriodic.F90
 endif
 
 ifdef RADI
-  SRCF90+=	ModInterfacesRadiation.F90
+  SRCF90+=      ModInterfacesRadiation.F90
 endif
 
 ifdef SPEC
-  SRCF90+= 	ModInterfacesSpecies.F90
+  SRCF90+=      ModInterfacesSpecies.F90
 endif
 
 ifdef STATS
-  SRCF90+=	ModInterfacesStatistics.F90\
-		ModStatsRoutines.F90
+  SRCF90+=      ModInterfacesStatistics.F90\
+                ModStatsRoutines.F90
 ifdef RFLU
-  SRCF90+= 	ModStatsPost.F90
+  SRCF90+=      ModStatsPost.F90
 endif
 endif
 
 ifdef TURB
-  SRCF90+=	ModInterfacesTurbulence.F90  		
+  SRCF90+=      ModInterfacesTurbulence.F90
 endif
 
 ################################################################################

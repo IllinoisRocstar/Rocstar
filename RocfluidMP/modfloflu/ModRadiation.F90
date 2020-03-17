@@ -82,9 +82,6 @@ MODULE ModRadiation
     REAL(RFREAL), POINTER :: cv(:,:), cvOld(:,:)                ! FLDTRAN+RTE
     REAL(RFREAL), POINTER :: rhs(:,:), rhsSum(:,:), diss(:,:)   ! FLDTRAN+RTE
     REAL(RFREAL), POINTER :: gradi(:,:), gradj(:,:), gradk(:,:) ! FLDTRAN+RTE(?)
-#ifdef RFLO
-    REAL(RFREAL), POINTER :: srad(:,:), epsIrs(:,:)             ! FLDTRAN+RTE
-#endif
     REAL(RFREAL), POINTER :: fluxlim(:)                         ! FLD+ROSS
     REAL(RFREAL), POINTER :: ptens(:,:), eddFact(:)             ! FLD
     REAL(RFREAL), POINTER :: qri(:), qrj(:), qrk(:), goFact(:)     ! all

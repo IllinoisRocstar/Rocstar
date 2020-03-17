@@ -27,7 +27,7 @@
 ! Description: None.
 !
 ! Input: 
-!   winName	Name of Rocflu window
+!   winName     Name of Rocflu window
 !
 ! Output: None.
 ! 

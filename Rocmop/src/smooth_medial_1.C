@@ -273,9 +273,9 @@ void Rocmop::smooth_surf_medial(){
  
  // Add the displacements onto the nodal coords
  // FIXME
- const std::string att1("disps");
- COM::DataItem *disps = _buf_window->dataitem(att1);
- COM::DataItem *nc = _buf_window->dataitem( COM::COM_NC);
+ //const std::string att1("disps");
+ //COM::DataItem *disps = _buf_window->dataitem(att1);
+ //COM::DataItem *nc = _buf_window->dataitem( COM::COM_NC);
  // Rocblas::add(disps,nc,nc);
  
  if(_verb > 2) 
@@ -299,9 +299,9 @@ compute_medial_quadric() {
   COM::DataItem *r_attr = _buf_window->dataitem(att3);
 
   int facenormals_id = _buf_window->dataitem(att4)->id();
-  int facecenters_id = _buf_window->dataitem(att5)->id();
+  //int facecenters_id = _buf_window->dataitem(att5)->id();
   int tangranks_id = _buf_window->dataitem(att6)->id();
-  int cntnranks_id = _buf_window->dataitem(att7)->id();
+  //int cntnranks_id = _buf_window->dataitem(att7)->id();
   int cntnvecs_id = _buf_window->dataitem(att8)->id();
   int vnormals_id = _buf_window->dataitem(att9)->id();
   int awnormals_id = _buf_window->dataitem(att11)->id();
@@ -316,15 +316,14 @@ compute_medial_quadric() {
   // Initialize disps to 0
   std::vector< COM::Pane*> allpanes;
   _buf_window->panes(allpanes);
-  for(int i =0, local_npanes = allpanes.size();
-      i<local_npanes; ++i){
-    Vector_3<double> *ds = reinterpret_cast<Vector_3<double>*>
-      ( allpanes[i]->dataitem(disps_id)->pointer());
-    for(int i =0, ni = allpanes[i]->size_of_real_nodes(); i<ni; ++i){
-      ds[i] = Vector_3<double>(0.0,0.0,0.0);
+  for (int i = 0, local_npanes = allpanes.size(); i < local_npanes; ++i) {
+    Vector_3<double> *ds = reinterpret_cast<Vector_3<double> *>(
+        allpanes[i]->dataitem(disps_id)->pointer());
+    for (int j = 0, ni = allpanes[i]->size_of_real_nodes(); j < ni; ++j) {
+      ds[j] = Vector_3<double>(0.0, 0.0, 0.0);
     }
   }
-  
+
   // Loop through the panes and its real faces, calculate A, b, and c = sum_i(wi)
   std::vector< COM::Pane*>::iterator it = allpanes.begin();
   SURF::Window_manifold_2::PM_iterator pm_it=_wm->pm_begin();
@@ -349,8 +348,8 @@ compute_medial_quadric() {
       ( pane->dataitem(uw_attr->id())->pointer());
     double   *rs = reinterpret_cast<double*>
       ( pane->dataitem(r_attr->id())->pointer());
-    Vector_3<double> *cnts = reinterpret_cast<Vector_3<double>*>
-      ( pane->dataitem(facecenters_id)->pointer());
+    //Vector_3<double> *cnts = reinterpret_cast<Vector_3<double>*>
+    //  ( pane->dataitem(facecenters_id)->pointer());
 
     // Loop through real elements of the current pane
     Element_node_enumerator ene( pane, 1); 
@@ -367,7 +366,7 @@ compute_medial_quadric() {
       for ( int k=0; k<ne; ++k) {
 	int windex = ene[(k+1==ne)?0:k+1]-1;
 	
-	Vector_3<double> cnt = cnts[j];
+	//Vector_3<double> cnt = cnts[j];
 
 	// Calculate the weight of the current face for this node.
 	double w=1;
@@ -479,14 +478,14 @@ compute_medial_quadric() {
       ( pane->dataitem(r_attr->id())->pointer());
     int      *tranks = reinterpret_cast<int*>
       ( pane->dataitem(tangranks_id)->pointer());
-    int      *cranks = reinterpret_cast<int*>
-      ( pane->dataitem(cntnranks_id)->pointer());
+    //int      *cranks = reinterpret_cast<int*>
+    //  ( pane->dataitem(cntnranks_id)->pointer());
     Vector_3<double> *cvecs = reinterpret_cast<Vector_3<double>*>
       ( pane->dataitem(cntnvecs_id)->pointer());
-    int      *cnstrs = _cnstr_types?reinterpret_cast<int*>
-      ( pane->dataitem(_cnstr_types->id())->pointer()):NULL;
-    Vector_3<double> *cnstr_dirs = _cnstr_dirs?reinterpret_cast<Vector_3<double>*>
-      ( pane->dataitem(_cnstr_dirs->id())->pointer()):NULL;
+    //int      *cnstrs = _cnstr_types?reinterpret_cast<int*>
+    //  ( pane->dataitem(_cnstr_types->id())->pointer()):NULL;
+    //Vector_3<double> *cnstr_dirs = _cnstr_dirs?reinterpret_cast<Vector_3<double>*>
+    //  ( pane->dataitem(_cnstr_dirs->id())->pointer()):NULL;
     Vector_3<double>  *vnrms = reinterpret_cast<Vector_3<double>*>
       ( pane->dataitem(vnormals_id)->pointer());
     Vector_3<double>  *awnrms = reinterpret_cast<Vector_3<double>*>
@@ -505,7 +504,7 @@ compute_medial_quadric() {
       Vector_3<double> *es = &As[3*j];    // eigen-vectors of current vertex.
       Vector_3<double> *cs = &cvecs[2*j]; // cnstr-tangent of current vertex.
       // Make copy of matrix A as it will be overwritten by eigenvectors
-      Vector_3<double> A_v[3] = {es[0], es[1], es[2]};
+      //Vector_3<double> A_v[3] = {es[0], es[1], es[2]};
       // Likewise, b will be overwritten by eigenvalues
       Vector_3<double> b_v = bs_m[j];
       awnrms[j].normalize();
@@ -747,10 +746,10 @@ redistribute_vertices_smooth() {
 	  if ( theta>half_pi) theta = std::max(0.,pi-theta);
 	  std::cout << "theta 2 = " << theta << std::endl;
   
-	  for ( int k=cranks[vindex]-1; k>=0; --k) {
-	    cs[vindex][k] += theta*(es[2*vindex+k]*(diff_uv+diff_wv));
-	    //	    std::cout << "cs[" << vindex << "][" << k << "] += " 
-	    //      << theta << "*(" << es[2*vindex+k] << " * (" 
+	  for ( int l =cranks[vindex]-1; l >=0; --l) {
+	    cs[vindex][l] += theta*(es[2*vindex+ l]*(diff_uv+diff_wv));
+	    //	    std::cout << "cs[" << vindex << "][" << l << "] += "
+	    //      << theta << "*(" << es[2*vindex+l] << " * ("
 	    //      << diff_uv << " + " << diff_wv << "))\n";
 	  }
 	  ws[vindex] += theta;
@@ -1133,57 +1132,6 @@ eigen_analyze_vertex( Vector_3<double> A_io[3], Vector_3<double> &b_io,
   return nrank;
 }
 
-#if 0
-// Solve the minimization problem (x^T)Ax+2b^Tx with eigen-decomposition.
-int Rocmop::
-eigen_analyze_vertex( Vector_3<double> A_io[3], Vector_3<double> &b_io, 
-		      Vector_3<double> *nrm_nz) {
-
-  // A_io will be replaced by its eigenvectors.
-  Vector_3<double> *es = A_io;
-
-  // Create a backup of b_io, as b_io will be replaced by eigenvalues.
-  const Vector_3<double> b = b_io;
-  Vector_3<double> &lambdas = b_io;
-
-  // Compute the eigenvalues and eigenvectors of the matrix. 
-  // Note that lambdas will be in decreasing order!
-  compute_eigenvectors( es, lambdas);
-
-  int orank;
-  double eps = lambdas[0]*1.e-8;
-  double gs[] = { b*es[0]/lambdas[0],
-		  b*es[1]/std::max(eps,lambdas[1]), 
-		  b*es[2]/std::max(eps,lambdas[2]) };
-  double gs_abs[] = {std::abs(gs[0]), std::abs(gs[1]), std::abs(gs[2])};
-
-  // Classify offset intersection based on acos(-b.norm()/rv) and lambdas
-  if ( lambdas[2] >= _saliency_crn*
-       std::max(lambdas[0]-lambdas[1], lambdas[1]-lambdas[2]) || 
-       gs_abs[2]>=gs_abs[1] && gs_abs[2] >= gs_abs[0])
-    orank = 3;
-  else if ( gs_abs[1] >= gs_abs[0] || lambdas[0]*_dir_thres<lambdas[1]) {
-    if ( lambdas[1] < lambdas[0]*_eig_thres) { 
-      lambdas[1] = lambdas[0]*_eig_thres;
-      std::cerr << "Rocmop Warning: Mesh contains near cusp." << std::endl;
-    }
-    orank = 2; // ridge vertex
-  }
-  else
-    orank = 1; // smooth vertex
-
-  if ( !_reorthog || orank==1)
-    *nrm_nz=( es[0]*b>0)?-es[0]:es[0];
-  else {
-    // Solve for x within primary space
-    Vector_3<double> x(0,0,0);
-    for ( int k=0; k<orank; ++k) x -= gs[k]*es[k];
-    *nrm_nz = x.normalize();
-  }
-  return orank;
-}
-#endif
-
 // Compute eigenvalues and eigenvectors of a 3x3 matrix A.
 // At output, the eigenvalues are saved in lambdas in decending order.
 // The columns of A are replaced by the orthonormal eigenvectors. 
@@ -1196,7 +1144,9 @@ compute_eigenvectors( Vector_3<double> A[3], Vector_3<double> &lambdas) {
   double ebuf[3][3];
   
   int info = dsyevq3( abuf, ebuf, &lambdas[0]);
-  COM_assertion_msg( info==0, "Computation of eigenvectos failed");
+  if (info != 0) {
+    COM_abort_msg(EXIT_FAILURE, "Computation of eigenvectos failed");
+  }
 
   std::swap( ebuf[0][1], ebuf[1][0]);
   std::swap( ebuf[0][2], ebuf[2][0]);

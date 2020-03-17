@@ -54,13 +54,8 @@ SUBROUTINE DescaleGridSpeeds( region )
   USE ModGlobal, ONLY    : t_global
   USE ModError
   USE ModParameters
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_GetDimensDummyNodes, RFLO_GetNodeOffset
-#include "Indexing.h"
-#endif
-#ifdef RFLU
+
   USE RFLU_ModGrid
-#endif
 
   IMPLICIT NONE
 
@@ -81,15 +76,8 @@ SUBROUTINE DescaleGridSpeeds( region )
   INTEGER :: ifc, iPatch, irk, irkStep
   REAL(RFREAL) :: scaleFactor, term
   REAL(RFREAL) :: ark(5), grk(5)
-#ifdef RFLO
-  INTEGER :: iLev, idnbeg, idnend, jdnbeg, jdnend, kdnbeg, kdnend
-  INTEGER :: ibn, ien, iNOff, ijNOff, in
-  REAL(RFREAL), POINTER :: siVel(:), sjVel(:), skVel(:)
-#endif
-#ifdef RFLU
   REAL(RFREAL), DIMENSION(:), POINTER :: gs
   TYPE(t_patch), POINTER :: pPatch
-#endif
   TYPE(t_global), POINTER :: global
 
 ! *****************************************************************************
@@ -130,26 +118,6 @@ SUBROUTINE DescaleGridSpeeds( region )
 ! Interior faces
 ! ============================================================================= 
 
-#ifdef RFLO
-  iLev = region%currLevel
-  CALL RFLO_GetDimensDummyNodes( region,iLev,idnbeg,idnend, &
-                                 jdnbeg,jdnend,kdnbeg,kdnend )
-  CALL RFLO_GetNodeOffset( region,iLev,iNOff,ijNOff )
-  ibn = IndIJK(idnbeg,jdnbeg,kdnbeg,iNOff,ijNOff)
-  ien = IndIJK(idnend,jdnend,kdnend,iNOff,ijNOff)
-
-  siVel => region%levels(iLev)%grid%siVel
-  sjVel => region%levels(iLev)%grid%sjVel
-  skVel => region%levels(iLev)%grid%skVel
-
-  DO in=ibn,ien
-    siVel(in) = scaleFactor*siVel(in)
-    sjVel(in) = scaleFactor*sjVel(in)
-    skVel(in) = scaleFactor*skVel(in)
-  ENDDO
-#endif
-
-#ifdef RFLU
   gs => region%grid%gs
 
   DO ifc = 1,region%grid%nFaces
@@ -168,7 +136,6 @@ SUBROUTINE DescaleGridSpeeds( region )
       gs(ifc) = scaleFactor*gs(ifc)      
     END DO ! ifc
   END DO ! iPatch
-#endif
 
 ! *****************************************************************************
 ! End

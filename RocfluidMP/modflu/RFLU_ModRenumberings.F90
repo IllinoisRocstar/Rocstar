@@ -545,8 +545,8 @@ MODULE RFLU_ModRenumberings
 ! Description: None.
 !
 ! Input:
-!   pRegion             Pointer to region
-!   sortFlag		Sorting flag
+!   pRegion     Pointer to region
+!   sortFlag    Sorting flag
 !
 ! Output: None.
 !

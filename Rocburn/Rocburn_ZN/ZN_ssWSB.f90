@@ -57,9 +57,9 @@
 
     USE M_Rocburn_ZN_Global_Data
 
-    IMPLICIT NONE
-    INCLUDE 'mpif.h'
+    USE mpi
 
+    IMPLICIT NONE
 
     TYPE(G_BURN_1D), POINTER :: G_ZN
     REAL(DBL), INTENT(IN) :: P, qr, To, rhoc
@@ -80,7 +80,7 @@
     REAL(DBL) :: term0, term1, term2, term3, term4, term5
     REAL(DBL) :: xcd, Da, xg, xcond, frJ
 
-    INTEGER   :: iter, i
+    INTEGER   :: iter, i, ierr
 !
 ! ============================================================================
 !
@@ -191,7 +191,7 @@
                WRITE(*,*) 'ROCBURN_ZN: rank=',G_ZN%rank
                WRITE(*,*) '  Error: xmax not large enough'
                WRITE(*,*) '  To boundary condition not satisfied'
-               CALL MPI_ABORT( MPI_COMM_WORLD, -1)
+               CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
                STOP
 
             ELSE
@@ -209,7 +209,7 @@
              ,'  in ignition_combustion'
       PRINT *,'  ROCBURN_ZN: Maximum # of ',G_ZN%itermax     &
              , ' iterations exceeded'
-      CALL MPI_ABORT( MPI_COMM_WORLD, -1)
+      CALL MPI_ABORT(MPI_COMM_WORLD, -1, ierr)
       STOP
 !
 !     end of steady state WSB homogeneouse propellant combustion model
@@ -301,7 +301,7 @@
                          ,' not large enough'
                WRITE(*,*) ' ROCBURN: To boundary'         &
                          ,' condition not satisfied'
-               CALL MPI_ABORT( MPI_COMM_WORLD, -1)
+               CALL MPI_ABORT(MPI_COMM_WORLD, -1, ierr)
                STOP
 
             ELSE
@@ -321,7 +321,7 @@
              ,'  in ignition_combustion'
       PRINT *,'  ROCBURN_ZN: Maximum # of ',G_ZN%itermax &
              , ' iterations exceeded'
-      CALL MPI_ABORT( MPI_COMM_WORLD, -1)
+      CALL MPI_ABORT(MPI_COMM_WORLD, -1, ierr)
       STOP
 
 !
@@ -351,7 +351,7 @@
     WRITE(*,*) ' ROCBURN_ZN: Error-ssWSB:'                   
     WRITE(*,*) ' No appropriate combustion model'
     WRITE(*,*) ' ROCBURN_ZN: Model_combustion=', G_ZN%Model_combustion
-    CALL MPI_ABORT( MPI_COMM_WORLD, -1)
+    CALL MPI_ABORT(MPI_COMM_WORLD, -1, ierr)
     STOP
 
     RETURN

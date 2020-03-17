@@ -675,15 +675,15 @@ MODULE RFLU_ModRocstarAdmin
 ! ==============================================================================  
 
     winName = global%volWinName
-    
+
     CALL COM_new_dataitem(TRIM(winName)//'.rhof' ,'e',COM_DOUBLE_PRECISION, &
                            1,'kg/(m^3)')
     CALL COM_new_dataitem(TRIM(winName)//'.rhovf','e',COM_DOUBLE_PRECISION, &
                            3,'kg/(m^2 s)')
     CALL COM_new_dataitem(TRIM(winName)//'.rhoEf','e',COM_DOUBLE_PRECISION, &
-                           1,'(J/(m^3))')  
-    CALL COM_new_dataitem(TRIM(winName)//'.pf','e',COM_DOUBLE_PRECISION,1, & 
-                           'N/(m^2)')  
+                           1,'(J/(m^3))')
+    CALL COM_new_dataitem(TRIM(winName)//'.pf','e',COM_DOUBLE_PRECISION,1, &
+                           'N/(m^2)')
     CALL COM_new_dataitem(TRIM(winName)//'.Tf','e',COM_DOUBLE_PRECISION,1, &
                            'K')
     CALL COM_new_dataitem(TRIM(winName)//'.af','e',COM_DOUBLE_PRECISION,1, &
@@ -751,14 +751,14 @@ MODULE RFLU_ModRocstarAdmin
     winName = global%surfWinName
 
     CALL COM_new_dataitem(TRIM(winName)//'.bcflag'     ,'p',COM_INTEGER,1,'')
-    CALL COM_new_dataitem(TRIM(winName)//'.patchNo'    ,'p',COM_INTEGER,1,'')    
+    CALL COM_new_dataitem(TRIM(winName)//'.patchNo'    ,'p',COM_INTEGER,1,'')
     CALL COM_new_dataitem(TRIM(winName)//'.cnstr_type' ,'p',COM_INTEGER,1,'')
   
     CALL COM_new_dataitem(TRIM(winName)//'.t3g:real'   ,'p',COM_INTEGER,3,'')
-    CALL COM_new_dataitem(TRIM(winName)//'.t3g:virtual','p',COM_INTEGER,3,'')    
+    CALL COM_new_dataitem(TRIM(winName)//'.t3g:virtual','p',COM_INTEGER,3,'')
 
     CALL COM_new_dataitem(TRIM(winName)//'.q4g:real'   ,'p',COM_INTEGER,4,'')
-    CALL COM_new_dataitem(TRIM(winName)//'.q4g:virtual','p',COM_INTEGER,4,'')    
+    CALL COM_new_dataitem(TRIM(winName)//'.q4g:virtual','p',COM_INTEGER,4,'')
 
 ! ******************************************************************************
 !   End
@@ -825,8 +825,8 @@ MODULE RFLU_ModRocstarAdmin
 
     winName = global%volWinName
     
-    CALL COM_new_dataitem(TRIM(winName)//'.gs','p',COM_DOUBLE_PRECISION, & 
-                           1,'m/s') 
+    CALL COM_new_dataitem(TRIM(winName)//'.gs','p',COM_DOUBLE_PRECISION, &
+                           1,'m/s')
 
 ! ==============================================================================  
 !   Surface
@@ -834,7 +834,7 @@ MODULE RFLU_ModRocstarAdmin
 
     winName = global%surfWinName
   
-    CALL COM_new_dataitem(TRIM(winName)//'.gs','e',COM_DOUBLE_PRECISION, & 
+    CALL COM_new_dataitem(TRIM(winName)//'.gs','e',COM_DOUBLE_PRECISION, &
                            1,'m/s')
   
 ! ******************************************************************************
@@ -918,7 +918,7 @@ MODULE RFLU_ModRocstarAdmin
 
     CALL COM_new_dataitem(TRIM(winName)//'.nf_alp'  ,'e',comd,3,''          )
     CALL COM_new_dataitem(TRIM(winName)//'.pf'      ,'e',comd,1,'Pa'        )
-    CALL COM_new_dataitem(TRIM(winName)//'.tf'      ,'e',comd,3,'Pa'        )  
+    CALL COM_new_dataitem(TRIM(winName)//'.tf'      ,'e',comd,3,'Pa'        )
     CALL COM_new_dataitem(TRIM(winName)//'.qc'      ,'e',comd,1,'kgK/(m^2s)')
     CALL COM_new_dataitem(TRIM(winName)//'.qr'      ,'e',comd,1,'kgK/(m^2s)')
     CALL COM_new_dataitem(TRIM(winName)//'.rhof_alp','e',comd,1,'kg/m^3'    )
@@ -3804,18 +3804,23 @@ MODULE RFLU_ModRocstarAdmin
 ! ==============================================================================  
 !   Volume. NOTE separate input volume window into substrings.
 ! ==============================================================================  
-  
-    READ(volWinNameInput,*,IOSTAT=errorFlag) tempString1,tempString2
-    global%error = errorFlag
-    IF ( global%error /= ERR_NONE ) THEN 
-      CALL ErrorStop(global,ERR_STRING_READ,__LINE__)
-    END IF ! global%error
+
+! AEG: Disable PLAG requirement due to the TO DO below
+!    READ(volWinNameInput,*,IOSTAT=errorFlag) tempString1,tempString2
+!    global%error = errorFlag
+!    IF ( global%error /= ERR_NONE ) THEN
+!      CALL ErrorStop(global,ERR_STRING_READ,__LINE__)
+!    END IF ! global%error
+! END AEG
 
 ! ------------------------------------------------------------------------------
 !   Mixture
 ! ------------------------------------------------------------------------------
-  
-    global%volWinNameInput = TRIM(tempString1)
+
+! AEG: Disable PLAG requirement due to the TO DO below
+!    global%volWinNameInput = TRIM(tempString1)
+! END AEG
+    global%volWinNameInput = volWinNameInput
 
     IF ( global%myProcid == MASTERPROC .AND. & 
          global%verbLevel >= VERBOSE_HIGH ) THEN 

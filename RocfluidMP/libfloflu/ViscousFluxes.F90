@@ -55,18 +55,13 @@ SUBROUTINE ViscousFluxes(region)
   USE ModDataStruct, ONLY: t_region
   USE ModBndPatch, ONLY: t_patch
   
-#ifdef RFLU
-  USE RFLU_ModConvertCv, ONLY: RFLU_ConvertCvCons2Prim, & 
+  USE RFLU_ModConvertCv, ONLY: RFLU_ConvertCvCons2Prim, &
                                RFLU_ConvertCvPrim2Cons  
   USE RFLU_ModDifferentiationBFaces
   USE RFLU_ModDifferentiationFaces
   USE RFLU_ModViscousFlux  
   USE ModInterfaces, ONLY : RFLU_DecideNeedBGradFace 
-#endif  
-  
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_CalcGradVector,RFLO_ViscousFlux
-#endif
+
 #ifdef TURB
   USE ModInterfacesTurbulence, ONLY : TURB_CoViscousFluxes
 #endif  
@@ -87,17 +82,10 @@ SUBROUTINE ViscousFluxes(region)
 ! ==============================================================================
 
   INTEGER :: iLev, turbModel
-#ifdef RFLU
   INTEGER :: iPatch
   INTEGER :: varInfo(CV_MIXT_XVEL:CV_MIXT_TEMP)
-#endif
-#ifdef RFLO
-  REAL(RFREAL), POINTER :: tv(:,:)
-#endif
-#ifdef RFLU
   TYPE(t_patch), POINTER :: pPatch
   TYPE(t_region), POINTER :: pRegion
-#endif
   TYPE(t_global), POINTER :: global
 
 ! ******************************************************************************
@@ -115,33 +103,10 @@ SUBROUTINE ViscousFluxes(region)
  
   turbModel = region%mixtInput%turbModel 
  
-#ifdef RFLO
-  iLev =  region%currLevel
-  tv   => region%levels(iLev)%mixt%tv
-#endif
-
 ! ******************************************************************************
 ! Add viscous residual from laminar or laminar+turbulent stress contributions
 ! ******************************************************************************
 
-#ifdef RFLO
-  CALL RFLO_CalcGradVector( region,DV_MIXT_UVEL,DV_MIXT_TEMP, &
-                                   GR_MIXT_UX,  GR_MIXT_TZ, &
-                                   region%levels(iLev)%mixt%dv, &
-                                   region%levels(iLev)%mixt%gradi, &
-                                   region%levels(iLev)%mixt%gradj, &
-                                   region%levels(iLev)%mixt%gradk )
-                                   
-  IF (turbModel == TURB_MODEL_NONE) THEN    ! only laminar
-    CALL RFLO_ViscousFlux( region,TV_MIXT_MUEL,TV_MIXT_TCOL,tv )
-  ELSE
-#ifdef TURB
-    CALL TURB_CoViscousFluxes( region )       ! laminar + turbulent
-#endif
-  ENDIF
-#endif
-
-#ifdef RFLU
   pRegion => region%pRegion
 
   CALL RFLU_ConvertCvCons2Prim(pRegion,CV_MIXT_STATE_DUVWT)
@@ -190,10 +155,9 @@ SUBROUTINE ViscousFluxes(region)
 #ifdef TURB
     CALL TURB_CoViscousFluxes( pRegion )   ! laminar + turbulent
 #endif
-  END IF ! turbModel                                                                
-                                                              
+  END IF ! turbModel
+
   CALL RFLU_ConvertCvPrim2Cons(pRegion,CV_MIXT_STATE_CONS)
-#endif  
 
 ! ******************************************************************************
 ! End

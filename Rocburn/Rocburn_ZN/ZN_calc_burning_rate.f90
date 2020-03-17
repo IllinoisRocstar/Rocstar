@@ -61,10 +61,10 @@
                                Toa, rb, Ts, fr, Tn, Tnp1)
 
     USE M_Rocburn_ZN_Global_Data
-  
-    IMPLICIT NONE
 
-    INCLUDE 'mpif.h'
+    USE mpi
+
+    IMPLICIT NONE
 
     TYPE(G_BURN_1D), POINTER :: G_ZN
     REAL(DBL), INTENT(IN)    :: delt, P, qr, To, rhoc

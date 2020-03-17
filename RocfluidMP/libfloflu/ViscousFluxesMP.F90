@@ -53,13 +53,11 @@ SUBROUTINE ViscousFluxesMP(region)
   USE ModParameters
 
 #ifdef SPEC
-#ifdef RFLU
   USE RFLU_ModConvertCv, ONLY: RFLU_ScalarConvertCvCons2Prim, &
                                RFLU_ScalarConvertCvPrim2Cons
   USE RFLU_ModDifferentiationBFaces
   USE RFLU_ModDifferentiationFaces
   USE ModInterfaces, ONLY : RFLU_DecideNeedBGradFace 
-#endif
 #endif
 
 !#ifdef PEUL
@@ -67,9 +65,7 @@ SUBROUTINE ViscousFluxesMP(region)
 !#endif
 
 #ifdef SPEC
-#ifdef RFLU
   USE ModInterfaces, ONLY: RFLU_ScalarViscousFluxes
-#endif
 #endif
 
   IMPLICIT NONE
@@ -89,12 +85,10 @@ SUBROUTINE ViscousFluxesMP(region)
 ! =============================================================================
 
   TYPE(t_global), POINTER :: global
-#ifdef RFLU
   TYPE(t_patch), POINTER :: pPatch
   INTEGER :: errorFlag,iPatch,iSpec  
   INTEGER, DIMENSION(:), ALLOCATABLE :: varInfoSpec    
   TYPE(t_region), POINTER :: pRegion
-#endif
 
 ! *****************************************************************************
 ! Start
@@ -125,7 +119,6 @@ SUBROUTINE ViscousFluxesMP(region)
 ! =============================================================================
 
   IF ( global%specUsed .EQV. .TRUE. ) THEN
-#ifdef RFLU
     pRegion => region
 
     CALL RFLU_ScalarConvertCvCons2Prim(pRegion,pRegion%spec%cv, &
@@ -184,7 +177,6 @@ SUBROUTINE ViscousFluxesMP(region)
                                   pRegion%spec%diss)
     CALL RFLU_ScalarConvertCvPrim2Cons(pRegion,pRegion%spec%cv, &
                                        pRegion%spec%cvState)
-#endif
   END IF ! global%specUsed
 #endif
 

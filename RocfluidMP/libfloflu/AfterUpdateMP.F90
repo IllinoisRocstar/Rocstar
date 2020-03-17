@@ -51,23 +51,14 @@ SUBROUTINE AfterUpdateMP( pRegion,istage )
   USE INRT_ModParameters
 #endif
 
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_CheckValidity
-#endif
-
-#ifdef RFLU
   USE ModInterfaces, ONLY : RFLU_CheckPositivityWrapper, &
                             RFLU_CheckValidityWrapper,   &
                             RFLU_EnforceBoundsWrapper
-#endif
 
 #ifdef INRT
   USE ModInterfacesInteract, ONLY : INRT_SetParticleTemp,       &
                                     INRT_VaporEnergyConversion, &
                                     INRT_BurnStatusUpdate
-#ifdef RFLO
-  USE ModInterfacesInteract, ONLY : INRT_TwoDimAverage
-#endif
 #endif
 
 #ifdef PEUL
@@ -105,20 +96,9 @@ SUBROUTINE AfterUpdateMP( pRegion,istage )
 
 ! check positivity ------------------------------------------------------------
 
-#ifdef RFLO
-  IF (finalStage) &
-    CALL RFLO_CheckValidity(pRegion)
-#ifdef PLAG
-  IF (finalStage) &
-    CALL PLAG_CheckValidity(pRegion)
-#endif
-#endif
-
-#ifdef RFLU
   CALL RFLU_CheckValidityWrapper(pRegion)
   CALL RFLU_EnforceBoundsWrapper(pRegion)
   CALL RFLU_CheckPositivityWrapper(pRegion)
-#endif
 
 #ifdef INRT
   IF (global%inrtUsed .AND. finalStage) THEN
@@ -127,12 +107,6 @@ SUBROUTINE AfterUpdateMP( pRegion,istage )
       CALL INRT_SetParticleTemp(pRegion)
       CALL INRT_VaporEnergyConversion(pRegion)
     END IF ! burning Used
-
-#ifdef RFLO
-    IF (pRegion%inrtInput%twoDAverage /= 0) THEN
-      CALL INRT_TwoDimAverage(pRegion)
-    END IF
-#endif
 
     IF (pRegion%inrtInput%inrts(INRT_TYPE_BURNING)%used) THEN
       CALL INRT_BurnStatusUpdate(pRegion)

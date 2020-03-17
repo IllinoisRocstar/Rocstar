@@ -729,15 +729,15 @@ END FUNCTION RFLU_TestInBoundBox
 ! Description: 
 !
 ! Input:
-!   global              Pointer to global data
-!   dr			Vector
-!   dir			Cartesian direction index
+!   global      Pointer to global data
+!   dr          Vector
+!   dir         Cartesian direction index
 !
 ! Output: 
 !   RFLU_TestVectorCartAxisAligned = .TRUE.     if dr aligned with Cartesian 
 !                                               coordinate direction
 !   RFLU_TestVectorCartAxisAligned = .FALSE.    if dr not aligned with Cartesian 
-!                                      		coordinate direction
+!                                               coordinate direction
 !
 ! Notes: None.
 !

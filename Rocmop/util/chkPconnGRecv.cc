@@ -159,7 +159,7 @@ int main(int argc, char** argv)
   {
     cout << "There are " << errFiles.size()
 	 << " files with incomplete PCONN.\n";
-    for (int i = 0; i < errFiles.size(); i++)
+    for (unsigned int i = 0; i < errFiles.size(); i++)
     {
       cout << errFiles[i] << ".hdf: ";
       if (option != 1)

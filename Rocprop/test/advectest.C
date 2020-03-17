@@ -41,19 +41,14 @@
 #include "IM_Reader.h"
 #include "PointPropagate.h"
 
-#ifdef MESH_ADAPT
-#include "AdaptCOMWindow.h"
-#endif
-
-
 using namespace std;
 using namespace PROP;
 
-COM_EXTERN_MODULE( Simpal);
-COM_EXTERN_MODULE( SurfMap);
-COM_EXTERN_MODULE( Rocprop);
-COM_EXTERN_MODULE( SurfUtil);
-COM_EXTERN_MODULE( SimOut);
+COM_EXTERN_MODULE(Simpal)
+COM_EXTERN_MODULE(SurfMap)
+COM_EXTERN_MODULE(Rocprop)
+COM_EXTERN_MODULE(SurfUtil)
+COM_EXTERN_MODULE(SimOut)
 
 void load_modules() {
   COM_LOAD_MODULE_STATIC_DYNAMIC(Simpal,   "BLAS");
@@ -525,32 +520,6 @@ int main(int argc, char *argv[]) {
   char fname[40];
   std::sprintf(fname, "timedata_%03d.txt", rank);
 
-#ifdef MESH_ADAPT
-  AdaptCOMWindow acw( wname.c_str());
-
-  acw.set_option( "adapt_iter", cntr_param.adapt_iter);
-  acw.set_option( "redist_iter", cntr_param.do_redist);
-
-  acw.set_option( "do_collapse", cntr_param.do_collapse);
-  acw.set_option( "do_flip", cntr_param.do_flip);
-  acw.set_option( "do_split", cntr_param.do_split);
-  acw.set_option( "refine", cntr_param.refine);
-
-  if ( !cntr_param.fangle.empty())
-    acw.set_option( "fangle_weak", 
-		    std::atof(cntr_param.fangle.c_str())/180*M_PI);
-  if ( !cntr_param.sangle.empty())
-    acw.set_option( "fangle_strong", 
-		    std::atof(cntr_param.sangle.c_str())/180*M_PI);
-  if ( !cntr_param.eigthres.empty())
-    acw.set_option( "eig_thres", std::atof(cntr_param.eigthres.c_str()));
-
-  if ( cntr_param.collapse_ratio>0)
-    acw.set_option( "collapse_ratio", cntr_param.collapse_ratio);
-  if ( cntr_param.split_angle > 0)
-    acw.set_option( "split_angle", cntr_param.split_angle);
-#endif
-
   double t=cntr_param.start*cntr_param.timestep; 
   for ( int i=1+cntr_param.start; i<=cntr_param.steps; ++i, t+=cntr_param.timestep) {
     if ( rank==0) cout << "Step " << i << endl;
@@ -583,30 +552,6 @@ int main(int argc, char *argv[]) {
 	std::cout << "Time step too small. Stopping..." << std::endl;
 	exit(-1);
       }
-
-#ifdef MESH_ADAPT
-      if ( (t_elapsed<0.1*t_rem || t_elapsed==t_rem &&
-	    i%cntr_param.remesh_interval==0) && cntr_param.adapt_iter>0) {
-
-	for (int j=-1; j<cntr_param.adapt_iter; ++j) {
-	  if ( j>=0) { // Note: we perform a step of smoothing first.
-	    if ( acw.adapt()==0) break;
-	    // If the window has changed, reinitialize Rocprop.
-	    COM_call_function( PROP_init, &pmesh);
-	  }
-
-	  for ( int k=0; k<cntr_param.do_redist; ++k) {
-	    // Perform mesh smoothing
-	    double zero=0.;
-	    std::cout << "Perform anisotropic smoothing" << std::endl;
-	    COM_call_function( PROP_propagate, &pmesh, &vvels, 
-			       &zero, &disps, &t_elapsed);
-	    COM_call_function( BLAS_add, &nc, &disps, &nc);
-	    COM_call_function( BLAS_add, &disps_total, &disps, &disps_total);
-	  }
-	}
-      }
-#endif
 
       t_rem = cntr_param.timestep - local_t;
 

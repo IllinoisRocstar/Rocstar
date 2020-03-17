@@ -219,14 +219,14 @@ SUBROUTINE TURB_RFLU_ReadSolutionBinary( region ) ! PUBLIC
   
   READ(iFile) nCellsTot,nVars
   IF ( nCellsTot /= nCellsExpected ) THEN 
-    WRITE(errorString,'(A,1X,I6,1X,A,1X,I6))') 'Specified:',nCellsTot, & 
-                                               'but expected:',nCellsExpected
+    WRITE(errorString,'(A,1X,I6,1X,A,1X,I6)') 'Specified:',nCellsTot, &
+                                              'but expected:',nCellsExpected
     CALL ErrorStop(global,ERR_INVALID_NCELLS,__LINE__,errorString)
   END IF ! nCellsExpected     
   
   IF ( nVars /= nVarsExpected ) THEN 
-    WRITE(errorString,'(A,1X,I6,1X,A,1X,I6))') 'Specified:',nVars, & 
-                                               'but expected:',nVarsExpected  
+    WRITE(errorString,'(A,1X,I6,1X,A,1X,I6)') 'Specified:',nVars, &
+                                              'but expected:',nVarsExpected
     CALL ErrorStop(global,ERR_INVALID_NVARS,__LINE__)
   END IF ! nVarsExpected   
   

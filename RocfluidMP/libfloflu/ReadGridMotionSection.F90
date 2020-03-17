@@ -42,12 +42,7 @@
 !
 ! ******************************************************************************
 
-#ifdef RFLO
-SUBROUTINE ReadGridMotionSection( global )
-#endif
-#ifdef RFLU
 SUBROUTINE ReadGridMotionSection(regions)
-#endif
 
   USE ModDataTypes
   USE ModGlobal, ONLY: t_global
@@ -66,20 +61,13 @@ SUBROUTINE ReadGridMotionSection(regions)
 ! Arguments
 ! ==============================================================================
 
-#ifdef RFLO
-  TYPE(t_global), POINTER :: global
-#endif
-#ifdef RFLU
   TYPE(t_region), POINTER :: regions(:)
-#endif
 
 ! ==============================================================================
 ! Locals
 ! ==============================================================================
 
-#ifdef RFLU
   INTEGER :: iReg
-#endif
   INTEGER, PARAMETER :: NVALS_MAX = 16
   INTEGER :: nVals
 
@@ -95,94 +83,6 @@ SUBROUTINE ReadGridMotionSection(regions)
 
   keys(1) = 'TYPE'
   keys(2) = 'NITER'
-#ifdef RFLO
-  keys(3) = 'VITER'
-  keys(4) = 'SITER'
-  keys(5) = 'WEIGHT'
-  keys(6) = 'AMPLIFX'
-  keys(7) = 'AMPLIFY'
-  keys(8) = 'AMPLIFZ'
-  keys(9) = 'POWER'
-  keys(10)= 'NEIGHBOR'
-  keys(11)= 'NSURFMATCH'
-  keys(12)= 'ORTHODIR'
-  keys(13)= 'ORTHOWGHTX'
-  keys(14)= 'ORTHOWGHTY'
-  keys(15)= 'ORTHOWGHTZ'
-  keys(16)= 'ORTHOCELL'
-
-  nVals = NVALS_MAX
-
-  CALL RegisterFunction( global,'ReadGridMotionSection',&
-  'ReadGridMotionSection.F90' )
-
-  CALL ReadSection( global,IF_INPUT,nVals,keys,vals,defined )
-
-  IF (defined(1).eqv..true.) THEN
-                       global%moveGridScheme = MOVEGRID_BLOCKS
-    IF (vals(1) > 0.9 .AND. vals(1) < 1.9) &
-                       global%moveGridScheme = MOVEGRID_GLOBAL
-    IF (vals(1) > 1.9 .AND. vals(1) < 2.9) &
-                       global%moveGridScheme = MOVEGRID_FRAME
-    IF (vals(1) > 2.9 .AND. vals(1) < 3.9) &
-                       global%moveGridScheme = MOVEGRID_FOMS
-    IF (vals(1) > 3.9 .AND. vals(1) < 4.9) &
-                       global%moveGridScheme = MOVEGRID_ELGLOBAL
-    IF (vals(1) > 4.9 .AND. vals(1) < 5.9) &
-                       global%moveGridScheme = MOVEGRID_ELFRAME
-    IF (vals(1) > 5.9) &
-                       global%moveGridScheme = MOVEGRID_VMS
-  ENDIF
-  IF (defined(2).eqv..true.) THEN
-    global%moveGridNiter   = INT(ABS(vals(2))+0.5_RFREAL)
-  ENDIF
-  IF (defined(3).eqv..true.) THEN
-    global%moveGridViter   = INT(ABS(vals(3))+0.5_RFREAL)
-  ENDIF
-  IF (defined(4).eqv..true.) THEN
-    global%moveGridSiter   = INT(ABS(vals(4))+0.5_RFREAL)
-  ENDIF
-  IF (defined(5).eqv..true.) THEN
-    global%moveGridWeight  = vals(5)
-  ENDIF
-  IF (defined(6).eqv..true.) THEN
-    global%moveGridAmplifX = vals(6)
-  ENDIF
-  IF (defined(7).eqv..true.) THEN
-    global%moveGridAmplifY = vals(7)
-  ENDIF
-  IF (defined(8).eqv..true.) THEN
-    global%moveGridAmplifZ = vals(8)
-  ENDIF
-  IF (defined(9).eqv..true.) THEN
-    global%moveGridPower   = vals(9)
-  ENDIF
-  IF (defined(10).eqv..true.) THEN
-    global%moveGridNbour   = INT(ABS(vals(10))+0.5_RFREAL)
-  ENDIF
-  IF (defined(11).eqv..true.) THEN
-    global%moveGridNsmatch = INT(ABS(vals(11))+0.5_RFREAL)
-  ENDIF
-  IF (defined(12).eqv..true.) THEN
-    global%moveGridOrthDir = INT(ABS(vals(12))+0.5_RFREAL)
-  ENDIF
-  IF (defined(13).eqv..true.) THEN
-    global%moveGridOrthWghtX = vals(13)
-  ENDIF
-  IF (defined(14).eqv..true.) THEN
-    global%moveGridOrthWghtY = vals(14)
-  ENDIF
-  IF (defined(15).eqv..true.) THEN
-    global%moveGridOrthWghtZ = vals(15)
-  ENDIF
-  IF (defined(16).eqv..true.) THEN
-    global%moveGridOrthCell  = vals(16)
-  ENDIF
-
-  CALL DeregisterFunction( global )
-#endif
-
-#ifdef RFLU
   keys(3) = 'SFACT'
 
   nVals = 3
@@ -211,7 +111,6 @@ SUBROUTINE ReadGridMotionSection(regions)
   END IF ! defined 
 
   CALL DeregisterFunction( regions(1)%global )
-#endif 
 
 ! ******************************************************************************
 ! End

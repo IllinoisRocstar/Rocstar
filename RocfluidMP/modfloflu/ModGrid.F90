@@ -41,12 +41,10 @@ MODULE ModGrid
   USE ModDataTypes
   USE ModParameters
   
-#ifdef RFLU  
   USE ModColoring, ONLY: t_soc
   USE ModStencil, ONLY: t_stencil,t_stencilInfo
   USE ModBorder, ONLY: t_border
-#endif  
-  
+
   IMPLICIT NONE
 
 ! ******************************************************************************
@@ -55,66 +53,7 @@ MODULE ModGrid
 
   TYPE t_grid
     INTEGER :: indSvel
-#ifdef RFLO
-! ==============================================================================
-!   Basic grid quantities
-! ==============================================================================
 
-    INTEGER :: ipc, jpc, kpc
-    LOGICAL :: boundMoved(6), allExternal(6), edgeMoved(12)
-    LOGICAL :: boundFlat(6), edgeStraight(12)
-    REAL(RFREAL) :: skewness, minVol
-    INTEGER, POINTER :: ijkDgen(:)                           ! degeneration flag
-    REAL(RFREAL), POINTER :: c2fCoI(:,:) ,c2fCoJ(:,:) ,c2fCoK(:,:)
-    REAL(RFREAL), POINTER :: c2eCoI(:,:) ,c2eCoJ(:,:) ,c2eCoK(:,:)
-    REAL(RFREAL), POINTER :: si(:,:), sj(:,:), sk(:,:)
-    REAL(RFREAL), POINTER :: siVel(:), sjVel(:), skVel(:)
-    REAL(RFREAL), POINTER :: arcLen12(:,:), arcLen34(:,:), arcLen56(:,:)
-    REAL(RFREAL), POINTER :: xyz(:,:), xyzOld(:,:)
-    REAL(RFREAL), POINTER :: vol(:), cofg(:,:)
-    REAL(RFREAL), POINTER :: cfcI(:,:), cfcJ(:,:), cfcK(:,:) ! face-cntrs (FOMS)
-
-! ==============================================================================
-!   Moving grid
-! ==============================================================================
-
-    INTEGER :: remesh                            ! block remeshing
-    INTEGER,      POINTER :: nCorns(:)           ! number of motion points
-    INTEGER,      POINTER :: ijkCorn(:,:)        ! ijk value of corn(iCorn,iReg)
-    INTEGER,      POINTER :: nghbor(:,:,:)       ! for block corners motion
-    INTEGER,      POINTER :: nShared(:)          ! # shared corners (iCorn,iReg)
-    INTEGER,      POINTER :: cshared(:,:,:)      ! crnrs shared wother ptch/blck
-    REAL(RFREAL), POINTER :: regCorn(:,:,:)      ! current corner motion
-    REAL(RFREAL), POINTER :: regCornOld(:,:,:)   ! old corner motion
-    REAL(RFREAL), POINTER :: regCornOrig(:,:,:)  ! previous tstep corner motion
-    REAL(RFREAL), POINTER :: regCornBuff(:,:,:)  ! buffer store latest cornCoord
-    REAL(RFREAL), POINTER :: regCornOrth(:,:,:)  ! orthogonally moved corners
-
-    REAL(RFREAL), POINTER :: xyzOrth(:,:), xyzTemp(:,:)      ! work-space (FOMS)
-
-    REAL(RFREAL), POINTER :: stu(:,:), stuOld(:,:)           ! param grid (EPDE)
-    REAL(RFREAL), POINTER :: stui(:,:), stuj(:,:), stuk(:,:) ! 1st deriv. stu
-    REAL(RFREAL), POINTER :: stuii(:,:) ,stujj(:,:)          ! 2nd deriv. stu
-    REAL(RFREAL), POINTER :: stukk(:,:) ,stuij(:,:)          ! 2nd deriv. stu
-    REAL(RFREAL), POINTER :: stuik(:,:) ,stujk(:,:)          ! 2nd deriv. stu
-    REAL(RFREAL), POINTER :: pmat(:,:,:)                     ! control function
-
-    REAL(RFREAL), POINTER :: aijk(:),aimjk(:),aipjk(:)       ! matrix coeffs.
-    REAL(RFREAL), POINTER :: aijmk(:),aijpk(:),aijkm(:)      ! in Elliptic PDE
-    REAL(RFREAL), POINTER :: aijkp(:),aimjmk(:),aipjmk(:)    ! grid motion
-    REAL(RFREAL), POINTER :: aimjpk(:),aipjpk(:),aimjkm(:)
-    REAL(RFREAL), POINTER :: aipjkm(:),aimjkp(:),aipjkp(:)
-    REAL(RFREAL), POINTER :: aijmkm(:),aijpkm(:),aijmkp(:)
-    REAL(RFREAL), POINTER :: aijpkp(:)
-
-! ==============================================================================
-!   Conversion to unstructured grid
-! ==============================================================================
-
-    INTEGER, POINTER :: tofluLoc2g(:,:,:) 
-#endif
-
-#ifdef RFLU
 ! ==============================================================================
 !   Basic grid quantities
 ! ==============================================================================
@@ -308,7 +247,6 @@ MODULE ModGrid
 ! ==============================================================================
 
     INTEGER, DIMENSION(:), POINTER :: cellMapPeriod
-#endif
 
   END TYPE t_grid
 

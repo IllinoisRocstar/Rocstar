@@ -42,11 +42,11 @@ using namespace std;
 
 typedef MAP::Vector_3<double> Vector_3;
 
-COM_EXTERN_MODULE( Simpal);
-COM_EXTERN_MODULE( SurfMap);
-COM_EXTERN_MODULE( SurfUtil);
-COM_EXTERN_MODULE( Rocprop);
-COM_EXTERN_MODULE( SimOut);
+COM_EXTERN_MODULE(Simpal)
+COM_EXTERN_MODULE(SurfMap)
+COM_EXTERN_MODULE(SurfUtil)
+COM_EXTERN_MODULE(Rocprop)
+COM_EXTERN_MODULE(SimOut)
 
 void load_modules() {
   COM_LOAD_MODULE_STATIC_DYNAMIC(Simpal, "BLAS");

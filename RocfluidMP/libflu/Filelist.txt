@@ -12,14 +12,14 @@
 #
 ################################################################################
 
-SRCCXX+=	clop.C
+SRCCXX+=        clop.C
 
 ifndef LAPACK_NATIVE
-SRCF77+=	daxpy.f\
-		dbdsdc.f\
-		dbdsqr.f\
-		dcopy.f\
-		dcuhre.f\
+SRCF77+=        daxpy.f\
+                dbdsdc.f\
+                dbdsqr.f\
+                dcopy.f\
+                dcuhre.f\
                 ddot.f\
                 dgebak.f\
                 dgebal.f\
@@ -35,10 +35,10 @@ SRCF77+=	daxpy.f\
                 dgeqr2.f\
                 dgeqrf.f\
                 dger.f\
-		dgerq2.f\
-		dgerqf.f\
-		dgglse.f\
-		dggrqf.f\
+                dgerq2.f\
+                dgerqf.f\
+                dgglse.f\
+                dggrqf.f\
                 dgesdd.f\
                 dhseqr.f\
                 dlabad.f\
@@ -99,15 +99,15 @@ SRCF77+=	daxpy.f\
                 dorml2.f\
                 dormlq.f\
                 dormqr.f\
-		dormr2.f\
-		dormrq.f\
+                dormr2.f\
+                dormrq.f\
                 drot.f\
                 dscal.f\
                 dswap.f\
                 dtrevc.f\
                 dtrmm.f\
                 dtrmv.f\
-		dtrsv.f\
+                dtrsv.f\
                 idamax.f\
                 ieeeck.f\
                 ilaenv.f\
@@ -125,62 +125,62 @@ SRCF90+=        RFLU_AllocateMemoryTbc.F90\
                 RFLU_CheckValidity.F90\
                 RFLU_CheckValidity_GL.F90\
                 RFLU_CheckValidityWrapper.F90\
-		RFLU_ClosePostInfo.F90\
-		RFLU_CloseRestartInfo.F90\
+                RFLU_ClosePostInfo.F90\
+                RFLU_CloseRestartInfo.F90\
                 RFLU_ComputeDCUHREInfo.F90\
                 RFLU_CreateGrid.F90\
-		RFLU_CreateRegions.F90\
+                RFLU_CreateRegions.F90\
                 RFLU_DecideNeedBGradFace.F90\
-		RFLU_DecidePrint.F90\
-		RFLU_DecideWrite.F90\
+                RFLU_DecidePrint.F90\
+                RFLU_DecideWrite.F90\
                 RFLU_DerivedInputValues.F90\
                 RFLU_DestroyGrid.F90\
-		RFLU_EnforceBoundsWrapper.F90\
-		RFLU_EquilibriumEulerian.F90\
-		RFLU_FinishSD.F90\
-		RFLU_GetCvLoc.F90\
+                RFLU_EnforceBoundsWrapper.F90\
+                RFLU_EquilibriumEulerian.F90\
+                RFLU_FinishSD.F90\
+                RFLU_GetCvLoc.F90\
                 RFLU_GetUserInput.F90\
                 RFLU_InitGlobal.F90\
                 RFLU_InitInputValues.F90\
                 RFLU_InvertMatrixSVD.F90\
-		RFLU_OpenPostInfo.F90\
-		RFLU_OpenRestartInfo.F90\
+                RFLU_OpenPostInfo.F90\
+                RFLU_OpenRestartInfo.F90\
                 RFLU_PrintFlowInfo.F90\
                 RFLU_PrintFlowInfoWrapper.F90\
                 RFLU_PrintGridInfo.F90\
                 RFLU_PrintLocInfo.F90\
                 RFLU_PrintUserInput.F90\
-		RFLU_PrintWarnInfo.F90\
-		RFLU_RandomInit.F90\
-		RFLU_ReadRestartInfo.F90\
+                RFLU_PrintWarnInfo.F90\
+                RFLU_RandomInit.F90\
+                RFLU_ReadRestartInfo.F90\
                 RFLU_ReadTbcInputFile.F90\
                 RFLU_ReadTbcSection.F90\
-		RFLU_ScalarFirst.F90\
-		RFLU_ScalarFirstPatch.F90\
-		RFLU_ScalarSecond.F90\
-		RFLU_ScalarSecondPatch.F90\
-		RFLU_ScalarCheckPositivity.F90\
-		RFLU_ScalarInitRhs.F90\
-		RFLU_ScalarViscousFluxes.F90\
-		RFLU_SetDependentVars.F90\
-		RFLU_SetGasVars.F90\
-		RFLU_SetDerivedUserInput.F90\
-		RFLU_SetModuleType.F90\
-		RFLU_SetRestartTimeFlag.F90\
-		RFLU_SetTransportVars.F90\
-		RFLU_SetVarInfo.F90\
-		RFLU_SetVarInfoWrapper.F90\
-		RFLU_SetVars.F90\
-		RFLU_SetVarsContWrapper.F90\
-		RFLU_SetVarsDiscWrapper.F90\
-		RFLU_SetVarsWrapper.F90\
-		RFLU_TestIsFirstRegion.F90\
+                RFLU_ScalarFirst.F90\
+                RFLU_ScalarFirstPatch.F90\
+                RFLU_ScalarSecond.F90\
+                RFLU_ScalarSecondPatch.F90\
+                RFLU_ScalarCheckPositivity.F90\
+                RFLU_ScalarInitRhs.F90\
+                RFLU_ScalarViscousFluxes.F90\
+                RFLU_SetDependentVars.F90\
+                RFLU_SetGasVars.F90\
+                RFLU_SetDerivedUserInput.F90\
+                RFLU_SetModuleType.F90\
+                RFLU_SetRestartTimeFlag.F90\
+                RFLU_SetTransportVars.F90\
+                RFLU_SetVarInfo.F90\
+                RFLU_SetVarInfoWrapper.F90\
+                RFLU_SetVars.F90\
+                RFLU_SetVarsContWrapper.F90\
+                RFLU_SetVarsDiscWrapper.F90\
+                RFLU_SetVarsWrapper.F90\
+                RFLU_TestIsFirstRegion.F90\
                 RFLU_UserInput.F90\
-		RFLU_WriteRestartInfo.F90\
+                RFLU_WriteRestartInfo.F90\
                 RFLU_ZeroVirtualCellVars.F90
 
 ifdef STATS
-  SRCF90+=	RFLU_ReadStat.F90\
+  SRCF90+=      RFLU_ReadStat.F90\
                 RFLU_WriteStat.F90
 endif
 

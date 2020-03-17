@@ -57,7 +57,7 @@ compute_quadrics( double dt, const COM::DataItem *spds,
   _buf->resize_array( sa_attr, 0);
   
   bool shear= _smoother==SMOOTHER_LAPLACIAN || _is_strtd ||
-    _smoother!=SMOOTHER_ANISOTROPIC && (dt==0 || bo_attr==0);
+    (_smoother!=SMOOTHER_ANISOTROPIC && (dt==0 || bo_attr==0));
 
   // Loop through the panes and its real faces
   std::vector< COM::Pane*>::iterator it = _panes.begin();
@@ -244,7 +244,7 @@ eigen_analyze_vertex( Vector_3 A_io[3], Vector_3 &b_io,
   Vector_3 *es = A_io;
 
   // Create a backup of b_io, as b_io will be replaced by eigenvalues.
-  const Vector_3 b = b_io;
+  //const Vector_3 b = b_io;
   Vector_3 &lambdas = b_io;
 
   // Compute the eigenvalues and eigenvectors of the matrix. 
@@ -328,8 +328,8 @@ update_vertex_centers() {
       (pane->dataitem(_vcenters->id())->pointer());
     Vector_3 *vdiff = reinterpret_cast<Vector_3*>
       (pane->dataitem(vecdiff_buf->id())->pointer());
-    const char *tranks = reinterpret_cast<const char*>
-      ( pane->dataitem(_tangranks->id())->pointer());
+    //const char *tranks = reinterpret_cast<const char*>
+    //  ( pane->dataitem(_tangranks->id())->pointer());
     const char *cranks = reinterpret_cast<const char*>
       ( pane->dataitem(_ctangranks->id())->pointer());
     const char *val_bndry_nodes = reinterpret_cast<const char*>
@@ -370,10 +370,11 @@ void FaceOffset_3::mark_weak_vertices() {
       ( pane->dataitem(_eigvalues->id())->pointer());
 
     for ( int j=0, nj=pane->size_of_real_nodes(); j<nj; ++j) {
-      weak[j] = tranks[j]==2 && 
-	lambdas[j][1] >= _eig_weak_lb*lambdas[j][0] &&
-	lambdas[j][1] <= _eig_weak_ub*lambdas[j][0] ||
-	tranks[j]<=1 && _eig_thres*lambdas[j][0] > lambdas[j][1];
+      weak[j] = (tranks[j] == 2 &&
+                 lambdas[j][1] >= _eig_weak_lb * lambdas[j][0] &&
+                 lambdas[j][1] <= _eig_weak_ub * lambdas[j][0]) ||
+                (tranks[j] <= 1 &&
+                 _eig_thres * lambdas[j][0] > lambdas[j][1]);
     }
   }
 
@@ -577,7 +578,9 @@ compute_eigenvectors( Vector_3 A[3], Vector_3 &lambdas) {
   double ebuf[3][3];
   
   int info = dsyevq3( abuf, ebuf, &lambdas[0]);
-  COM_assertion_msg( info==0, "Computation of eigenvectos failed");
+  if (info != 0) {
+    COM_abort_msg(EXIT_FAILURE, "Computation of eigenvectos failed");
+  }
 
   std::swap( ebuf[0][1], ebuf[1][0]);
   std::swap( ebuf[0][2], ebuf[2][0]);

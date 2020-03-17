@@ -57,10 +57,10 @@ PROGRAM ROCPART_Post
                                      PLAG_AllocateMemoryPost,            &
                                      PLAG_BinSortNozzleInlet,            &
                                      PLAG_BinSortSpatialDist,            &
-				     PLAG_DeallocateMemoryPost,          &
+                                     PLAG_DeallocateMemoryPost,          &
                                      PLAG_CalcDerivedVariables,          &
                                      PLAG_IntrpMixtProperties,           &
-				     PLAG_ProcessEulerField,             &
+                                     PLAG_ProcessEulerField,             &
                                      PLAG_ReadSolutionFilePost,          &
                                      PLAG_UserInput,                     &
                                      PLAG_WriteTecplotAscii
@@ -157,10 +157,10 @@ PROGRAM ROCPART_Post
 
 ! read argument list ----------------------------------------------------------
 
-  CALL GETARG(1,global%casename)
-  CALL GETARG(2,stamp)
-  CALL GETARG(3,outFmt)
-  CALL GETARG(4,verbosity)
+  CALL GET_COMMAND_ARGUMENT(1,global%casename)
+  CALL GET_COMMAND_ARGUMENT(2,stamp)
+  CALL GET_COMMAND_ARGUMENT(3,outFmt)
+  CALL GET_COMMAND_ARGUMENT(4,verbosity)
 
   IF (LEN_TRIM(global%casename)==0 .OR. &
       LEN_TRIM(stamp)==0           .OR. &

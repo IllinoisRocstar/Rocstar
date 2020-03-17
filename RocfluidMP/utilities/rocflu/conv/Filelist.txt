@@ -14,13 +14,13 @@
 
 SRCCXX+=        main.C
 
-SRCF90+=	RFLU_ModSTL.F90\
-		BuildVersionString.F90\
-		RFLU_AllocMemSolWrapper.F90\
-		RFLU_DeallocMemSolWrapper.F90\
-		RFLU_PrintHeader.F90\
-		RFLU_WriteVersionString.F90\
-		rfluconv.F90
+SRCF90+=        RFLU_ModSTL.F90\
+                BuildVersionString.F90\
+                RFLU_AllocMemSolWrapper.F90\
+                RFLU_DeallocMemSolWrapper.F90\
+                RFLU_PrintHeader.F90\
+                RFLU_WriteVersionString.F90\
+                rfluconv.F90
 
 ################################################################################
 #
