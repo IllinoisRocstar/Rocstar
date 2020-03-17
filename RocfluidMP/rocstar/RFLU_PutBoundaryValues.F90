@@ -27,7 +27,7 @@
 ! Description: None.
 !
 ! Input: 
-!   region     	Dimensions of patches, types of BCs, flow variables
+!   region             Dimensions of patches, types of BCs, flow variables
 !
 ! Output: None.
 !
@@ -135,13 +135,13 @@ SUBROUTINE RFLU_PutBoundaryValues(region)
          global%verbLevel >= VERBOSE_HIGH ) THEN 
       IF ( pPatch%bcCoupled == BC_NOT_COUPLED ) THEN
         WRITE(STDOUT,'(A,3X,A,1X,I3,1X,A)') SOLVER_NAME,'Patch:',iPatch, & 
-	                                    '(not interacting)'
+                                            '(not interacting)'
       ELSE IF ( pPatch%bcCoupled == BC_NOT_BURNING ) THEN 
         WRITE(STDOUT,'(A,3X,A,1X,I3,1X,A)') SOLVER_NAME,'Patch:',iPatch, & 
-	                                    '(interacting)'      
+                                            '(interacting)'
       ELSE IF ( pPatch%bcCoupled == BC_BURNING ) THEN
         WRITE(STDOUT,'(A,3X,A,1X,I3,1X,A)') SOLVER_NAME,'Patch:',iPatch, & 
-	                                    '(interacting and burning)'          
+                                            '(interacting and burning)'
       END IF ! pPatch%bcCoupled                 
     END IF ! global%myProcid
 
@@ -283,7 +283,7 @@ SUBROUTINE RFLU_PutBoundaryValues(region)
           mm = pGv(GV_MIXT_MOL,indMol*c1)
 
           minj = pMixtVals(BCDAT_INJECT_MFRATE,distrib*ifl)
-		
+
           IF ( minj > 0.0_RFREAL ) THEN ! Surface burning
             tinj = pMixtVals(BCDAT_INJECT_TEMP,distrib*ifl)
 
@@ -291,20 +291,20 @@ SUBROUTINE RFLU_PutBoundaryValues(region)
 
             CALL RFLU_SetRindStateInjectPerf(cp,mm,nx,ny,nz,minj,tinj,pl, &
                                              fsu,rl,dummyReal,dummyReal, &
-		  			     dummyReal,dummyReal)
-					     
-            tl = tinj					     
+                                             dummyReal,dummyReal)
+
+            tl = tinj
           ELSE ! Surface NOT burning
-            rl  = pCv(CV_MIXT_DENS,c1)	
+            rl  = pCv(CV_MIXT_DENS,c1)
             rul = pCv(CV_MIXT_XMOM,c1)
             rvl = pCv(CV_MIXT_YMOM,c1)
-            rwl = pCv(CV_MIXT_ZMOM,c1)	  
+            rwl = pCv(CV_MIXT_ZMOM,c1)
             pl  = pDv(DV_MIXT_PRES,c1)
-		
+
             CALL RFLU_SetRindStateSlipWallPerf(cp,mm,nx,ny,nz,rl,rul,rvl,rwl, &
                                                fsu,pl)
-					     
-            tl = pDv(DV_MIXT_TEMP,c1)					                     
+
+            tl = pDv(DV_MIXT_TEMP,c1)
           END IF ! minj
         ELSE 
           CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)
@@ -379,7 +379,7 @@ SUBROUTINE RFLU_PutBoundaryValues(region)
                 MAXVAL(pPatch%tracf(YCOORD,1:pPatch%nBFaces))  
           WRITE(STDOUT,'(A,7X,A,2(1X,E15.8))') SOLVER_NAME,'tracf.z:', & 
                 MINVAL(pPatch%tracf(ZCOORD,1:pPatch%nBFaces)), & 
-                MAXVAL(pPatch%tracf(ZCOORD,1:pPatch%nBFaces))				
+                MAXVAL(pPatch%tracf(ZCOORD,1:pPatch%nBFaces))
         END IF ! pPatch%nBFaces
       END IF ! global%myProcid
     END IF ! pPatch%bcType

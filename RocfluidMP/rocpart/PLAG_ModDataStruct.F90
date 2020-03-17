@@ -86,7 +86,7 @@ MODULE PLAG_ModDataStruct
 ! Description: None.
 !
 ! Input: 
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -277,10 +277,10 @@ END SUBROUTINE PLAG_DSTR_BuildCell2PclList
 ! Description: None.
 !
 ! Input: 
-!  global	Pointer to global data
-!  pPlag	Pointer to particle data structure (origin)
-!  pPlag2	Pointer to particle data structure (target)
-!  iPcl 	Index of particle in data structure (origin)
+!  global       Pointer to global data
+!  pPlag        Pointer to particle data structure (origin)
+!  pPlag2       Pointer to particle data structure (target)
+!  iPcl         Index of particle in data structure (origin)
 !
 ! Output: None.
 !
@@ -380,9 +380,9 @@ END SUBROUTINE PLAG_DSTR_CopyParticle
 ! Description: None.
 !
 ! Input: 
-!  global	Pointer to global data
-!  pPlag	Pointer to particle data structure (origin)
-!  pPlag2	Pointer to particle data structure (target)
+!  global       Pointer to global data
+!  pPlag        Pointer to particle data structure (origin)
+!  pPlag2       Pointer to particle data structure (target)
 !
 ! Output: None.
 !
@@ -446,8 +446,8 @@ END SUBROUTINE PLAG_DSTR_CopyParticleWrapper
 !
 ! Description: None.
 !
-! Input: 
-!   pRegion	Pointer to region
+! Input:
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -529,7 +529,7 @@ END SUBROUTINE PLAG_DSTR_CreateCell2PclList
 ! Description: None.
 !
 ! Input: 
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -602,7 +602,7 @@ END SUBROUTINE PLAG_DSTR_CreatePclListCSR
 ! Description: None.
 !
 ! Input: 
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -679,7 +679,7 @@ END SUBROUTINE PLAG_DSTR_DestroyCell2PclList
 ! Description: None.
 !
 ! Input: 
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -752,10 +752,10 @@ END SUBROUTINE PLAG_DSTR_DestroyPclListCSR
 ! Description: None.
 !
 ! Input: 
-!  global	Pointer to global data
-!  pGrid	Pointer to grid data structure
-!  pPlag	Pointer to particle data structure (origin)
-!  pPlag2	Pointer to particle data structure (target)
+!  global       Pointer to global data
+!  pGrid        Pointer to grid data structure
+!  pPlag        Pointer to particle data structure (origin)
+!  pPlag2       Pointer to particle data structure (target)
 !
 ! Output: None.
 !
@@ -840,7 +840,7 @@ END SUBROUTINE PLAG_DSTR_MergeParticleWrapper
 ! Description: None.
 !
 ! Input: 
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !

@@ -68,7 +68,7 @@ MODULE ModPartLag
     INTEGER :: breakupWebSwi        ! Weber Switch for Breakup Model
     INTEGER :: readStatus           ! Status of reading for input sections
     INTEGER :: nPclsIni             ! Number of Initial Particles
-    INTEGER :: findPclMethod	    ! Method for finding particles
+    INTEGER :: findPclMethod        ! Method for finding particles
 
     INTEGER, POINTER, DIMENSION(:) :: materialIndex  ! index pointing to appropriate Material
 

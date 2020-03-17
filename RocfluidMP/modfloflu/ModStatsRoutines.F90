@@ -164,14 +164,7 @@ SUBROUTINE GetStatistics( regions )
 ! perform data sampling --------------------------------------------------------
 
   IF (global%doStat == ACTIVE) THEN
-#ifdef RFLO
-    DO iReg=1,global%nRegions
-      IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-          regions(iReg)%active==ACTIVE) THEN              ! on my processor
-#endif
-#ifdef RFLU
     DO iReg=1,global%nRegionsLocal
-#endif
         IF (global%mixtNStat>0) CALL StatDataSampling( regions(iReg),FTYPE_MIXT )
 #ifdef TURB
         IF (global%turbNStat>0) THEN
@@ -190,10 +183,7 @@ SUBROUTINE GetStatistics( regions )
             CALL StatDataSampling( regions(iReg),FTYPE_PLAG ) 
         ENDIF ! plagUsed
 #endif
-#ifdef RFLO
-      ENDIF
-#endif
-    
+
     ENDDO
     CALL StatTimeAccumulation( global ) 
   ENDIF
@@ -224,17 +214,9 @@ END SUBROUTINE GetStatistics
 
 SUBROUTINE InitStatistics( regions )
 
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_ReadStat
-#ifdef PLAG
-  USE PLAG_RFLO_ModStats, ONLY : PLAG_RFLO_ReadStat
-#endif
-#endif
-#ifdef RFLU
   USE ModInterfaces, ONLY : RFLU_ReadStat
 #ifdef GENX
   USE STAT_RFLU_ModRocstarAdmin, ONLY : STAT_RFLU_GenxGetData
-#endif
 #endif
   IMPLICIT NONE
 
@@ -248,9 +230,7 @@ SUBROUTINE InitStatistics( regions )
   INTEGER :: iLev
 
   TYPE(t_global), POINTER :: global
-#ifdef RFLU
   TYPE(t_region), POINTER :: pRegion
-#endif
 
 !******************************************************************************
 
@@ -278,27 +258,16 @@ SUBROUTINE InitStatistics( regions )
       IF (global%myProcid==MASTERPROC .AND. global%verbLevel/=VERBOSE_NONE)  &
         WRITE(STDOUT,'(A)') SOLVER_NAME//' Restart statistics ...'
 #ifndef GENX
-#ifdef RFLO
-      CALL RFLO_ReadStat( regions )
-#ifdef PLAG
-      IF ( global%plagUsed .EQV. .TRUE. ) &
-        CALL PLAG_RFLO_ReadStat( regions )
-#endif
-#endif
-#ifdef RFLU
       DO iReg=1,global%nRegionsLocal
         CALL RFLU_ReadStat( regions(iReg) )
       ENDDO
-#endif
 
 #else
 
-#ifdef RFLU
       DO iReg=1,global%nRegionsLocal
         pRegion => regions(iReg)
         CALL STAT_RFLU_GenxGetData( pRegion )
       ENDDO
-#endif
 #endif
 
 ! - initialize new statistics
@@ -308,31 +277,6 @@ SUBROUTINE InitStatistics( regions )
       IF (global%myProcid==MASTERPROC .AND. global%verbLevel/=VERBOSE_NONE)  &
         WRITE(STDOUT,'(A)') SOLVER_NAME//' Start new statistics ...'
       global%integrTime = 0._RFREAL      
-#ifdef RFLO
-      DO iReg=1,global%nRegions
-        IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-            regions(iReg)%active==ACTIVE) THEN              ! on my processor
-          iLev =  regions(iReg)%currLevel
-          IF (global%mixtNStat > 0) THEN
-            regions(iReg)%levels(iLev)%mixt%tav = 0._RFREAL
-          ENDIF
-#ifdef TURB
-          IF ((regions(iReg)%mixtInput%flowModel == FLOW_NAVST) .AND. &
-              (regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE) .AND. &
-              (global%turbNStat > 0)) THEN
-            regions(iReg)%levels(iLev)%turb%tav = 0._RFREAL
-          ENDIF
-#endif
-#ifdef PLAG
-          IF ((global%plagUsed .EQV. .TRUE.) .AND. &
-              (global%plagNStat > 0)) THEN
-            regions(iReg)%levels(iLev)%plag%tav = 0._RFREAL
-          ENDIF
-#endif
-        ENDIF     ! region on this processor and active
-      ENDDO       ! iReg
-#endif
-#ifdef RFLU
       DO iReg=1,global%nRegionsLocal
         IF (global%mixtNStat > 0) THEN
           regions(iReg)%mixt%tav =  0._RFREAL
@@ -351,7 +295,6 @@ SUBROUTINE InitStatistics( regions )
         ENDIF
 #endif
       ENDDO       ! iReg
-#endif
 
     ENDIF
   ENDIF
@@ -453,11 +396,6 @@ END SUBROUTINE StatDataAccumulation2
 
 SUBROUTINE StatDataSampling( region,fluidType )
 
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_GetDimensDummy, RFLO_GetCellOffset
-
-#include "Indexing.h"
-#endif
   IMPLICIT NONE
 
 ! ... parameters
@@ -484,87 +422,43 @@ SUBROUTINE StatDataSampling( region,fluidType )
 
 ! get dimensions and pointers -------------------------------------------------
 
-#ifdef RFLO
-  iLev = region%currLevel
-#endif
-
   IF (fluidType == FTYPE_MIXT) THEN
     nStat = region%global%mixtNStat
     statCode => region%global%mixtStatCode
-#ifdef RFLO
-    cv    => region%levels(iLev)%mixt%cv
-    dv    => region%levels(iLev)%mixt%dv
-    tv    => region%levels(iLev)%mixt%tv
-    gv    => region%levels(iLev)%mixt%gv
-    tav   => region%levels(iLev)%mixt%tav
-#endif
-#ifdef RFLU
     cv    => region%mixt%cv
     dv    => region%mixt%dv
     tv    => region%mixt%tv
     gv    => region%mixt%gv
     tav   => region%mixt%tav
-#endif
   ELSEIF (fluidType == FTYPE_TURB) THEN
 #ifdef TURB
     nStat = region%global%turbNStat
     statCode => region%global%turbStatCode
-#ifdef RFLO
-    tv    => region%levels(iLev)%mixt%tv
-    dv    => region%levels(iLev)%turb%dv
-    sv    => region%levels(iLev)%turb%sv
-    st    => region%levels(iLev)%turb%st
-    tav   => region%levels(iLev)%turb%tav
-#endif
-#ifdef RFLU
     tv    => region%mixt%tv
     dv    => region%turb%dv
     sv    => region%turb%sv
     st    => region%turb%st
     tav   => region%turb%tav
 #endif
-#endif
   ELSEIF (fluidType == FTYPE_PLAG) THEN
 #ifdef PLAG
     nStat = region%global%plagNStat
     statCode => region%global%plagStatCode
-#ifdef RFLO
-    ev    => region%levels(iLev)%plag%ev
-    tav   => region%levels(iLev)%plag%tav
-#endif
-#ifdef RFLU
     ev    => region%plag%ev
     tav   => region%plag%tav
-#endif
 #endif
   ELSEIF (fluidType == FTYPE_PEUL) THEN
 #ifdef PEUL
     nStat = region%global%peulNStat
     statCode => region%global%peulStatCode
-#ifdef RFLO
-!    cv    => region%levels(iLev)%peul%cv
-!    dv    => region%levels(iLev)%peul%dv
-!    tav   => region%levels(iLev)%peul%tav
-#endif
-#ifdef RFLU
 !    cv    => region%peul%cv
 !    dv    => region%peul%dv
 !    tav   => region%peul%tav
 #endif
-#endif
   ENDIF
 
-#ifdef RFLO
-  CALL RFLO_GetDimensDummy( region,iLev,idcbeg,idcend, &
-                            jdcbeg,jdcend,kdcbeg,kdcend )
-  CALL RFLO_GetCellOffset( region,iLev,iOff,ijOff )
-  ijkbeg = IndIJK(idcbeg,jdcbeg,kdcbeg,iOff,ijOff)
-  ijkend = IndIJK(idcend,jdcend,kdcend,iOff,ijOff)
-#endif
-#ifdef RFLU
   ijkbeg = 1
   ijkend = region%grid%nCells
-#endif
 
 ! Quantities to be time-averaged is determined from the index selected by user.
 ! Data accumulation proceeds afterwards for each quantity.
@@ -714,40 +608,22 @@ SUBROUTINE StatMapping( global )
         statName(n,2,l) = 'kg/m^3'
 #endif
       ELSE IF (statId(n,l)==2) THEN 
-#ifdef RFLO
-        statCode(n,1,l) = STAT_DV
-        statCode(n,2,l) = DV_MIXT_UVEL
-#endif
-#ifdef RFLU
         statCode(n,1,l) = STAT_CV
         statCode(n,2,l) = CV_MIXT_XVEL
-#endif
 #ifdef GENX
         statName(n,1,l) = 'u'
         statName(n,2,l) = 'm/s'
 #endif
       ELSE IF (statId(n,l)==3) THEN 
-#ifdef RFLO
-        statCode(n,1,l) = STAT_DV
-        statCode(n,2,l) = DV_MIXT_VVEL
-#endif
-#ifdef RFLU
-        statCode(n,1,l) = STAT_CV 
+        statCode(n,1,l) = STAT_CV
         statCode(n,2,l) = CV_MIXT_YVEL 
-#endif
 #ifdef GENX
         statName(n,1,l) = 'v'
         statName(n,2,l) = 'm/s'
 #endif
       ELSE IF (statId(n,l)==4) THEN 
-#ifdef RFLO
-        statCode(n,1,l) = STAT_DV
-        statCode(n,2,l) = DV_MIXT_WVEL
-#endif
-#ifdef RFLU
-        statCode(n,1,l) = STAT_CV 
+        statCode(n,1,l) = STAT_CV
         statCode(n,2,l) = CV_MIXT_ZVEL 
-#endif
 #ifdef GENX
         statName(n,1,l) = 'w'
         statName(n,2,l) = 'm/s'
@@ -838,22 +714,6 @@ SUBROUTINE StatMapping( global )
 444 CONTINUE
 #endif
 
-#ifdef RFLO
-! check with regard to inlet turbulence recycling -----------------------------
-! stats id 01-06 must exist and lined up in the same order
-
-  IF (global%infloNijk < NIJK_INFLOW_INIT) THEN
-    DO l=1,global%mixtNStat
-      IF (statId(1,l)==0) THEN 
-        IF (statId(2,l) /= l) THEN
-          CALL ErrorStop( global,ERR_STATS_INDEXING,__LINE__, &
-              'For recycturb inflow, set stats Id 01-06 in the given order.' ) 
-        ENDIF
-      ENDIF
-    ENDDO
-  ENDIF
-#endif
-
 ! finalize --------------------------------------------------------------------
 
   CALL DeregisterFunction( global )
@@ -926,21 +786,10 @@ SUBROUTINE StatWriteMP( regions )
   USE ModDataTypes
   USE ModDataStruct, ONLY : t_region
   USE ModGlobal, ONLY     : t_global
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_WriteStat
-  USE RFLO_ModStatsBoundaryConditions, ONLY : RFLO_StatBoundaryConditionsSet
-#ifdef PLAG
-  USE PLAG_RFLO_ModStats, ONLY : PLAG_RFLO_WriteStat, &
-                                 PLAG_RFLO_CommStatBuffWrapper
-#endif
-#endif
+
   USE ModError
   USE ModParameters
   IMPLICIT NONE
-
-#ifdef RFLO
-#include "Indexing.h"
-#endif
 
 ! ... parameters
   TYPE(t_region), POINTER :: regions(:)
@@ -959,18 +808,6 @@ SUBROUTINE StatWriteMP( regions )
   'ModStatsRoutines.F90' )
 
 ! start -----------------------------------------------------------------------
-
-#ifdef RFLO
-#ifdef PLAG
-  CALL PLAG_RFLO_CommStatBuffWrapper( regions )
-#endif
-  CALL RFLO_StatBoundaryConditionsSet( regions )
-
-  CALL RFLO_WriteStat( regions )
-#ifdef PLAG
-  CALL PLAG_RFLO_WriteStat( regions )
-#endif
-#endif
 
 ! finalize --------------------------------------------------------------------
 

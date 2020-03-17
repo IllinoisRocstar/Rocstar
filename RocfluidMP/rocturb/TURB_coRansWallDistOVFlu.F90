@@ -151,7 +151,7 @@ SUBROUTINE TURB_CoRansWallDistOV( regions )
 !       write(*,*)'send=',ireg
 
         CALL MPI_SEND( global%turbWork1D(1+icount),wallDim(iRegGlob),MPI_RFREAL, &
-                       MASTERPROC,iRegGlob,global%mpiComm,status,global%mpierr )
+                       MASTERPROC,iRegGlob,global%mpiComm,global%mpierr )
         IF (global%mpierr /=0 ) CALL ErrorStop( global,ERR_MPI_TROUBLE,__LINE__ )
 
         icount = icount + wallDim(iRegGlob)

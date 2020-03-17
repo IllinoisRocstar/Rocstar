@@ -95,15 +95,8 @@ SUBROUTINE UpdateTbc(region,t,dt,final)
 ! Loop over patches
 ! ******************************************************************************
 
-#ifdef RFLO
-  DO iPatch=1,region%nPatches
-    patch => region%levels(region%currLevel)%patches(iPatch)
-#endif
-
-#ifdef RFLU
   DO iPatch=1,region%grid%nPatches
     patch => region%patches(iPatch)
-#endif
 
 ! ==============================================================================
 !   Loop over modules

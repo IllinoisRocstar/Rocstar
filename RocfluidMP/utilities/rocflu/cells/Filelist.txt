@@ -12,14 +12,14 @@
 #
 ################################################################################
 
-SRCF90+=	main.F90\
-		BuildVersionString.F90\
-		RFLU_AllocateMemoryWrapper.F90\
-		RFLU_DeallocateMemoryWrapper.F90\
-		RFLU_GetSpecialCells.F90\
-		RFLU_PrintHeader.F90\
+SRCF90+=        main.F90\
+                BuildVersionString.F90\
+                RFLU_AllocateMemoryWrapper.F90\
+                RFLU_DeallocateMemoryWrapper.F90\
+                RFLU_GetSpecialCells.F90\
+                RFLU_PrintHeader.F90\
                 RFLU_WriteSpecialCells.F90\
-		RFLU_WriteVersionString.F90
+                RFLU_WriteVersionString.F90
 
 ################################################################################
 #

@@ -39,6 +39,7 @@
 #include <cassert>
 #include <iostream>
 #include <algorithm>
+#include <utility>
 
 MOP_BEGIN_NAMESPACE
 
@@ -177,14 +178,14 @@ void Geo_Metric_Base_3::compute_angles(double& min, double& max) const{
 	int node_id1 = fne[j],node_id2 = fne[(j+1)%nj];
 	if(node_id1>node_id2)
 	  std::swap(node_id1, node_id2);
-	e2f_it = e2f.find(std::make_pair<int,int>(node_id1,node_id2));
+	e2f_it = e2f.find(std::make_pair(node_id1,node_id2));
 	if(e2f_it != e2f.end()){
-	  afs.insert(std::make_pair<int,int>(e2f_it->second,i));
+	  afs.insert(std::make_pair(e2f_it->second,i));
 	  e2f.erase(e2f_it);
 	}
 	else{
-	  e2f.insert(std::make_pair<std::pair<int,int>,int>(
-		     std::make_pair<int,int>(node_id1,node_id2)
+	  e2f.insert(std::make_pair(
+		     std::make_pair(node_id1,node_id2)
 		     ,i));
 	}	
       }

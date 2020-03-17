@@ -61,21 +61,6 @@ SUBROUTINE AllocateMemoryWork( region )
   CALL RegisterFunction( region%global,'AllocateMemoryWork',&
   'AllocateMemoryWork.F90' )
 
-! allocate work space
-
-#ifdef RFLO
-  ALLOCATE( region%work1D(region%dimWork1D),stat=errorFlag )
-  region%global%error = errorFlag
-  IF (region%global%error /= 0) &
-    CALL ErrorStop( region%global,ERR_ALLOCATE,__LINE__ )
-
-  ALLOCATE( region%work2D(region%dimWork2D(1),region%dimWork2D(2)), &
-            stat=errorFlag )
-  region%global%error = errorFlag
-  IF (region%global%error /= 0) &
-    CALL ErrorStop( region%global,ERR_ALLOCATE,__LINE__ )
-#endif
-
 ! finalize
 
   CALL DeregisterFunction( region%global )

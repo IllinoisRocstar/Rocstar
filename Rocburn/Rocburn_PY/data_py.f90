@@ -28,32 +28,33 @@ MODULE data_py
  INTEGER, PARAMETER :: DBL = SELECTED_REAL_KIND(P=14,R=30)
 !=========================================================================
 
- REAL *8, PARAMETER ::  zero    = 0.d0,   &
-                        one     = 1.0d0,  &
-                        two     = 2.0d0,  &
-                        three   = 3.0d0,  &
-                        four    = 4.0d0,  &
-                        eight   = 8.0d0,  &
+ REAL(DBL), PARAMETER ::  zero    = 0.d0,   &
+                          one     = 1.0d0,  &
+                          two     = 2.0d0,  &
+                          three   = 3.0d0,  &
+                          four    = 4.0d0,  &
+                          eight   = 8.0d0,  &
 
-                        half    = 0.5d0,        &
-                        quarter = 0.25d0,       &
-                        eighth  = 0.125d0,      &
-                        third   = one/three,         &
-                        two_thirds = two/three,      &
-                        root_two = 1.41421356237309515d0,   &
+                          half    = 0.5d0,        &
+                          quarter = 0.25d0,       &
+                          eighth  = 0.125d0,      &
+                          third   = one/three,         &
+                          two_thirds = two/three,      &
+                          root_two = 1.41421356237309515d0,   &
 
-                        j2cal = 1.0d0/4.1868d0,         &
-                        kg2g  = 1000.0d0,               &
-                        m2cm  = 100.0d0,                &
-                        ru    = 1.9859d0,               &
-                        mpa2atm = 9.86923266716d0,      &
-                        pa2atm = mpa2atm*1d-6,          &     
-                        kgmc2gcc = kg2g/m2cm**3,        &
-                        j_m2cal_cm = j2cal/m2cm,        &
-                        j_msq2cal_cmsq = j2cal/m2cm**2, &
-                        gcc2kgmc = one/kgmc2gcc,        &
-                        kcalmc2atm = 4186.8/101325.d0,  &
-                        j_kg2cal_g = j2cal/kg2g
+                          j2cal = 1.0d0/4.1868d0,         &
+                          kg2g  = 1000.0d0,               &
+                          m2cm  = 100.0d0,                &
+                          ru    = 1.9859d0,               &
+                          mpa2atm = 9.86923266716d0,      &
+                          pa2atm = mpa2atm*1d-6,          &
+                          kgmc2gcc = kg2g/m2cm**3,        &
+                          j_m2cal_cm = j2cal/m2cm,        &
+                          j_msq2cal_cmsq = j2cal/m2cm**2, &
+                          gcc2kgmc = one/kgmc2gcc,        &
+                          kcalmc2atm = 4186.8/101325.d0,  &
+                          j_kg2cal_g = j2cal/kg2g
+
 !=======================================================================
 ! global structure that contains combustion model parameters
 
@@ -68,7 +69,7 @@ MODULE data_py
     REAL(DBL) :: delt_max, delz2inv, delzsqinv, dx1
     REAL(DBL),POINTER :: x(:), z(:), zx(:), zxx(:)
     REAL(DBL) :: P_range(2), rb_range(2), Tf_range(2) 
-    CHARACTER*50 :: TABNAM
+    CHARACTER(50) :: TABNAM
 
     TYPE(TABLETYPE),POINTER :: TABLE
     

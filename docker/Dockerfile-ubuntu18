@@ -1,0 +1,18 @@
+FROM ubuntu:18.04
+
+RUN apt update -y
+RUN apt upgrade -y
+
+WORKDIR /rocstar/
+# ENTRYPOINT /home/
+
+# Compilers and build tools.
+RUN apt install g++-7 gfortran-7 gcc-7 cmake libmpich-dev libcgns-dev libhdf5-dev libhdf4-dev liblapack-dev perl -y
+
+RUN apt install vim -y
+
+# Copy the TPLs ( metis-4 & IMPACT )
+COPY . /home/
+# RUN echo $(ls -la)
+
+RUN apt install /home/impact_2.1.0_amd64.deb -y

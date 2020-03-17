@@ -12,17 +12,17 @@
 #
 ################################################################################
 
-SRCCXX+=	main.C
+SRCCXX+=        main.C
 
-SRCF90+=	BuildVersionString.F90\
-		RFLU_PickRegionsCoord.F90\
-		RFLU_PickRegionsManual.F90\
-		RFLU_PickSpecialCells.F90\
-		RFLU_PickSpecialFaces.F90\
-		RFLU_PrintHeader.F90\
+SRCF90+=        BuildVersionString.F90\
+                RFLU_PickRegionsCoord.F90\
+                RFLU_PickRegionsManual.F90\
+                RFLU_PickSpecialCells.F90\
+                RFLU_PickSpecialFaces.F90\
+                RFLU_PrintHeader.F90\
                 RFLU_WritePostInfo.F90\
-		RFLU_WriteVersionString.F90\
-		rflupick.F90
+                RFLU_WriteVersionString.F90\
+                rflupick.F90
 
 ################################################################################
 #

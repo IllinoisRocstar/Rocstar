@@ -66,7 +66,7 @@ set_bounds( const COM::DataItem *bnd) {
   else {
     COM_assertion_msg( COM_compatible_types( bnd->data_type(), COM_DOUBLE) &&
 		       bnd->size_of_components()==BOUND_LEN && 
-		       bnd->is_panel() || bnd->is_windowed(),
+		       (bnd->is_panel() || bnd->is_windowed()),
 		       "Propagation_3::set_bounds expects double-precision 3-vector");
 
     _buf->inherit( const_cast<COM::DataItem*>(bnd), "PROP_cnstr_bound",
@@ -300,7 +300,7 @@ check_spherical_bound( const Point_3 &pnt, const Point_3 &org,
   double sqnrm = (pnt - org).squared_norm();
 
   return sqnrm >= square( rad_max-eps) || 
-    rad_min >=0 && sqnrm <= square( rad_min+eps);
+    (rad_min >=0 && sqnrm <= square( rad_min+eps));
 }
 
 void Propagation_3::
@@ -310,10 +310,11 @@ bound_spherical_disp( const Point_3 &pnt, const Point_3 &org,
   Vector_3 dir = pnt - org;
   double sqnrm = dir.squared_norm(), sqnrm1 = (dir+disp).squared_norm(), t;
 
-  if ( std::max( sqnrm, sqnrm1) >= square((t=rad_max)-eps) && 
-       std::min( sqnrm, sqnrm1) <= square(rad_max+eps) ||
-       (t=rad_min) >= 0 && std::min( sqnrm, sqnrm1) <= square(rad_min+eps) && 
-       std::max( sqnrm, sqnrm1) >= square(rad_min-eps)) {
+  if ((std::max(sqnrm, sqnrm1) >= square((t = rad_max) - eps) &&
+       std::min(sqnrm, sqnrm1) <= square(rad_max + eps)) ||
+      ((t = rad_min) >= 0 &&
+       std::min(sqnrm, sqnrm1) <= square(rad_min + eps) &&
+       std::max(sqnrm, sqnrm1) >= square(rad_min - eps))) {
 
     if ( dir.is_null()) 
       disp[0] = disp[1] = disp[2] = 0;
@@ -321,9 +322,9 @@ bound_spherical_disp( const Point_3 &pnt, const Point_3 &org,
       Vector_3 dir_unit; (dir_unit = dir).normalize();
       disp += ( t - disp*dir_unit) * dir_unit - dir;
     }
-  }
-  else if ( sqnrm >= square(rad_max) && sqnrm1 > sqnrm || 
-	    rad_min >= 0 && sqnrm <= square(rad_min) && sqnrm1 < sqnrm) {
+  } else if ((sqnrm >= square(rad_max) && sqnrm1 > sqnrm) ||
+             (rad_min >= 0 &&
+              sqnrm <= square(rad_min) && sqnrm1 < sqnrm)) {
     if ( dir.is_null()) 
       disp[0] = disp[1] = disp[2] = 0;
     else
@@ -339,7 +340,7 @@ bool Propagation_3::check_radial_bound( const double x, const double y,
 
   double sq_xy = square( x)+square( y);
   return  sq_xy >= square(bnd_max-eps) || 
-    bnd_min >=0 && sq_xy <= square(bnd_min+eps);
+    (bnd_min >=0 && sq_xy <= square(bnd_min+eps));
 }
 
 void Propagation_3::bound_radial_disp( const double x, const double y,
@@ -350,10 +351,10 @@ void Propagation_3::bound_radial_disp( const double x, const double y,
   double sq_rad_actual=square( x+dx)+square( y+dy);
   double t;
 
-  if ( std::max( sq_xy, sq_rad_actual) >= square((t=bnd_max)-eps) && 
-       std::min( sq_xy, sq_rad_actual) <= square(bnd_max+eps) ||
-       std::min( sq_xy, sq_rad_actual) <= square((t=bnd_min)+eps) && 
-       std::max( sq_xy, sq_rad_actual) >= square(bnd_min-eps)) {
+  if ( (std::max(sq_xy, sq_rad_actual) >= square((t = bnd_max) - eps) &&
+        std::min(sq_xy, sq_rad_actual) <= square(bnd_max + eps)) ||
+       (std::min(sq_xy, sq_rad_actual) <= square((t = bnd_min) + eps) &&
+        std::max(sq_xy, sq_rad_actual) >= square(bnd_min - eps))) {
 
     if ( sq_xy == 0)
       dx = dy = 0;
@@ -363,9 +364,9 @@ void Propagation_3::bound_radial_disp( const double x, const double y,
       dx = ratio*x - x;
       dy = ratio*y - y;
     }
-  }
-  else if ( sq_xy >= square(bnd_max-eps) && sq_rad_actual >= sq_xy || 
-	    bnd_min>=0 && sq_xy <= square(bnd_min+eps) && sq_rad_actual<=sq_xy) {
+  } else if ((sq_xy >= square(bnd_max - eps) && sq_rad_actual >= sq_xy) ||
+             (bnd_min >= 0 &&
+              sq_xy <= square(bnd_min + eps) && sq_rad_actual <= sq_xy)) {
     dx = dy = 0; // Do not alter dx if moves inwards
   }
 
@@ -387,7 +388,7 @@ void Propagation_3::bound_axial_disp( const double x, const double bnd_min,
   else if ( std::min( x, xnew) <= bnd_min+eps && std::max(x, xnew) >= bnd_min-eps) {
     dx = bnd_min - x;
   }
-  else if ( x >= bnd_max+eps && xnew > x || x<=bnd_min-eps && xnew < x)
+  else if ( (x >= bnd_max+eps && xnew > x) || (x<=bnd_min-eps && xnew < x))
     dx = 0; // Do not alter dx if moves inwards
 }
 
@@ -540,8 +541,8 @@ bound_nodal_motion( COM::DataItem *du) {
 				     bnd[11]-bnd[8]);
       if ( eps>1 || eps <= 0) eps = 1.e-10;
 
-      for (int i=0, n=pane->size_of_real_nodes(); i<n; ++i)
-	bound_nodal_motion( pnts[i], bnd, ds[i]);
+      for (int j=0, n=pane->size_of_real_nodes(); j <n; ++j)
+	bound_nodal_motion( pnts[j], bnd, ds[j]);
     }
   }
 }

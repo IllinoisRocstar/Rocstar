@@ -128,8 +128,7 @@ void Rocmop::read_config_file(const std::string &cfname)
   // buffer winodw may not be created yet.
   int rank =0;
   if(COMMPI_Initialized()){
-    int ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
-    assert( ierr == 0);
+    rank = COMMPI_Comm_rank(MPI_COMM_WORLD);
   }
 
   // If the file doesn't exist, fire off a warning and continue
@@ -203,14 +202,14 @@ void Rocmop::read_config_file(const std::string &cfname)
   }  
 
   // Load the next line and set tolerance for lazy threshold
-  float tol;
+  double tol;
   get_next_line(Inf,line,'#');
 #if ! NO_STRINGSTREAM
   Istr.str(line);
   Istr >> tol;
   Istr.clear();
 #else
-  sscanf(line.c_str(), "%f", &tol);
+  sscanf(line.c_str(), "%lf", &tol);
 #endif
   if(tol < 0. || tol > 180.){
     std::cerr << "Rocmop: Warning: Invalid dihedral angle tolerance"
@@ -225,14 +224,14 @@ void Rocmop::read_config_file(const std::string &cfname)
   }  
 
   // Load the next line and set node displacement constraint for Mesquite smoothing 
-  float max_disp;
+  double max_disp;
   get_next_line(Inf,line,'#');
 #if ! NO_STRINGSTREAM
   Istr.str(line);
   Istr >> max_disp;
   Istr.clear();
 #else
-  sscanf(line.c_str(), "%f", &max_disp);
+  sscanf(line.c_str(), "%lf", &max_disp);
 #endif
   if(max_disp < 0. || max_disp > 10.0){
     std::cerr << "Rocmop: Warning: Invalid displacement constraint from configfile. " 
@@ -273,7 +272,7 @@ void Rocmop::read_config_file(const std::string &cfname)
   Istr >> _disp_thresh;
   Istr.clear();
 #else
-  sscanf(line.c_str(), "%f", &_disp_thresh);
+  sscanf(line.c_str(), "%lf", &_disp_thresh);
 #endif
   if(_disp_thresh < 0.0)
     _disp_thresh = 0.0;
@@ -730,10 +729,8 @@ void Rocmop::smooth_in_place(COM::DataItem *pmesh){
   COM_assertion_msg( validate_object()==0, "Invalid object");
   print_legible(0,"Entering rocmop::smooth_in_place");
 
-  int pmesh_id = pmesh->id();
-
-  COM_assertion_msg( pmesh && 
-		     (pmesh_id==COM::COM_PMESH || pmesh_id==COM::COM_MESH) , 
+  COM_assertion_msg( pmesh &&
+		     (pmesh->id()==COM::COM_PMESH || pmesh->id()==COM::COM_MESH) ,
 		     "Input to Rocmop::smooth_in_place must be a mesh or pmesh");
 
   if(_buf_window) 
@@ -907,7 +904,9 @@ void Rocmop::smoother_specific_init(){
       COM::DataItem * new_attr = 
 	_buf_window->inherit( const_cast<COM::DataItem *>(w_is_surface), 
 			      surf_attr, COM::Pane::INHERIT_CLONE, true, NULL, 0);
-      COM_assertion_msg(new_attr, "DataItem could not be allocated.");
+      if (!new_attr) {
+        COM_abort_msg(EXIT_FAILURE, "DataItem could not be allocated.");
+      }
     }
     // else, detect the physical boundary ourselves
     else{
@@ -1048,19 +1047,19 @@ void Rocmop::set_value(const char* opt, const void* value)
   else if ( option == "lazy"){ 
     _lazy = *((int*)value); }
   else if ( option == "tol"){ 
-    COM_assertion_msg( *((float*)value) <= 180. && *((float*)value)>=0. 
+    COM_assertion_msg( *((double*)value) <= 180. && *((double*)value)>=0.
                       ,"Illegal value for 'tol' option");
-    _tol = *((float*)value); }
+    _tol = *((double*)value); }
   else if ( option == "maxdisp"){ 
-    COM_assertion_msg( *((float*)value)>0. 
+    COM_assertion_msg( *((double*)value)>0.
                       ,"Illegal value for 'maxdisp' option");
-    _maxdisp = *((float*)value); }
+    _maxdisp = *((double*)value); }
   else if ( option == "niter"){ 
     _niter = *((int*)value); }
   else if ( option == "ctol"){ 
-    COM_assertion_msg( *((float*)value) <= 1. && *((float*)value)>=0. 
+    COM_assertion_msg( *((double*)value) <= 1. && *((double*)value)>=0.
                       ,"Illegal value for '_ctol' option");
-    _ctol = *((float*)value); }
+    _ctol = *((double*)value); }
   else if ( option == "ncycle"){
     _ncycle = *((int*)value); }
   else if ( option == "inverted"){
@@ -1336,9 +1335,11 @@ double Rocmop::check_all_elem_quality(std::vector<const COM::Pane*> &allpanes,
 #endif
   print_legible(1,"Entering Rocmop::check_all_elem_quality");
 
+/*
   int rank =0;
   int ierr = MPI_Comm_rank( _buf_window->get_communicator(),
 			    &rank); assert( ierr == 0);
+*/
   double worst_angle = 0.0;
   double angles[] = {0.0, 0.0};
   for(int i=0,ni = allpanes.size(); i<ni; ++i){
@@ -1373,11 +1374,13 @@ double Rocmop::check_all_elem_quality(std::vector<COM::Pane*> &allpanes,
  
   print_legible(1,"Entering Rocmop::check_all_elem_quality");
 
+/*
   if(COMMPI_Initialized()){
     int rank =0;
     int ierr = MPI_Comm_rank( _buf_window->get_communicator(),
 			      &rank); assert( ierr == 0);
   }
+*/
 
   double worst_angle = 0.0;
   double angles[] = {0.0, 0.0};
@@ -1411,9 +1414,7 @@ void Rocmop::print_legible(int verb, const char *msg){
   int rank =0;
 
   if(COMMPI_Initialized()){
-    int ierr = MPI_Comm_rank( _buf_window->get_communicator(),
-			      &rank); 
-    assert( ierr == 0);
+    rank = COMMPI_Comm_rank( _buf_window->get_communicator());
   }
 
   if (rank==0)
@@ -1469,9 +1470,7 @@ void Rocmop::print_extremal_dihedrals(COM::Window * window){
   // MPI calls on parallel runs
   int myrank =0;
   if(COMMPI_Initialized()){ // true if in parallel
-    int ierr = MPI_Comm_rank( window->get_communicator(),
-			      &myrank); 
-    assert( ierr == 0);
+    myrank = COMMPI_Comm_rank( window->get_communicator());
   }
 
   // Calculate extremal angles on local panes, and
@@ -1568,8 +1567,7 @@ void Rocmop::print_quality(std::string &s,const std::string &s2){
 
   int rank =0;
   if(cominit){
-    int ierr = MPI_Comm_rank( _buf_window->get_communicator(),
-			      &rank); assert( ierr == 0);
+    rank = COMMPI_Comm_rank( _buf_window->get_communicator());
   }
 
   std::vector<Pane*> allpanes;
@@ -1610,14 +1608,12 @@ void Rocmop::print_quality(std::string &s,const std::string &s2){
 void Rocmop::print_mquality(std::string &s,
 			    std::vector<std::vector<bool> > &to_check){
 
-  int ierr = 0, rank =0;
+  int rank =0;
 
   if(COMMPI_Initialized()){
-    ierr = MPI_Comm_rank( _buf_window->get_communicator()
-			  , &rank); 
-  }  
-  assert( ierr == 0);
-  
+    rank = COMMPI_Comm_rank( _buf_window->get_communicator());
+  }
+
 
   std::vector<std::vector<bool> > elem_to_check;
   mark_elems_from_nodes(to_check, elem_to_check);
@@ -1668,8 +1664,7 @@ void Rocmop::print_mquality(std::string &s,
   }
 
   if(COMMPI_Initialized())
-    ierr = MPI_Barrier(_buf_window->get_communicator());
-  assert( ierr == 0);
+    MPI_Barrier(_buf_window->get_communicator());
 
   if(min_angle == temp){
     
@@ -1682,8 +1677,7 @@ void Rocmop::print_mquality(std::string &s,
   }
 
   if(COMMPI_Initialized())
-    ierr = MPI_Barrier(_buf_window->get_communicator());
-  assert( ierr == 0);
+    MPI_Barrier(_buf_window->get_communicator());
 }
 
 void Rocmop::perturb_stationary(){

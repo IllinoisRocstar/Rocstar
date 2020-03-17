@@ -44,12 +44,7 @@ SUBROUTINE ReadFlowSection( regions )
 
   USE ModDataTypes
   USE ModDataStruct, ONLY: t_region
-#ifdef RFLO  
-  USE ModInterfaces, ONLY : ReadRegionSection
-#endif
-#ifdef RFLU
   USE ModInterfaces, ONLY : ReadSection
-#endif
   USE ModError
   USE ModParameters
   IMPLICIT NONE
@@ -60,13 +55,8 @@ SUBROUTINE ReadFlowSection( regions )
 ! ... local variables
   CHARACTER(10)     :: keys(2)
  
-#ifdef RFLO 
-  INTEGER :: brbeg, brend
-#endif 
-#ifdef RFLU
   INTEGER :: iReg
-#endif 
- 
+
   LOGICAL :: defined(2)
  
   REAL(RFREAL) :: vals(2)
@@ -81,25 +71,7 @@ SUBROUTINE ReadFlowSection( regions )
   keys(1) = 'MODEL'
   keys(2) = 'MOVEGRID'
 
-#ifdef RFLO
-  CALL ReadRegionSection( regions(1)%global,IF_INPUT,2,keys,vals, &
-                          brbeg,brend,defined )
-
-  IF (defined(1).eqv..true.) THEN
-                     regions(brbeg:brend)%mixtInput%flowModel = FLOW_EULER
-    IF (vals(1)>0.9) regions(brbeg:brend)%mixtInput%flowModel = FLOW_NAVST
-  ENDIF
-  IF (defined(2).eqv..true.) THEN
-    IF (vals(2) < 0.1) THEN
-      regions(brbeg:brend)%mixtInput%moveGrid = .false.
-    ELSE
-      regions(brbeg:brend)%mixtInput%moveGrid = .true.
-    ENDIF
-  ENDIF 
-#endif
-
-#ifdef RFLU
-  CALL ReadSection( regions(1)%global,IF_INPUT,2,keys,vals,defined ) 
+  CALL ReadSection( regions(1)%global,IF_INPUT,2,keys,vals,defined )
   
   IF ( defined(1) .eqv..true.) THEN
     DO iReg = LBOUND(regions,1),UBOUND(regions,1)
@@ -118,7 +90,6 @@ SUBROUTINE ReadFlowSection( regions )
       END DO ! iReg
     END IF ! NINT
   END IF ! defined 
-#endif 
 
 ! finalize
 

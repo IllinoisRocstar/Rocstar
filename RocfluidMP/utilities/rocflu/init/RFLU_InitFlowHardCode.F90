@@ -143,7 +143,7 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
   
 ! ==============================================================================
 !   Incompressible fluid model
-! ==============================================================================  
+! ==============================================================================
   
     CASE ( FLUID_MODEL_INCOMP ) 
       pRegion%mixt%cvState = CV_MIXT_STATE_PRIM
@@ -154,7 +154,7 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
 
 ! ==============================================================================
 !   Compressible fluid model
-! ==============================================================================  
+! ==============================================================================
     
     CASE ( FLUID_MODEL_COMP )
       pRegion%mixt%cvState = CV_MIXT_STATE_CONS
@@ -203,10 +203,10 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
 ! ----- Without backchamber ----------------------------------------------------
 
         CASE ( "ds_7p25"   , "ds_20p0"   , "ds_50p0"   , "ds_125p0"   , & 
-	       "ds_7p25_v2", "ds_20p0_v2", "ds_50p0_v2", "ds_125p0_v2", &
-	       "ds_7p25_v3", "ds_20p0_v3", "ds_50p0_v3", "ds_125p0_v3", &
-	       "ds_7p25_v4", "ds_20p0_v4", "ds_50p0_v4", "ds_125p0_v4", &
-	       "ds_7p25_v5", "ds_20p0_v5", "ds_50p0_v5", "ds_125p0_v5" )
+               "ds_7p25_v2", "ds_20p0_v2", "ds_50p0_v2", "ds_125p0_v2", &
+               "ds_7p25_v3", "ds_20p0_v3", "ds_50p0_v3", "ds_125p0_v3", &
+               "ds_7p25_v4", "ds_20p0_v4", "ds_50p0_v4", "ds_125p0_v4", &
+               "ds_7p25_v5", "ds_20p0_v5", "ds_50p0_v5", "ds_125p0_v5" )
           DO icg = 1,pGrid%nCellsTot
             x = pGrid%cofg(XCOORD,icg)
 
@@ -236,16 +236,16 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
             pCv(CV_MIXT_ZMOM,icg) = d*w
             pCv(CV_MIXT_ENER,icg) = d*MixtPerf_Eo_DGPUVW(d,g,p,u,v,w)
           END DO ! icg
-	  
-! ----- With backchamber -----------------------------------------------------	  
-	  	  
+
+! ----- With backchamber -------------------------------------------------------
+
         CASE ( "ds_7p25_v6", "ds_20p0_v6", "ds_50p0_v6", "ds_125p0_v6" )
           DO icg = 1,pGrid%nCellsTot
             x =     pGrid%cofg(XCOORD,icg)
-	    y = ABS(pGrid%cofg(YCOORD,icg))
+            y = ABS(pGrid%cofg(YCOORD,icg))
 
             IF ( (x < pMixtInput%prepRealVal1) .AND. & 
-	         (y < pMixtInput%prepRealVal2) ) THEN
+                 (y < pMixtInput%prepRealVal2) ) THEN
               d = pMixtInput%prepRealVal3
               u = pMixtInput%prepRealVal4
               v = 0.0_RFREAL
@@ -270,7 +270,7 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
             pCv(CV_MIXT_YMOM,icg) = d*v
             pCv(CV_MIXT_ZMOM,icg) = d*w
             pCv(CV_MIXT_ENER,icg) = d*MixtPerf_Eo_DGPUVW(d,g,p,u,v,w)
-          END DO ! icg	  
+          END DO ! icg
 
 ! ------------------------------------------------------------------------------
 !       hexahedral channel mesh
@@ -322,13 +322,13 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
 !       Generic compressible gravity current
 ! ------------------------------------------------------------------------------
 
-        CASE ( "gcgc" ) 
+        CASE ( "gcgc" )
           DO icg = 1,pGrid%nCellsTot
             x = pGrid%cofg(XCOORD,icg)
             y = pGrid%cofg(YCOORD,icg)
 
-            IF ( (x < pMixtInput%prepRealVal1) .AND. & 
-                 (y < pMixtInput%prepRealVal2) ) THEN 
+            IF ( (x < pMixtInput%prepRealVal1) .AND. &
+                 (y < pMixtInput%prepRealVal2) ) THEN
               d = pMixtInput%prepRealVal3
               u = 0.0_RFREAL
               v = 0.0_RFREAL
@@ -341,20 +341,20 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
               w = 0.0_RFREAL
               p = pMixtInput%prepRealVal4
             END IF ! x
-            
+
             mw = pGv(GV_MIXT_MOL,indMol*icg)
             cp = pGv(GV_MIXT_CP ,indCp *icg)
-        
+
             gc = MixtPerf_R_M(mw)
-            g  = MixtPerf_G_CpR(cp,gc)            
-            
+            g  = MixtPerf_G_CpR(cp,gc)
+
             pCv(CV_MIXT_DENS,icg) = d
             pCv(CV_MIXT_XMOM,icg) = d*u
             pCv(CV_MIXT_YMOM,icg) = d*v
             pCv(CV_MIXT_ZMOM,icg) = d*w
-            pCv(CV_MIXT_ENER,icg) = d*MixtPerf_Eo_DGPUVW(d,g,p,u,v,w)               
-          END DO ! icg     
-	  
+            pCv(CV_MIXT_ENER,icg) = d*MixtPerf_Eo_DGPUVW(d,g,p,u,v,w)
+          END DO ! icg
+
 ! ------------------------------------------------------------------------------
 !       Generic multiphase wall jet
 ! ------------------------------------------------------------------------------
@@ -363,17 +363,17 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
           DO icg = 1,pGrid%nCellsTot
             x = pGrid%cofg(XCOORD,icg)
             y = pGrid%cofg(YCOORD,icg)
-	    z = pGrid%cofg(ZCOORD,icg)
+            z = pGrid%cofg(ZCOORD,icg)
 
-            IF ( (    x  < 0.00_RFREAL) .AND. & 
-                 (ABS(y) < 0.55_RFREAL) .AND. & 
-		 (ABS(z) < 0.55_RFREAL) ) THEN 
+            IF ( (    x  < 0.00_RFREAL) .AND. &
+                 (ABS(y) < 0.55_RFREAL) .AND. &
+                 (ABS(z) < 0.55_RFREAL) ) THEN
               d = 34.7418238572_RFREAL
               u = 0.0_RFREAL
               v = 0.0_RFREAL
               w = 0.0_RFREAL
               p = 5.0E+6_RFREAL
-            ELSE 
+            ELSE
               d = 1.20903522664_RFREAL
               u = 0.0_RFREAL
               v = 0.0_RFREAL
@@ -383,16 +383,16 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
             
             mw = pGv(GV_MIXT_MOL,indMol*icg)
             cp = pGv(GV_MIXT_CP ,indCp *icg)
-        
+
             gc = MixtPerf_R_M(mw)
-            g  = MixtPerf_G_CpR(cp,gc)            
-            
+            g  = MixtPerf_G_CpR(cp,gc)
+
             pCv(CV_MIXT_DENS,icg) = d
             pCv(CV_MIXT_XMOM,icg) = d*u
             pCv(CV_MIXT_YMOM,icg) = d*v
             pCv(CV_MIXT_ZMOM,icg) = d*w
-            pCv(CV_MIXT_ENER,icg) = d*MixtPerf_Eo_DGPUVW(d,g,p,u,v,w)               
-          END DO ! icg     	  
+            pCv(CV_MIXT_ENER,icg) = d*MixtPerf_Eo_DGPUVW(d,g,p,u,v,w)
+          END DO ! icg
 
 ! ------------------------------------------------------------------------------
 !       Gradient test 
@@ -400,46 +400,46 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
 
 ! ----- Linear function --------------------------------------------------------
 
-        CASE ( "gtlin" ) 
-          xMin = MINVAL(pGrid%cofg(XCOORD,1:pGrid%nCellsTot))        
+        CASE ( "gtlin" )
+          xMin = MINVAL(pGrid%cofg(XCOORD,1:pGrid%nCellsTot))
           yMin = MINVAL(pGrid%cofg(YCOORD,1:pGrid%nCellsTot))
           zMin = MINVAL(pGrid%cofg(ZCOORD,1:pGrid%nCellsTot))
         
           CALL RFLU_SetExactFlowLinear(xMin,yMin,zMin,1,dMin,gx,gy,gz)
           CALL RFLU_SetExactFlowLinear(xMin,yMin,zMin,5,pMin,gx,gy,gz)
-                        
-          IF ( dMin < 0.0_RFREAL ) THEN 
+
+          IF ( dMin < 0.0_RFREAL ) THEN
             dOffs = -2.0_RFREAL*dMin
           ELSE 
             dOffs = 0.0_RFREAL
-          END IF ! dMin  
-          
-          IF ( pMin < 0.0_RFREAL ) THEN 
+          END IF ! dMin
+
+          IF ( pMin < 0.0_RFREAL ) THEN
             pOffs = -2.0_RFREAL*pMin
           ELSE 
             pOffs = 0.0_RFREAL
-          END IF ! pMin                        
-                                                                      
+          END IF ! pMin
+
           DO icg = 1,pGrid%nCellsTot
             x = pGrid%cofg(XCOORD,icg)
             y = pGrid%cofg(YCOORD,icg)
-            z = pGrid%cofg(ZCOORD,icg)                        
-     
+            z = pGrid%cofg(ZCOORD,icg)
+
             mw = pGv(GV_MIXT_MOL,indMol*icg)
             cp = pGv(GV_MIXT_CP ,indCp *icg)
-        
+
             gc = MixtPerf_R_M(mw)
             g  = MixtPerf_G_CpR(cp,gc)
-                               
+
             CALL RFLU_SetExactFlowLinear(x,y,z,1,d,gx,gy,gz)
             CALL RFLU_SetExactFlowLinear(x,y,z,2,u,gx,gy,gz) 
             CALL RFLU_SetExactFlowLinear(x,y,z,3,v,gx,gy,gz)
             CALL RFLU_SetExactFlowLinear(x,y,z,4,w,gx,gy,gz)
             CALL RFLU_SetExactFlowLinear(x,y,z,5,p,gx,gy,gz) 
-                                                                           
+
             d = d + dOffs 
-            p = p + pOffs                  
-                               
+            p = p + pOffs
+
             pCv(CV_MIXT_DENS,icg) = d
             pCv(CV_MIXT_XMOM,icg) = d*u
             pCv(CV_MIXT_YMOM,icg) = d*v
@@ -1679,7 +1679,7 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
             pCv(CV_MIXT_XMOM,icg) = d*u
             pCv(CV_MIXT_YMOM,icg) = d*v
             pCv(CV_MIXT_ZMOM,icg) = d*w
-            pCv(CV_MIXT_ENER,icg) = d*MixtPerf_Eo_DGPUVW(d,g,p,u,v,w)	    
+            pCv(CV_MIXT_ENER,icg) = d*MixtPerf_Eo_DGPUVW(d,g,p,u,v,w)
           END DO ! icg 
 
 ! ----- Sod case 1 -------------------------------------------------------------  
@@ -1712,7 +1712,7 @@ SUBROUTINE RFLU_InitFlowHardCode(pRegion)
             pCv(CV_MIXT_XMOM,icg) = d*u
             pCv(CV_MIXT_YMOM,icg) = d*v
             pCv(CV_MIXT_ZMOM,icg) = d*w
-            pCv(CV_MIXT_ENER,icg) = d*MixtPerf_Eo_DGPUVW(d,g,p,u,v,w)	    
+            pCv(CV_MIXT_ENER,icg) = d*MixtPerf_Eo_DGPUVW(d,g,p,u,v,w)
           END DO ! icg                       
   
 ! ----- Sod case 2 -------------------------------------------------------------  

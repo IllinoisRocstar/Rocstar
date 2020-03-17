@@ -1,2 +1,0 @@
-gridConversion:Error: Meshes must have elements with the same number of nodes!
-gridConversion:Error: Element 11 has 3 nodes but previous elements have 8 nodes.

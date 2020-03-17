@@ -15,13 +15,13 @@
 SRCF90+=        BuildVersionString.F90\
                 RFLU_AllocateMemory.F90\
                 RFLU_AllocateMemoryWrapper.F90\
-		RFLU_CentralFirstPatch.F90\
+                RFLU_CentralFirstPatch.F90\
                 RFLU_CentralFirstPatch_GL.F90\
-		RFLU_CentralSecondPatch.F90\
+                RFLU_CentralSecondPatch.F90\
                 RFLU_CentralSecondPatch_GL.F90\
                 RFLU_CheckGridSpeeds.F90\
                 RFLU_ComputeEnerDissOLES.F90\
-		RFLU_ComputeFluxInv.F90\
+                RFLU_ComputeFluxInv.F90\
                 RFLU_ComputeGridSpeeds.F90\
                 RFLU_ComputeIntegral1OLES.F90\
                 RFLU_ComputeIntegral2OLES.F90\
@@ -35,7 +35,7 @@ SRCF90+=        BuildVersionString.F90\
                 RFLU_DeallocateMemory.F90\
                 RFLU_DeallocateMemoryWrapper.F90\
                 RFLU_EndFlowSolver.F90\
-		RFLU_ExplicitMultiStage.F90\
+                RFLU_ExplicitMultiStage.F90\
                 RFLU_FlowSolver.F90\
                 RFLU_GetDeformationWrapper.F90\
                 RFLU_InitFlowSolver.F90\
@@ -49,7 +49,7 @@ SRCF90+=        BuildVersionString.F90\
                 RFLU_OpenTotalMassFile.F90\
                 RFLU_PrintChangeInfo.F90\
                 RFLU_PrintHeader.F90\
-		RFLU_PrintWriteConvergence.F90\
+                RFLU_PrintWriteConvergence.F90\
                 RFLU_ReadIntegrals1245OLES.F90\
                 RFLU_ResidualNorm.F90\
                 RFLU_SetMoveGridOptions.F90\
@@ -57,10 +57,10 @@ SRCF90+=        BuildVersionString.F90\
                 RFLU_TimeStepping.F90\
                 RFLU_TimeStepViscous.F90\
                 RFLU_USER_GetDeformation.F90\
-		RFLU_UpdateBoundaryValues.F90\
+                RFLU_UpdateBoundaryValues.F90\
                 RFLU_WriteIntegrals1245OLES.F90\
                 RFLU_WriteStatsFileOLES.F90\
-		RFLU_WriteVersionString.F90
+                RFLU_WriteVersionString.F90
 
 ################################################################################
 #

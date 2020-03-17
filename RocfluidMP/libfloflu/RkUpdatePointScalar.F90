@@ -27,19 +27,19 @@
 ! Description: None.
 !
 ! Input: 
-!   region	Region data
-!   iStage	Runge-Kutta stage
-!   ivBeg	Beginning index for variable update
-!   ivEnd	Ending index for variable update
-!   var		Conserved variables
-!   varOld	Old conserved variables
-!   rhs		Residual
-!   rhsSum	Residual sum
+!   region      Region data
+!   iStage      Runge-Kutta stage
+!   ivBeg       Beginning index for variable update
+!   ivEnd       Ending index for variable update
+!   var         Conserved variables
+!   varOld      Old conserved variables
+!   rhs         Residual
+!   rhsSum      Residual sum
 !
 !
 ! Output: 
-!   var		Variables
-!   rhsSum	Residual sum
+!   var         Variables
+!   rhsSum      Residual sum
 !
 ! Notes: None.
 !

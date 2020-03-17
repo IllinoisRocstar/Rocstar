@@ -27,8 +27,8 @@
 ! Description: None.
 !
 ! Input:
-!   pRegion	Region pointer
-!   allocMode 	Allocation mode
+!   pRegion     Region pointer
+!   allocMode   Allocation mode
 !
 ! Output: None.
 !

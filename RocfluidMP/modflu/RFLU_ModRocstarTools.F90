@@ -93,7 +93,7 @@ MODULE RFLU_ModRocstarTools
 ! Description: 
 !
 ! Input: 
-!   pRegion 	Pointer to region data
+!   pRegion      Pointer to region data
 !
 ! Output: None.
 !

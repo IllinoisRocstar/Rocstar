@@ -13,58 +13,58 @@
 ################################################################################
 
 ifdef RFLO
-  SRCF90+= 	RFLO_FlowSolverDummy.F90\
-		RFLO_GetBoundaryValues.F90\
-         	RFLO_GetDeformation.F90\
+  SRCF90+=      RFLO_FlowSolverDummy.F90\
+                RFLO_GetBoundaryValues.F90\
+                RFLO_GetDeformation.F90\
                 RFLO_InitGenxInterface.F90\
-         	RFLO_SendBoundaryValues.F90\
+                RFLO_SendBoundaryValues.F90\
                 RFLO_SendBoundaryValuesAlpha.F90\
-         	RFLO_UpdateInbuffGm.F90\
+                RFLO_UpdateInbuffGm.F90\
                 Fluid_finalize.F90\
                 Fluid_preHdfOutput.F90\
                 Fluid_postHdfOutput.F90\
-         	Rocflo_load_module.F90\
+                Rocflo_load_module.F90\
                 Rocflo_unload_module.F90
 ifdef PEUL
-  SRCF90+= 	PEUL_InitGenxInterface.F90
+  SRCF90+=      PEUL_InitGenxInterface.F90
 endif
 ifdef PLAG
-  SRCF90+= 	PLAG_InitGenxInterface.F90\
-		PLAG_SetSizeGenx.F90
+  SRCF90+=      PLAG_InitGenxInterface.F90\
+                PLAG_SetSizeGenx.F90
 endif
 ifdef RADI
-  SRCF90+= 	RADI_InitGenxInterface.F90
+  SRCF90+=      RADI_InitGenxInterface.F90
 endif
 ifdef TURB
-  SRCF90+= 	TURB_InitGenxInterface.F90
+  SRCF90+=      TURB_InitGenxInterface.F90
 endif
-  SRCF90+= 	RandInitGenxInterface.F90
+  SRCF90+=      RandInitGenxInterface.F90
 endif
 
 ifdef RFLU
-  SRCF90+=	RFLU_CheckCouplingInput.F90\
-		RFLU_GetBoundaryValues.F90\
-         	RFLU_GetDeformation.F90\
+  SRCF90+=      RFLU_CheckCouplingInput.F90\
+                RFLU_GetBoundaryValues.F90\
+                RFLU_GetDeformation.F90\
                 RFLU_FlowSolverDummy.F90\
                 RFLU_PutBoundaryValues.F90\
-         	RFLU_PutBoundaryValuesAlpha.F90\
-         	RFLU_UpdateInbuffGm.F90\
+                RFLU_PutBoundaryValuesAlpha.F90\
+                RFLU_UpdateInbuffGm.F90\
                 Fluid_compute_integrals.F90\
-         	Fluid_finalize.F90\
+                Fluid_finalize.F90\
                 Fluid_preHdfOutput.F90\
                 Fluid_postHdfOutput.F90\
                 Rocflu_load_module.F90\
-         	Rocflu_unload_module.F90
+                Rocflu_unload_module.F90
 ifdef TURB
-  SRCF90+= 	TURB_RFLU_ModRocstarAdmin.F90
+  SRCF90+=      TURB_RFLU_ModRocstarAdmin.F90
 endif
 ifdef STATS
-  SRCF90+= 	STAT_RFLU_ModRocstarAdmin.F90
+  SRCF90+=      STAT_RFLU_ModRocstarAdmin.F90
 endif
 endif
 
 ifdef STATS
-  SRCF90+= 	STAT_GenxStatNaming.F90
+  SRCF90+=      STAT_GenxStatNaming.F90
 endif
 
 ################################################################################

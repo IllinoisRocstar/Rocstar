@@ -27,7 +27,7 @@
 ! Description: None.
 !
 ! Input:
-!    globalGenx		global data structure
+!   globalGenx          global data structure
 !
 ! Output: None.
 !
@@ -45,13 +45,8 @@ SUBROUTINE Fluid_compute_integrals(globalGenx,integ)
 
   USE ModRocstar, ONLY: t_globalGenx
 
-#ifdef RFLO
-  USE ModInterfaces, ONLY: RFLO_ComputeIntegralValues
-#endif
-#ifdef RFLU
   USE ModInterfaces, ONLY: RFLU_ComputeIntegralValues
-#endif
-  
+
   IMPLICIT NONE
 
   INCLUDE 'rocmanf90.h'
@@ -62,13 +57,7 @@ SUBROUTINE Fluid_compute_integrals(globalGenx,integ)
 
 !******************************************************************************
 
-#ifdef RFLO
-  CALL RFLO_ComputeIntegralValues(globalGenx%levels(1)%regions,integ)
-#endif
-#ifdef RFLU
   CALL RFLU_ComputeIntegralValues(globalGenx%levels(1)%regions,integ)
-#endif
-
 
 END SUBROUTINE Fluid_compute_integrals
 

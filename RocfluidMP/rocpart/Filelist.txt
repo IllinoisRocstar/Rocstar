@@ -12,175 +12,175 @@
 #
 ################################################################################
 
-  SRCF90+=	PLAG_BuildVersionString.F90
+  SRCF90+=      PLAG_BuildVersionString.F90
 
 ifdef RFLO
-  SRCF90+=	PLAG_ModInterfaces.F90\
-		PLAG_ModInterfacesCECells.F90\
+  SRCF90+=      PLAG_ModInterfaces.F90\
+                PLAG_ModInterfacesCECells.F90\
                 PLAG_ModParameters.F90\
                 PLAG_ModCheckVars.F90\
                 PLAG_ModRkInit.F90\
-		PLAG_AllocateDataBuffers.F90\
-		PLAG_AllocateMemory.F90\
-		PLAG_AllocateMemoryTile.F90\
-		PLAG_AppendDataFromBuffers.F90\
-		PLAG_BoundaryConditionsSet.F90\
-		PLAG_BufferDataRecv.F90\
-		PLAG_BufferDataSend.F90\
-		PLAG_BufferSizeRecv.F90\
-		PLAG_BufferSizeSend.F90\
+                PLAG_AllocateDataBuffers.F90\
+                PLAG_AllocateMemory.F90\
+                PLAG_AllocateMemoryTile.F90\
+                PLAG_AppendDataFromBuffers.F90\
+                PLAG_BoundaryConditionsSet.F90\
+                PLAG_BufferDataRecv.F90\
+                PLAG_BufferDataSend.F90\
+                PLAG_BufferSizeRecv.F90\
+                PLAG_BufferSizeSend.F90\
                 PLAG_CalcBreakup.F90\
-		PLAG_CalcDerivedVariables.F90\
-		PLAG_CalcFaceCentroids.F90\
-		PLAG_CalcRhsPosition.F90\
+                PLAG_CalcDerivedVariables.F90\
+                PLAG_CalcFaceCentroids.F90\
+                PLAG_CalcRhsPosition.F90\
                 PLAG_CECellsAllocateData.F90\
-		PLAG_CECellsClearRequestsData.F90\
-		PLAG_CECellsClearRequestsSize.F90\
+                PLAG_CECellsClearRequestsData.F90\
+                PLAG_CECellsClearRequestsSize.F90\
                 PLAG_CECellsDeallocateData.F90\
                 PLAG_CECellsExchange.F90\
                 PLAG_CECellsFaceCentroids.F90\
                 PLAG_CECellsFaceVectors.F90\
                 PLAG_CECellsGetBufferSize.F90\
                 PLAG_CECellsLoadDataWrapper.F90\
-		PLAG_CECellsRecvData.F90\
-		PLAG_CECellsRecvSize.F90\
-		PLAG_CECellsSendData.F90\
-		PLAG_CECellsSendRecvWrapper.F90\
-		PLAG_CECellsSendSize.F90\
+                PLAG_CECellsRecvData.F90\
+                PLAG_CECellsRecvSize.F90\
+                PLAG_CECellsSendData.F90\
+                PLAG_CECellsSendRecvWrapper.F90\
+                PLAG_CECellsSendSize.F90\
                 PLAG_CECellsWrapper.F90\
-		PLAG_CheckUserInput.F90\
-		PLAG_ClearDataSendRequests.F90\
-		PLAG_ClearSizeSendRequests.F90\
+                PLAG_CheckUserInput.F90\
+                PLAG_ClearDataSendRequests.F90\
+                PLAG_ClearSizeSendRequests.F90\
                 PLAG_CopyFaceVectors.F90\
-		PLAG_CornCellsLoadData.F90\
-		PLAG_CornCellsLoadSendBuff.F90\
-		PLAG_DeallocateDataBuffers.F90\
-		PLAG_DerivedInputValues.F90\
-		PLAG_EdgeCellsLoadData.F90\
-		PLAG_EdgeCellsLoadSendBuff.F90\
-		PLAG_GetCellIndices.F90\
-		PLAG_GetCellIndicesOutflow.F90\
-		PLAG_InCellTest.F90\
-		PLAG_InCellTestRobust.F90\
+                PLAG_CornCellsLoadData.F90\
+                PLAG_CornCellsLoadSendBuff.F90\
+                PLAG_DeallocateDataBuffers.F90\
+                PLAG_DerivedInputValues.F90\
+                PLAG_EdgeCellsLoadData.F90\
+                PLAG_EdgeCellsLoadSendBuff.F90\
+                PLAG_GetCellIndices.F90\
+                PLAG_GetCellIndicesOutflow.F90\
+                PLAG_InCellTest.F90\
+                PLAG_InCellTestRobust.F90\
                 PLAG_InitInputValues.F90\
-		PLAG_InitMemory.F90\
-		PLAG_InitSolution.F90\
-		PLAG_InjcEjectParticle.F90\
-		PLAG_InjcMakeParticle.F90\
-		PLAG_InjcSetInjection.F90\
-		PLAG_InjcTileCalcRhs.F90\
-		PLAG_InjcTileInitialize.F90\
-		PLAG_InjcTileRKUpdate.F90\
-		PLAG_InjcTileUpdate.F90\
-		PLAG_InjcTileZeroRhs.F90\
-		PLAG_IntrpMixtProperties.F90\
-		PLAG_NonCvUpdate.F90\
-		PLAG_PatchBufferSendRecv.F90\
-		PLAG_PatchExchangeConf.F90\
-		PLAG_PatchGetBufferSize.F90\
-		PLAG_PatchLoadDataBuffers.F90\
-		PLAG_PatchRemoveDataOutflow.F90\
-		PLAG_PatchUpdate.F90\
+                PLAG_InitMemory.F90\
+                PLAG_InitSolution.F90\
+                PLAG_InjcEjectParticle.F90\
+                PLAG_InjcMakeParticle.F90\
+                PLAG_InjcSetInjection.F90\
+                PLAG_InjcTileCalcRhs.F90\
+                PLAG_InjcTileInitialize.F90\
+                PLAG_InjcTileRKUpdate.F90\
+                PLAG_InjcTileUpdate.F90\
+                PLAG_InjcTileZeroRhs.F90\
+                PLAG_IntrpMixtProperties.F90\
+                PLAG_NonCvUpdate.F90\
+                PLAG_PatchBufferSendRecv.F90\
+                PLAG_PatchExchangeConf.F90\
+                PLAG_PatchGetBufferSize.F90\
+                PLAG_PatchLoadDataBuffers.F90\
+                PLAG_PatchRemoveDataOutflow.F90\
+                PLAG_PatchUpdate.F90\
                 PLAG_PatchUpdateWrapper.F90\
-		PLAG_PrintUserInput.F90\
-		PLAG_ReadDisPartInitSection.F90\
-		PLAG_ReadDisPartnContSection.F90\
-		PLAG_ReadDisPartSection.F90\
-		PLAG_ReadInputFile.F90\
-		PLAG_ReadPdfFromFile.F90\
-		PLAG_ReadSolution.F90\
-		PLAG_RkInit.F90\
+                PLAG_PrintUserInput.F90\
+                PLAG_ReadDisPartInitSection.F90\
+                PLAG_ReadDisPartnContSection.F90\
+                PLAG_ReadDisPartSection.F90\
+                PLAG_ReadInputFile.F90\
+                PLAG_ReadPdfFromFile.F90\
+                PLAG_ReadSolution.F90\
+                PLAG_RkInit.F90\
                 PLAG_RkUpdateWrapper.F90\
-		PLAG_Update.F90\
-		PLAG_UpdateDataStruct.F90\
-		PLAG_UserInput.F90\
-		PLAG_WallBounce.F90\
-		PLAG_WriteSolution.F90\
-		PLAG_ZeroRhs.F90\
+                PLAG_Update.F90\
+                PLAG_UpdateDataStruct.F90\
+                PLAG_UserInput.F90\
+                PLAG_WallBounce.F90\
+                PLAG_WriteSolution.F90\
+                PLAG_ZeroRhs.F90\
                 PLAG_RFLO_SetMetrics.F90\
                 PLAG_RFLO_ClearSendRequests.F90\
-		PLAG_RFLO_FindGridMapping.F90\
+                PLAG_RFLO_FindGridMapping.F90\
                 PLAG_RFLO_RecvMetrics.F90\
                 PLAG_RFLO_SendMetrics.F90\
                 PLAG_RFLO_SendRecvMetrics.F90              
 
 ifdef STATS
-  SRCF90+=	PLAG_ModEulerian.F90\
-		PLAG_ModStats.F90\
-		PLAG_RFLO_ModStats.F90
+  SRCF90+=      PLAG_ModEulerian.F90\
+                PLAG_ModStats.F90\
+                PLAG_RFLO_ModStats.F90
 endif
 
 endif
 
 ifdef RFLU
-  SRCF90+=	PLAG_ModCheckVars.F90\
-		PLAG_ModDataStruct.F90\
-		PLAG_ModDimensions.F90\
-		PLAG_ModEulerian.F90\
-		PLAG_ModInjection.F90\
-		PLAG_ModInterfaces.F90\
-		PLAG_ModInterfacesCECells.F90\
-		PLAG_ModParameters.F90\
-		PLAG_ModReallocateMemory.F90\
-		PLAG_ModRkInit.F90\
-		PLAG_ModSurfStats.F90\
-		PLAG_RFLU_ModComm.F90\
-		PLAG_RFLU_ModFindCells.F90\
-		PLAG_CalcBreakup.F90\
-		PLAG_CalcDerivedVariables.F90\
-		PLAG_CalcRhsPosition.F90\
-		PLAG_CheckUserInput.F90\
-		PLAG_DerivedInputValues.F90\
+  SRCF90+=      PLAG_ModCheckVars.F90\
+                PLAG_ModDataStruct.F90\
+                PLAG_ModDimensions.F90\
+                PLAG_ModEulerian.F90\
+                PLAG_ModInjection.F90\
+                PLAG_ModInterfaces.F90\
+                PLAG_ModInterfacesCECells.F90\
+                PLAG_ModParameters.F90\
+                PLAG_ModReallocateMemory.F90\
+                PLAG_ModRkInit.F90\
+                PLAG_ModSurfStats.F90\
+                PLAG_RFLU_ModComm.F90\
+                PLAG_RFLU_ModFindCells.F90\
+                PLAG_CalcBreakup.F90\
+                PLAG_CalcDerivedVariables.F90\
+                PLAG_CalcRhsPosition.F90\
+                PLAG_CheckUserInput.F90\
+                PLAG_DerivedInputValues.F90\
                 PLAG_InitPatchData.F90\
-		PLAG_InitInputValues.F90\
-		PLAG_InjcMakeParticle.F90\
-		PLAG_InjcSetInjection.F90\
-		PLAG_InjcTileRKUpdate.F90\
-		PLAG_InjcTileUpdate.F90\
-		PLAG_InjcTileZeroRhs.F90\
-		PLAG_IntrpMixtProperties.F90\
-		PLAG_NonCvUpdate.F90\
-		PLAG_PrintUserInput.F90\
-		PLAG_ReadDisPartInitSection.F90\
-		PLAG_ReadDisPartnContSection.F90\
-		PLAG_ReadDisPartSection.F90\
-		PLAG_ReadInputFile.F90\
-		PLAG_ReadPdfFromFile.F90\
-		PLAG_ReflectParticleData.F90\
-		PLAG_RkInit.F90\
-		PLAG_RkUpdateWrapper.F90\
-		PLAG_UserInput.F90\
-		PLAG_UpdateDataStruct.F90\
-		PLAG_ZeroRhs.F90\
-		PLAG_INRT_AllocMemTStep.F90\
-		PLAG_INRT_DeallocMemTStep.F90\
-		PLAG_RFLU_AllocMemSol.F90\
-		PLAG_RFLU_AllocMemSolTile.F90\
-		PLAG_RFLU_AllocMemTStep.F90\
-		PLAG_RFLU_AllocMemTStepTile.F90\
-		PLAG_RFLU_CorrectMixtProperties.F90\
-		PLAG_RFLU_DeallocMemSol.F90\
-		PLAG_RFLU_DeallocMemSolTile.F90\
-		PLAG_RFLU_DeallocMemTStep.F90\
-		PLAG_RFLU_DeallocMemTStepTile.F90\
-		PLAG_RFLU_InitSolutionRandom.F90\
-		PLAG_RFLU_InitSolutionScratch.F90\
-		PLAG_RFLU_InitSolFromSerial.F90\
-		PLAG_RFLU_InitSolSerialWrapper.F90\
-		PLAG_RFLU_InitSolSerial_1D.F90\
-		PLAG_RFLU_InitSolSerial_3D.F90\
-		PLAG_RFLU_InjcTileCalcRhs.F90\
-		PLAG_RFLU_InjectionDriver.F90\
-		PLAG_RFLU_ReadSolutionASCII.F90\
-		PLAG_RFLU_ReadSolutionBinary.F90\
-		PLAG_RFLU_Update.F90\
-		PLAG_RFLU_WriteSolutionASCII.F90\
-		PLAG_RFLU_WriteSolutionBinary.F90
+                PLAG_InitInputValues.F90\
+                PLAG_InjcMakeParticle.F90\
+                PLAG_InjcSetInjection.F90\
+                PLAG_InjcTileRKUpdate.F90\
+                PLAG_InjcTileUpdate.F90\
+                PLAG_InjcTileZeroRhs.F90\
+                PLAG_IntrpMixtProperties.F90\
+                PLAG_NonCvUpdate.F90\
+                PLAG_PrintUserInput.F90\
+                PLAG_ReadDisPartInitSection.F90\
+                PLAG_ReadDisPartnContSection.F90\
+                PLAG_ReadDisPartSection.F90\
+                PLAG_ReadInputFile.F90\
+                PLAG_ReadPdfFromFile.F90\
+                PLAG_ReflectParticleData.F90\
+                PLAG_RkInit.F90\
+                PLAG_RkUpdateWrapper.F90\
+                PLAG_UserInput.F90\
+                PLAG_UpdateDataStruct.F90\
+                PLAG_ZeroRhs.F90\
+                PLAG_INRT_AllocMemTStep.F90\
+                PLAG_INRT_DeallocMemTStep.F90\
+                PLAG_RFLU_AllocMemSol.F90\
+                PLAG_RFLU_AllocMemSolTile.F90\
+                PLAG_RFLU_AllocMemTStep.F90\
+                PLAG_RFLU_AllocMemTStepTile.F90\
+                PLAG_RFLU_CorrectMixtProperties.F90\
+                PLAG_RFLU_DeallocMemSol.F90\
+                PLAG_RFLU_DeallocMemSolTile.F90\
+                PLAG_RFLU_DeallocMemTStep.F90\
+                PLAG_RFLU_DeallocMemTStepTile.F90\
+                PLAG_RFLU_InitSolutionRandom.F90\
+                PLAG_RFLU_InitSolutionScratch.F90\
+                PLAG_RFLU_InitSolFromSerial.F90\
+                PLAG_RFLU_InitSolSerialWrapper.F90\
+                PLAG_RFLU_InitSolSerial_1D.F90\
+                PLAG_RFLU_InitSolSerial_3D.F90\
+                PLAG_RFLU_InjcTileCalcRhs.F90\
+                PLAG_RFLU_InjectionDriver.F90\
+                PLAG_RFLU_ReadSolutionASCII.F90\
+                PLAG_RFLU_ReadSolutionBinary.F90\
+                PLAG_RFLU_Update.F90\
+                PLAG_RFLU_WriteSolutionASCII.F90\
+                PLAG_RFLU_WriteSolutionBinary.F90
 
 endif
                 
 ifdef STATS
-  SRCF90+=	PLAG_StatMapping.F90
+  SRCF90+=      PLAG_StatMapping.F90
 endif                
 
 ################################################################################

@@ -94,8 +94,8 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
-!   pRegionSerial	Pointer to serial region
+!   pRegion             Pointer to region
+!   pRegionSerial       Pointer to serial region
 !
 ! Output: None.
 !
@@ -203,12 +203,12 @@ MODULE RFLU_ModPartitionRegion
           IF ( pGrid%nTetsTot == pGrid%nTetsMax ) THEN 
             global%warnCounter = global%warnCounter + 1
 
-	    IF ( global%verbLevel > VERBOSE_LOW ) THEN
-	      WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, &
-        	 '*** WARNING *** About to exceed tetrahedra list dimensions.'
+            IF ( global%verbLevel > VERBOSE_LOW ) THEN
+              WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, &
+                 '*** WARNING *** About to exceed tetrahedra list dimensions.'
               WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, & 
                  '                Increasing list dimensions and continuing.'
-	    END IF ! global
+            END IF ! global
 
             CALL RFLU_PART_RecreateCellList(global,4,pGrid%nTetsMax, & 
                                             pGrid%tet2v,pGrid%tet2CellGlob)
@@ -235,12 +235,12 @@ MODULE RFLU_ModPartitionRegion
           IF ( pGrid%nHexsTot == pGrid%nHexsMax ) THEN 
             global%warnCounter = global%warnCounter + 1
 
-	    IF ( global%verbLevel > VERBOSE_LOW ) THEN
-	      WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, &
-        	 '*** WARNING *** About to exceed hexahedra list dimensions.'
+            IF ( global%verbLevel > VERBOSE_LOW ) THEN
+              WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, &
+                 '*** WARNING *** About to exceed hexahedra list dimensions.'
               WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, & 
                  '                Increasing list dimensions and continuing.'
-	    END IF ! global
+            END IF ! global
 
             CALL RFLU_PART_RecreateCellList(global,8,pGrid%nHexsMax, & 
                                             pGrid%hex2v,pGrid%hex2CellGlob)
@@ -271,12 +271,12 @@ MODULE RFLU_ModPartitionRegion
           IF ( pGrid%nPrisTot == pGrid%nPrisMax ) THEN 
             global%warnCounter = global%warnCounter + 1
 
-	    IF ( global%verbLevel > VERBOSE_LOW ) THEN
-	      WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, &
-        	 '*** WARNING *** About to exceed prism list dimensions.'
+            IF ( global%verbLevel > VERBOSE_LOW ) THEN
+              WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, &
+                 '*** WARNING *** About to exceed prism list dimensions.'
               WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, & 
                  '                Increasing list dimensions and continuing.'
-	    END IF ! global
+            END IF ! global
 
             CALL RFLU_PART_RecreateCellList(global,6,pGrid%nPrisMax, & 
                                             pGrid%pri2v,pGrid%pri2CellGlob)
@@ -305,12 +305,12 @@ MODULE RFLU_ModPartitionRegion
           IF ( pGrid%nPyrsTot == pGrid%nPyrsMax ) THEN 
             global%warnCounter = global%warnCounter + 1
 
-	    IF ( global%verbLevel > VERBOSE_LOW ) THEN
-	      WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, &
-        	 '*** WARNING *** About to exceed pyramid list dimensions.'
+            IF ( global%verbLevel > VERBOSE_LOW ) THEN
+              WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, &
+                 '*** WARNING *** About to exceed pyramid list dimensions.'
               WRITE(STDOUT,'(A,3X,A)') SOLVER_NAME, & 
                  '                Increasing list dimensions and continuing.'
-	    END IF ! global
+            END IF ! global
 
             CALL RFLU_PART_RecreateCellList(global,5,pGrid%nPyrsMax, & 
                                             pGrid%pyr2v,pGrid%pyr2CellGlob)
@@ -396,7 +396,7 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -583,8 +583,8 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
-!   pRegionSerial	Pointer to serial region
+!   pRegion             Pointer to region
+!   pRegionSerial      Pointer to serial region
 !
 ! Output: None.
 !
@@ -807,8 +807,8 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
-!   pRegionSerial	Pointer to serial region
+!   pRegion             Pointer to region
+!   pRegionSerial       Pointer to serial region
 !
 ! Output: None.
 !
@@ -913,7 +913,7 @@ MODULE RFLU_ModPartitionRegion
             CALL BinarySearchInteger(pGrid%sbc2pc(1:1,1:pGrid%nBCellsTot), &
                                      pGrid%nBCellsTot,icg,iLoc)
           ELSE ! No need to search
-	    iLoc = ELEMENT_NOT_FOUND				   
+            iLoc = ELEMENT_NOT_FOUND
           END IF ! icg
 
 ! ------- Cell exists, so add face to boundary-face lists ----------------------                  
@@ -1165,7 +1165,7 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -1277,7 +1277,7 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   levels	Level data structure
+!   levels      Level data structure
 !
 ! Output: None.
 !
@@ -1375,8 +1375,8 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
-!   pRegionSerial	Pointer to serial region
+!   pRegion             Pointer to region
+!   pRegionSerial      Pointer to serial region
 !
 ! Output: None.
 !
@@ -1487,7 +1487,7 @@ MODULE RFLU_ModPartitionRegion
         CALL RFLU_HashBuildKey(pGrid%tet2v(ivl,icl:icl),1,key)          
         CALL RFLU_HashVertexFancy(global,key,pGrid%tet2v(ivl,icl), & 
                                   pGrid%nVertTot,pGrid%pv2sv, & 
-				  indx,ivgStat,ivgIndx)				  
+                                  indx,ivgStat,ivgIndx)
       END DO ! ivl
     END DO ! icl
 
@@ -1496,7 +1496,7 @@ MODULE RFLU_ModPartitionRegion
         CALL RFLU_HashBuildKey(pGrid%hex2v(ivl,icl:icl),1,key)          
         CALL RFLU_HashVertexFancy(global,key,pGrid%hex2v(ivl,icl), & 
                                   pGrid%nVertTot,pGrid%pv2sv, & 
-				  indx,ivgStat,ivgIndx)
+                                  indx,ivgStat,ivgIndx)
       END DO ! ivl
     END DO ! icl
 
@@ -1505,7 +1505,7 @@ MODULE RFLU_ModPartitionRegion
         CALL RFLU_HashBuildKey(pGrid%pri2v(ivl,icl:icl),1,key)          
         CALL RFLU_HashVertexFancy(global,key,pGrid%pri2v(ivl,icl), & 
                                   pGrid%nVertTot,pGrid%pv2sv, & 
-				  indx,ivgStat,ivgIndx)
+                                  indx,ivgStat,ivgIndx)
       END DO ! ivl
     END DO ! icl
     
@@ -1514,7 +1514,7 @@ MODULE RFLU_ModPartitionRegion
         CALL RFLU_HashBuildKey(pGrid%pyr2v(ivl,icl:icl),1,key)          
         CALL RFLU_HashVertexFancy(global,key,pGrid%pyr2v(ivl,icl), & 
                                   pGrid%nVertTot,pGrid%pv2sv, & 
-				  indx,ivgStat,ivgIndx)
+                                  indx,ivgStat,ivgIndx)
       END DO ! ivl
     END DO ! icl 
     
@@ -1531,15 +1531,15 @@ MODULE RFLU_ModPartitionRegion
         CALL RFLU_HashBuildKey(pGrid%tet2v(ivl,icl:icl),1,key)          
         CALL RFLU_HashVertexFancy(global,key,pGrid%tet2v(ivl,icl), & 
                                   pGrid%nVertTot,pGrid%pv2sv, & 
-				  indx,ivgStat,ivgIndx)
-				  
+                                  indx,ivgStat,ivgIndx)
+
         IF ( ivgStat == HASHTABLE_ENTRYSTATUS_NEW ) THEN 
-	  pGrid%vertKind(pGrid%nVertTot) = VERT_KIND_V
-	ELSE 
-	  IF ( pGrid%vertKind(ivgIndx) == VERT_KIND_A ) THEN 
-	    pGrid%vertKind(ivgIndx) = VERT_KIND_AV
-	  END IF ! pGrid%vertKind
-	END IF ! ivgStat				  	
+          pGrid%vertKind(pGrid%nVertTot) = VERT_KIND_V
+        ELSE
+          IF ( pGrid%vertKind(ivgIndx) == VERT_KIND_A ) THEN
+            pGrid%vertKind(ivgIndx) = VERT_KIND_AV
+          END IF ! pGrid%vertKind
+        END IF ! ivgStat
       END DO ! ivl
     END DO ! icl
 
@@ -1548,15 +1548,15 @@ MODULE RFLU_ModPartitionRegion
         CALL RFLU_HashBuildKey(pGrid%hex2v(ivl,icl:icl),1,key)          
         CALL RFLU_HashVertexFancy(global,key,pGrid%hex2v(ivl,icl), & 
                                   pGrid%nVertTot,pGrid%pv2sv, & 
-				  indx,ivgStat,ivgIndx)
-				  
+                                  indx,ivgStat,ivgIndx)
+
         IF ( ivgStat == HASHTABLE_ENTRYSTATUS_NEW ) THEN 
-	  pGrid%vertKind(pGrid%nVertTot) = VERT_KIND_V
-	ELSE 
-	  IF ( pGrid%vertKind(ivgIndx) == VERT_KIND_A ) THEN 
-	    pGrid%vertKind(ivgIndx) = VERT_KIND_AV
-	  END IF ! pGrid%vertKind
-	END IF ! ivgStat				  
+          pGrid%vertKind(pGrid%nVertTot) = VERT_KIND_V
+        ELSE
+          IF ( pGrid%vertKind(ivgIndx) == VERT_KIND_A ) THEN
+            pGrid%vertKind(ivgIndx) = VERT_KIND_AV
+          END IF ! pGrid%vertKind
+        END IF ! ivgStat
       END DO ! ivl
     END DO ! icl
 
@@ -1565,15 +1565,15 @@ MODULE RFLU_ModPartitionRegion
         CALL RFLU_HashBuildKey(pGrid%pri2v(ivl,icl:icl),1,key)          
         CALL RFLU_HashVertexFancy(global,key,pGrid%pri2v(ivl,icl), & 
                                   pGrid%nVertTot,pGrid%pv2sv, & 
-				  indx,ivgStat,ivgIndx)
-				  
+                                  indx,ivgStat,ivgIndx)
+
         IF ( ivgStat == HASHTABLE_ENTRYSTATUS_NEW ) THEN 
-	  pGrid%vertKind(pGrid%nVertTot) = VERT_KIND_V
-	ELSE 
-	  IF ( pGrid%vertKind(ivgIndx) == VERT_KIND_A ) THEN 
-	    pGrid%vertKind(ivgIndx) = VERT_KIND_AV
-	  END IF ! pGrid%vertKind
-	END IF ! ivgStat				  
+          pGrid%vertKind(pGrid%nVertTot) = VERT_KIND_V
+        ELSE
+          IF ( pGrid%vertKind(ivgIndx) == VERT_KIND_A ) THEN
+            pGrid%vertKind(ivgIndx) = VERT_KIND_AV
+          END IF ! pGrid%vertKind
+        END IF ! ivgStat
       END DO ! ivl
     END DO ! icl
     
@@ -1582,15 +1582,15 @@ MODULE RFLU_ModPartitionRegion
         CALL RFLU_HashBuildKey(pGrid%pyr2v(ivl,icl:icl),1,key)          
         CALL RFLU_HashVertexFancy(global,key,pGrid%pyr2v(ivl,icl), & 
                                   pGrid%nVertTot,pGrid%pv2sv, & 
-				  indx,ivgStat,ivgIndx)
-				  
+                                  indx,ivgStat,ivgIndx)
+
         IF ( ivgStat == HASHTABLE_ENTRYSTATUS_NEW ) THEN 
-	  pGrid%vertKind(pGrid%nVertTot) = VERT_KIND_V
-	ELSE 
-	  IF ( pGrid%vertKind(ivgIndx) == VERT_KIND_A ) THEN 
-	    pGrid%vertKind(ivgIndx) = VERT_KIND_AV
-	  END IF ! pGrid%vertKind
-	END IF ! ivgStat				  
+          pGrid%vertKind(pGrid%nVertTot) = VERT_KIND_V
+        ELSE
+          IF ( pGrid%vertKind(ivgIndx) == VERT_KIND_A ) THEN
+            pGrid%vertKind(ivgIndx) = VERT_KIND_AV
+          END IF ! pGrid%vertKind
+        END IF ! ivgStat
       END DO ! ivl
     END DO ! icl     
 
@@ -1710,8 +1710,8 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
-!   pRegionSerial	Pointer to serial region
+!   pRegion             Pointer to region
+!   pRegionSerial      Pointer to serial region
 !
 ! Output: None.
 !
@@ -1956,8 +1956,8 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
-!   pRegionSerial	Pointer to serial region
+!   pRegion             Pointer to region
+!   pRegionSerial      Pointer to serial region
 !
 ! Output: None.
 !
@@ -2050,7 +2050,7 @@ MODULE RFLU_ModPartitionRegion
 ! ==============================================================================
                  
     icgMin = MINVAL(pGrid%sbc2pc(1:1,1:pGrid%nBCellsTot))
-    icgMax = MAXVAL(pGrid%sbc2pc(1:1,1:pGrid%nBCellsTot))	       
+    icgMax = MAXVAL(pGrid%sbc2pc(1:1,1:pGrid%nBCellsTot))
 
     DO iPatch = 1,pGridSerial%nPatches
       pPatchSerial => pRegionSerial%patches(iPatch)
@@ -2075,8 +2075,8 @@ MODULE RFLU_ModPartitionRegion
             CALL BinarySearchInteger(pGrid%sbc2pc(1:1,1:pGrid%nBCellsTot), &    
                                      pGrid%nBCellsTot,icg,iLoc)
           ELSE ! No need to search
-	    iLoc = ELEMENT_NOT_FOUND
-	  END IF ! icg				    
+            iLoc = ELEMENT_NOT_FOUND
+          END IF ! icg
 
           IF ( iLoc /= ELEMENT_NOT_FOUND ) THEN
             icg2 = pGrid%sbc2pc(2,iLoc)
@@ -2277,7 +2277,7 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   levels	Level data structure
+!   levels      Level data structure
 !
 ! Output: None.
 !
@@ -2378,7 +2378,7 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
+!   pRegion             Pointer to region
 !
 ! Output: None.
 !
@@ -2473,7 +2473,7 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -2567,7 +2567,7 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
+!   pRegion             Pointer to region
 !
 ! Output: None.
 !
@@ -2683,7 +2683,7 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
+!   pRegion             Pointer to region
 !
 ! Output: None.
 !
@@ -2800,7 +2800,7 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
+!   pRegion             Pointer to region
 !
 ! Output: None.
 !
@@ -3047,24 +3047,24 @@ MODULE RFLU_ModPartitionRegion
       ALLOCATE(vwgt(1),STAT=errorFlag)
       global%error = errorFlag
       IF ( global%error /= ERR_NONE ) THEN 
-	CALL ErrorStop(global,ERR_ALLOCATE,__LINE__,'vwgt')
+        CALL ErrorStop(global,ERR_ALLOCATE,__LINE__,'vwgt')
       END IF ! global%error
 
       ALLOCATE(adjwgt(1),STAT=errorFlag)
       global%error = errorFlag
       IF ( global%error /= ERR_NONE ) THEN 
-	CALL ErrorStop(global,ERR_ALLOCATE,__LINE__,'adjwgt')
+        CALL ErrorStop(global,ERR_ALLOCATE,__LINE__,'adjwgt')
       END IF ! global%error    
 
       wgtFlag    = 0 ! No weights on graph
       options(1) = 0 ! Use default settings
 
       IF ( global%nRegionsLocal < 8 ) THEN 
-	CALL METIS_PartGraphRecursive(pGrid%nCellsTot,f2cCSRInfo,f2cCSR,vwgt, &
+        CALL METIS_PartGraphRecursive(pGrid%nCellsTot,f2cCSRInfo,f2cCSR,vwgt, &
                                       adjwgt,wgtFlag,1,global%nRegionsLocal, &
                                       options,pGrid%nFacesCut,pGrid%sc2r)
       ELSE 
-	CALL METIS_PartGraphKway(pGrid%nCellsTot,f2cCSRInfo,f2cCSR,vwgt, & 
+        CALL METIS_PartGraphKway(pGrid%nCellsTot,f2cCSRInfo,f2cCSR,vwgt, &
                                  adjwgt,wgtFlag,1,global%nRegionsLocal, & 
                                  options,pGrid%nFacesCut,pGrid%sc2r)      
       END IF ! global%nRegionsLocal
@@ -3072,13 +3072,13 @@ MODULE RFLU_ModPartitionRegion
       DEALLOCATE(vwgt,STAT=errorFlag)
       global%error = errorFlag
       IF ( global%error /= ERR_NONE ) THEN 
-	CALL ErrorStop(global,ERR_DEALLOCATE,__LINE__,'vwgt')
+        CALL ErrorStop(global,ERR_DEALLOCATE,__LINE__,'vwgt')
       END IF ! global%error   
 
       DEALLOCATE(adjwgt,STAT=errorFlag)
       global%error = errorFlag
       IF ( global%error /= ERR_NONE ) THEN 
-	CALL ErrorStop(global,ERR_DEALLOCATE,__LINE__,'adjwgt')
+        CALL ErrorStop(global,ERR_DEALLOCATE,__LINE__,'adjwgt')
       END IF ! global%error
 
 ! ==============================================================================
@@ -3098,15 +3098,15 @@ MODULE RFLU_ModPartitionRegion
       nCellsPerReg = pGrid%nCells/global%nRegionsLocal
  
       DO iReg = 1,global%nRegionsLocal
-	icgBeg = nCellsPerReg*(iReg - 1) + 1
-	icgEnd = nCellsPerReg* iReg
+        icgBeg = nCellsPerReg*(iReg - 1) + 1
+        icgEnd = nCellsPerReg* iReg
 
-	IF ( global%verbLevel > VERBOSE_LOW ) THEN 
+        IF ( global%verbLevel > VERBOSE_LOW ) THEN
           WRITE(STDOUT,'(A,5X,I4,2(1X,I9))') SOLVER_NAME,iReg,icgBeg,icgEnd
-	END IF ! global%verbLevel   
+        END IF ! global%verbLevel
 
         DO icg = icgBeg,icgEnd
-	  pGrid%sc2r(icg) = iReg
+          pGrid%sc2r(icg) = iReg
         END DO ! icg
       END DO ! iReg
 
@@ -3206,16 +3206,16 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   global		Pointer to global data
-!   nVertPerCell	Number of vertices per cell
-!   nCellsMax		Maximum number of cells
-!   x2v			Connectivity array
-!   x2cg		Cell mapping array
+!   global              Pointer to global data
+!   nVertPerCell        Number of vertices per cell
+!   nCellsMax           Maximum number of cells
+!   x2v                 Connectivity array
+!   x2cg                Cell mapping array
 !
 ! Output: 
-!   nCellsMax		Increased maximum number of cells
-!   x2v			Enlarged connectivity array
-!   x2cg		Enlarged cell mapping array
+!   nCellsMax           Increased maximum number of cells
+!   x2v                 Enlarged connectivity array
+!   x2cg                Enlarged cell mapping array
 !
 ! Notes: None.
 !
@@ -3368,7 +3368,7 @@ MODULE RFLU_ModPartitionRegion
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !

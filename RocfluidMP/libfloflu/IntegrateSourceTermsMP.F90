@@ -50,11 +50,9 @@ SUBROUTINE IntegrateSourceTermsMP(regions)
   USE ModError
   USE ModParameters
 
-#ifdef RFLU
 #ifdef SPEC
   USE SPEC_RFLU_ModChemistry, ONLY: SPEC_RFLU_IntegrateChemSrcTerm
   USE ModInterfaces, ONLY: RFLU_SetVarsWrapper
-#endif  
 #endif
 
 ! ******************************************************************************
@@ -62,9 +60,7 @@ SUBROUTINE IntegrateSourceTermsMP(regions)
 ! ******************************************************************************  
 
   TYPE(t_region), POINTER :: regions(:)
-#ifdef RFLU
-  TYPE(t_region), POINTER :: pRegion  
-#endif
+  TYPE(t_region), POINTER :: pRegion
 
 ! ==============================================================================
 ! Arguments
@@ -75,9 +71,7 @@ SUBROUTINE IntegrateSourceTermsMP(regions)
 ! ==============================================================================
 
   CHARACTER(CHRLEN) :: RCSIdentString
-#ifdef RFLU
   INTEGER :: iReg
-#endif  
   TYPE(t_global), POINTER :: global
 
 ! ******************************************************************************
@@ -95,8 +89,7 @@ SUBROUTINE IntegrateSourceTermsMP(regions)
   CALL RegisterFunction(global,'IntegrateSourceTermsMP',&
   'IntegrateSourceTermsMP.F90')
 
-#ifdef RFLU
-#ifdef SPEC  
+#ifdef SPEC
 ! ******************************************************************************
 ! Integrate chemistry source term and update dependent variables
 ! ******************************************************************************  
@@ -113,7 +106,6 @@ SUBROUTINE IntegrateSourceTermsMP(regions)
 !    END IF ! pRegion%specInput%sourceType
 !  END DO ! iReg
 ! END TEMPORARY
-#endif
 #endif
 
 ! ******************************************************************************

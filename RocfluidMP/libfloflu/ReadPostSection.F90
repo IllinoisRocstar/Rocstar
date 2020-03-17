@@ -57,12 +57,7 @@ SUBROUTINE ReadPostSection(global)
 ! ... local variables
   INTEGER :: nVals  
 
-#ifdef RFLO
-  INTEGER, PARAMETER :: NVALS_MAX = 9 
-#endif
-#ifdef RFLU
   INTEGER, PARAMETER :: NVALS_MAX = 20
-#endif
 
   CHARACTER(CHRLEN) :: RCSIdentString
   CHARACTER(10) :: keys(NVALS_MAX)  
@@ -82,86 +77,6 @@ SUBROUTINE ReadPostSection(global)
 
   nVals = NVALS_MAX
 
-#ifdef RFLO
-  keys( 1) = 'PLTTYPE'
-  keys( 2) = 'TIME'
-  keys( 3) = 'ITER'
-  keys( 4) = 'OUTFORMAT'
-  keys( 5) = 'STATSFLAG'
-  keys( 6) = 'TURBFLAG'
-  keys( 7) = 'PLAGFLAG'
-  keys( 8) = 'RADIFLAG'
-  keys( 9) = 'SPECFLAG'
-
-  CALL ReadSection( global,IF_INPUT,nVals,keys(1:nVals),vals(1:nVals), &
-                    defined(1:nVals) )
-
-  global%postStatsFlag = .FALSE.
-  global%postTurbFlag  = .FALSE.
-  global%postPlagFlag  = .FALSE.
-  global%postRadiFlag  = .FALSE.
-  global%postSpecFlag  = .FALSE.
-
-  IF (defined(1).eqv..true.) THEN
-    IF (INT(vals(1)+0.5_RFREAL) == 1) THEN 
-      global%postPlotType = PLOT_GRID_ONLY
-    ELSE 
-      global%postPlotType = PLOT_GRID_FLOW
-    END IF
-  END IF
-
-  IF (defined(2).eqv..true.) THEN
-    global%postTime   = ABS(vals(2))
-  END IF
-
-  IF (defined(3).eqv..true.) THEN
-    global%postIter   = INT(vals(3)+0.5_RFREAL)
-  END IF
-
-  IF (defined(4).eqv..true.) THEN
-    global%postOutFmt = INT(vals(4)+0.5_RFREAL)
-  END IF
-  
-  IF (defined(5).eqv..true.) THEN
-    IF (INT(vals(5)+0.5_RFREAL) == 1) THEN 
-      global%postStatsFlag = .TRUE.
-    END IF
-  END IF
-  
-  IF (defined(6).eqv..true.) THEN
-    IF (INT(vals(6)+0.5_RFREAL) == 1) THEN 
-      global%postTurbFlag = .TRUE.
-    END IF
-  END IF
-  
-  IF (defined(7).eqv..true.) THEN
-    IF (INT(vals(7)+0.5_RFREAL) == 1) THEN 
-      global%postPlagFlag = .TRUE.
-    END IF
-  END IF
-  
-  IF (defined(8).eqv..true.) THEN
-    IF (INT(vals(8)+0.5_RFREAL) == 1) THEN 
-      global%postRadiFlag = .TRUE.
-    END IF
-  END IF
-  
-  IF (defined(9).eqv..true.) THEN
-    IF (INT(vals(9)+0.5_RFREAL) == 1) THEN 
-      global%postSpecFlag = .TRUE.
-    END IF
-  END IF
-
-  IF (global%postOutFmt <= 1) THEN
-    global%postOutFmt = PLOT_FMT_GENERIC
-  ELSE IF (global%postOutFmt == 2) THEN
-    global%postOutFmt = PLOT_FMT_TECPLOT
-  ELSE
-    global%postOutFmt = PLOT_FMT_TECASCII
-  ENDIF
-#endif
-
-#ifdef RFLU
   keys( 1) = 'PLTTYPE'
   keys( 2) = 'MERGEFLAG'
   keys( 3) = 'PLTVOLFLAG'
@@ -320,7 +235,6 @@ SUBROUTINE ReadPostSection(global)
       global%postGradFlag = .FALSE.
     END IF ! NINT(vals)
   END IF ! defined
-#endif
 
 ! finalize
 

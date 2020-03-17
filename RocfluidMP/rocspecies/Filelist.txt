@@ -12,49 +12,49 @@
 #
 ################################################################################
 
- SRCF90+=	SPEC_BuildVersionString.F90
+ SRCF90+=       SPEC_BuildVersionString.F90
 
 ifdef RFLO
- SRCF90+= 	SPEC_ModInterfaces.F90
+ SRCF90+=       SPEC_ModInterfaces.F90
 endif 
 
 ifdef RFLU
-  SRCF90+=	SPEC_ModInterfaces.F90\
-		SPEC_ModParameters.F90\
-		SPEC_RFLU_ModChemistry.F90\
-		SPEC_RFLU_ModReadWriteVars.F90\
-		SPEC_CheckUserInput.F90\
-		SPEC_DerivedInputValues.F90\
-		SPEC_EqEulCorr.F90\
-		SPEC_EqEulCorrPatch.F90\
-		SPEC_InitInputValues.F90\
-		SPEC_InitInputValuesSpecType.F90\
-		SPEC_PrintUserInput.F90\
-		SPEC_ReadInputFile.F90\
-		SPEC_ReadSpecSection.F90\
-		SPEC_ReadSpecTypeSection.F90\
-		SPEC_UpdateDependentVars.F90\
-		SPEC_UserInput.F90\
-		SPEC_RFLU_AllocateMemory.F90\
-		SPEC_RFLU_AllocateMemoryEEv.F90\
-		SPEC_RFLU_AllocateMemorySol.F90\
-		SPEC_RFLU_AllocateMemoryTStep.F90\
-		SPEC_RFLU_AllocateMemoryVert.F90\
-		SPEC_RFLU_DeallocateMemory.F90\
-		SPEC_RFLU_DeallocateMemoryEEv.F90\
-		SPEC_RFLU_DeallocateMemorySol.F90\
-		SPEC_RFLU_DeallocateMemoryTStep.F90\
-		SPEC_RFLU_DeallocateMemoryVert.F90\
-		SPEC_RFLU_EnforceBounds.F90\
-		SPEC_RFLU_InitFlowHardCode.F90\
-		SPEC_RFLU_InitFlowScratch.F90\
-		SPEC_RFLU_PrintFlowInfo.F90\
-		SPEC_RFLU_ReadBcFarfSection.F90\
-		SPEC_RFLU_ReadBcInflowSection.F90\
-		SPEC_RFLU_ReadBcInjectSection.F90\
-		SPEC_RFLU_ReadBcInputFile.F90\
-		SPEC_RFLU_ReadBcSectionDummy.F90\
-		SPEC_RFLU_SetEEv.F90\
+  SRCF90+=      SPEC_ModInterfaces.F90\
+                SPEC_ModParameters.F90\
+                SPEC_RFLU_ModChemistry.F90\
+                SPEC_RFLU_ModReadWriteVars.F90\
+                SPEC_CheckUserInput.F90\
+                SPEC_DerivedInputValues.F90\
+                SPEC_EqEulCorr.F90\
+                SPEC_EqEulCorrPatch.F90\
+                SPEC_InitInputValues.F90\
+                SPEC_InitInputValuesSpecType.F90\
+                SPEC_PrintUserInput.F90\
+                SPEC_ReadInputFile.F90\
+                SPEC_ReadSpecSection.F90\
+                SPEC_ReadSpecTypeSection.F90\
+                SPEC_UpdateDependentVars.F90\
+                SPEC_UserInput.F90\
+                SPEC_RFLU_AllocateMemory.F90\
+                SPEC_RFLU_AllocateMemoryEEv.F90\
+                SPEC_RFLU_AllocateMemorySol.F90\
+                SPEC_RFLU_AllocateMemoryTStep.F90\
+                SPEC_RFLU_AllocateMemoryVert.F90\
+                SPEC_RFLU_DeallocateMemory.F90\
+                SPEC_RFLU_DeallocateMemoryEEv.F90\
+                SPEC_RFLU_DeallocateMemorySol.F90\
+                SPEC_RFLU_DeallocateMemoryTStep.F90\
+                SPEC_RFLU_DeallocateMemoryVert.F90\
+                SPEC_RFLU_EnforceBounds.F90\
+                SPEC_RFLU_InitFlowHardCode.F90\
+                SPEC_RFLU_InitFlowScratch.F90\
+                SPEC_RFLU_PrintFlowInfo.F90\
+                SPEC_RFLU_ReadBcFarfSection.F90\
+                SPEC_RFLU_ReadBcInflowSection.F90\
+                SPEC_RFLU_ReadBcInjectSection.F90\
+                SPEC_RFLU_ReadBcInputFile.F90\
+                SPEC_RFLU_ReadBcSectionDummy.F90\
+                SPEC_RFLU_SetEEv.F90\
                 SPEC_RFLU_SetVarInfo.F90\
                 SPEC_RFLU_SourceTerms_GL.F90
 endif

@@ -50,9 +50,6 @@
 
   IMPLICIT NONE
 
-  INCLUDE 'mpif.h'
-
-
 ! ----------------------------------------------------------------
 ! local variables
 
@@ -64,11 +61,16 @@
 !     ------------------------------------------------------------------------
 
   SUBROUTINE CHECK_ALLOC( ierr)
+    USE mpi
+
     INTEGER, INTENT(IN) :: ierr
+    INTEGER :: ierr2
+
     IF(ierr /= 0) THEN
        PRINT *, "ROCBRUN_ZN ERROR: unable to allocate memory"
-       CALL MPI_ABORT( MPI_COMM_WORLD, -1)
-    ENDIF
+       CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr2)
+       STOP
+    END IF
   END SUBROUTINE CHECK_ALLOC
 
   SUBROUTINE INITIALIZE_0D(G_ZN, comm, Indir, nxmax, To_read)
@@ -259,6 +261,9 @@
     SUBROUTINE GET_BURNING_RATE_1D( G_ZN, delt, P_mks, To, Tn,   &
               qc_mks, qc_old_mks, qr_mks, qr_old_mks, rhoc_mks, &
               Toa, rb_mks, fr, bflag, Tnp1, Tflame)
+
+      USE mpi
+
       TYPE (G_BURN_1D), POINTER :: G_ZN
 
       REAL(DBL), INTENT (IN)      :: delt, P_mks, To
@@ -296,6 +301,8 @@
 !     local variables
       REAL(DBL) :: P, qc, qc_old, qr, qr_old, rhoc, rb
       REAL(DBL) :: Ts, Tf
+
+      INTEGER :: ierr
 ! ---------------------------------------------------------------------------
 
 
@@ -349,7 +356,7 @@
           WRITE(*,*) 'ROCBURN_ZN: rank=',G_ZN%rank
           WRITE(*,*) '  Error: igntion model not ready'
           WRITE(*,*) '  job aborted'
-          CALL MPI_ABORT( MPI_COMM_WORLD, -1)
+          CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
           STOP
 
         ELSE

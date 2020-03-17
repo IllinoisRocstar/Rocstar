@@ -107,11 +107,11 @@ main(int argc,char *argv[])
   int nprocs;
   int nregions;
   int verbosity;
-  bool help;
-  bool isset;
+  //bool help;
+  //bool isset;
   
   // See if the help option is specified, if so give'm the usage text
-  if(help = GetOp("help",args)){
+  if(/*help = */GetOp("help",args)){
     Usage(program_name);
     exit(0);
   }
@@ -120,17 +120,17 @@ main(int argc,char *argv[])
   if(GetOp("casename",casename,args)){
     if(casename.empty()){ // casename was empty
       cerr << program_name 
-	   << ": Expected casename after casename option."
-	   << " Use -h for usage instructions."
-	   << endl;
+           << ": Expected casename after casename option."
+           << " Use -h for usage instructions."
+           << endl;
       exit(1);
     }
   }
   else{ // option not specified (but it's required!)
     cerr << program_name
-	 << ": Missing required casename option."
-	 << "  Use -h for usage instructions."
-	 << endl;
+         << ": Missing required casename option."
+         << "  Use -h for usage instructions."
+         << endl;
     exit(1);
   }      
 
@@ -138,24 +138,24 @@ main(int argc,char *argv[])
   if(GetOp("mode",smode,args)){
     if(smode.empty()){
       cerr << program_name
-	   << ": Expected mode value. "
-	   << "Use -h for usage instructions." << endl;
+           << ": Expected mode value. "
+           << "Use -h for usage instructions." << endl;
       exit(1);
     }
     istringstream Istr(smode);
     Istr >> mode;
     if(mode < 1 || mode > 2){ // Some jerk specified an invalid number
       cerr << program_name
-	   << ": Invalid mode value.  Use -h for usage "
-	   << "instructions." << endl;
+           << ": Invalid mode value.  Use -h for usage "
+           << "instructions." << endl;
       exit(1);
     }
   }
   else{ // option not specified (but it's required!)
     cerr << program_name
-	 << ": Missing mode value."
-	 << "  Use -h for usage instructions."
-	 << endl;
+         << ": Missing mode value."
+         << "  Use -h for usage instructions."
+         << endl;
     exit(1);
   }    
 
@@ -163,25 +163,25 @@ main(int argc,char *argv[])
   if(GetOp("nregions",sregs,args)){
     if(sregs.empty()){
       cerr << program_name
-	   << ": Expected number of regions. "
-	   << "Use -h for usage instructions." << endl;
+           << ": Expected number of regions. "
+           << "Use -h for usage instructions." << endl;
       exit(1);
     }
     istringstream Istr(sregs);
     Istr >> nregions;
     if(nregions < 1){ // Some jerk specified zero or a negative number
       cerr << program_name
-	   << ": Invalid number of regions.  Use -h for usage "
-	   << "instructions." << endl;
+           << ": Invalid number of regions.  Use -h for usage "
+           << "instructions." << endl;
       exit(1);
     }
   }
   else{ // option not specified
     if(mode == 1){  
       cerr << program_name
-	   << ": Missing number of regions."
-	   << "  Use -h for usage instructions."
-	   << endl;
+           << ": Missing number of regions."
+           << "  Use -h for usage instructions."
+           << endl;
       exit(1);
     }
     else {
@@ -193,16 +193,16 @@ main(int argc,char *argv[])
   if(GetOp("nprocs",sprocs,args)){
     if(sprocs.empty()){
       cerr << program_name
-	   << ": Expected number of processes. "
-	   << "Use -h for usage instructions." << endl;
+           << ": Expected number of processes. "
+           << "Use -h for usage instructions." << endl;
       exit(1);
     }
     istringstream Istr(sprocs);
     Istr >> nprocs;
     if(nprocs < 1){ // Some jerk specified zero or a negative number
       cerr << program_name
-	   << ": Invalid number of processes.  Use -h for usage "
-	   << "instructions." << endl;
+           << ": Invalid number of processes.  Use -h for usage "
+           << "instructions." << endl;
       exit(1);
     } 
     if(nprocs > nregions){
@@ -214,9 +214,9 @@ main(int argc,char *argv[])
   else{ // option not specified 
     if(mode == 1){
       cerr << program_name
-	   << ": Missing number of processes."
-	   << "  Use -h for usage instructions."
-	   << endl;
+           << ": Missing number of processes."
+           << "  Use -h for usage instructions."
+           << endl;
       exit(1);
     } 
     else {
@@ -228,16 +228,16 @@ main(int argc,char *argv[])
   if(GetOp("verbosity",sverb,args)){
     if(sverb.empty()){
       cerr << program_name
-	   << ": Expected verbosity level. "
-	   << "Use -h for usage instructions." << endl;
+           << ": Expected verbosity level. "
+           << "Use -h for usage instructions." << endl;
       exit(1);
     }
     istringstream Istr(sverb);
     Istr >> verbosity;
     if(verbosity < 0 || verbosity > 2){ // Some jerk specified a non numeric or negative
       cerr << program_name
-	   << ": Invalid verbosity value.  Use -h for usage "
-	   << "instructions." << endl;
+           << ": Invalid verbosity value.  Use -h for usage "
+           << "instructions." << endl;
       exit(1);
     }
   }

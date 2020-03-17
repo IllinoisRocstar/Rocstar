@@ -64,12 +64,7 @@ SUBROUTINE ReadForcesSection( global )
 ! Locals
 ! ==============================================================================    
 
-#ifdef RFLO
-  INTEGER, PARAMETER :: NVALS_MAX = 13
-#endif
-#ifdef RFLU
-  INTEGER, PARAMETER :: NVALS_MAX = 7  
-#endif
+  INTEGER, PARAMETER :: NVALS_MAX = 7
 
   LOGICAL :: defined(NVALS_MAX)
   CHARACTER(10) :: keys(NVALS_MAX)
@@ -87,25 +82,6 @@ SUBROUTINE ReadForcesSection( global )
 ! Specify keywords and search for them
 ! ******************************************************************************
 
-#ifdef RFLO
-  nVals = NVALS_MAX
-
-  keys(1)  = 'TYPE'
-  keys(2)  = 'AEROCOEFFS'
-  keys(3)  = 'REFLENGTH'
-  keys(4)  = 'REFAREA'
-  keys(5)  = 'REFXCOORD'
-  keys(6)  = 'REFYCOORD'
-  keys(7)  = 'REFZCOORD'
-  keys(8)  = 'BNDBOXXMIN'
-  keys(9)  = 'BNDBOXXMAX'
-  keys(10) = 'BNDBOXYMIN'
-  keys(11) = 'BNDBOXYMAX'
-  keys(12) = 'BNDBOXZMIN'
-  keys(13) = 'BNDBOXZMAX'
-#endif
-
-#ifdef RFLU
   nVals = NVALS_MAX
 
   keys(1) = 'FLAG'
@@ -115,73 +91,14 @@ SUBROUTINE ReadForcesSection( global )
   keys(5) = 'REFYCOORD'
   keys(6) = 'REFZCOORD'
   keys(7) = 'PATCHFLAG'    
-#endif  
-  
+
   CALL ReadSection(global,IF_INPUT,nVals,keys,vals,defined)
 
 ! ******************************************************************************
 ! Set variables
 ! ******************************************************************************
 
-#ifdef RFLO
-  IF (defined(1).eqv..true.) THEN
-                                       global%forcesOn = FORCES_NONE
-    IF (vals(1)>0.9 .AND. vals(1)<1.1) global%forcesOn = FORCES_PRESS
-    IF (vals(1) > 1.9)                 global%forcesOn = FORCES_VISC
-  ENDIF
-
-  IF (defined(2).eqv..true.) THEN
-                     global%aeroCoeffs = OFF
-    IF (vals(1)>0.9) global%aeroCoeffs = ACTIVE
-  ENDIF
-
-  IF (defined(3).eqv..true.) THEN 
-    global%forceRefLength = vals(3)
-  END IF ! defined
-  
-  IF (defined(4).eqv..true.) THEN 
-    global%forceRefArea   = vals(4)
-  END IF ! defined
-  
-  IF (defined(5).eqv..true.) THEN 
-    global%forceRefXCoord = vals(5)
-  END IF ! defined 
-  
-  IF (defined(6).eqv..true.) THEN 
-    global%forceRefYCoord = vals(6)
-  END IF ! defined 
-  
-  IF (defined(7).eqv..true.) THEN 
-    global%forceRefZCoord = vals(7)
-  END IF ! defined  
-  
-  IF (defined(8).eqv..true.) THEN 
-    global%acBndBoxXmin   = vals(8)
-  END IF ! defined  
-  
-  IF (defined(9).eqv..true.) THEN 
-    global%acBndBoxXmax   = vals(9)
-  END IF ! defined  
-  
-  IF (defined(10).eqv..true.) THEN 
-    global%acBndBoxYmin   = vals(10)
-  END IF ! defined  
-  
-  IF (defined(11).eqv..true.) THEN 
-    global%acBndBoxYmax   = vals(11)
-  END IF ! defined  
-  
-  IF (defined(12).eqv..true.) THEN 
-    global%acBndBoxZmin   = vals(12)
-  END IF ! defined  
-  
-  IF (defined(13).eqv..true.) THEN 
-    global%acBndBoxZmax   = vals(13)
-  END IF ! defined  
-#endif
-
-#ifdef RFLU
-  IF ( defined(1) .EQV. .TRUE. ) THEN 
+  IF ( defined(1) .EQV. .TRUE. ) THEN
     IF ( NINT(vals(1)) == 1 ) THEN 
       global%forceFlag = .TRUE.
     ELSE 
@@ -215,8 +132,7 @@ SUBROUTINE ReadForcesSection( global )
     ELSE 
       global%patchCoeffFlag = .FALSE.
     END IF ! NINT
-  END IF ! defined        
-#endif
+  END IF ! defined
 
 ! ******************************************************************************
 ! End

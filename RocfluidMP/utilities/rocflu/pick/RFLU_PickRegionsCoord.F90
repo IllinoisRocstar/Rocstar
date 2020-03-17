@@ -28,7 +28,8 @@
 !   bounding box; if yes, flag region as active, otherwise as inactive.
 !
 ! Input: 
-!   pRegion		Pointer to region data
+!   regions     Region data
+!   pRegion     Pointer to region data
 !
 ! Output: None.
 !

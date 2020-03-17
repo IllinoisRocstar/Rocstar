@@ -38,7 +38,6 @@ MODULE M_ROCBURN_2D
 
   IMPLICIT NONE
   INCLUDE 'comf90.h'
-  INCLUDE 'mpif.h'
 
   INTEGER, PARAMETER :: MODEL_APN = 1, MODEL_PY = 2, MODEL_ZN = 3
   INTEGER, PARAMETER :: NO_TBL = 0
@@ -50,11 +49,16 @@ MODULE M_ROCBURN_2D
 
 CONTAINS
 
-  SUBROUTINE CHECK_ALLOC( ierr) 
+  SUBROUTINE CHECK_ALLOC(ierr)
+    USE mpi
+
     INTEGER, INTENT(IN) :: ierr
+    INTEGER :: ierr2
+
     IF(ierr /= 0) THEN
        PRINT *, "ROCBRUN ERROR: unable to allocate memory"
-       CALL MPI_ABORT( MPI_COMM_WORLD, -1)
+       CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr2)
+       STOP
     END IF
   END SUBROUTINE CHECK_ALLOC
 
@@ -82,6 +86,8 @@ CONTAINS
 
   SUBROUTINE INITIALIZE( G_b, MAN_INIT, inSurf, inInt, INIT_0D, INIT_1D,  &
                          IN_obt_attr)
+
+    USE mpi
 
     TYPE(list_block), POINTER   :: G_b
     INTEGER, INTENT(IN)         :: MAN_INIT, IN_obt_attr
@@ -412,6 +418,7 @@ CONTAINS
   SUBROUTINE UPDATE( G_b, timestamp, dt, MAN_UPDATE, GET_FILM_COEFF_1D, &
        GET_TIME_STEP_1D, GET_BURNING_RATE_1D)
 
+    USE mpi
 
 !!!-------------------------------------------------
     TYPE(list_block), POINTER :: G_b

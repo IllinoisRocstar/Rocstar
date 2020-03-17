@@ -165,11 +165,11 @@ public:
    *   verbose level, an integer greater than -1
    * - lazy (int, 0)      
    *   check quality before smoothing? 0 or 1
-   * - tol (float, 0.0)       
+   * - tol (double, 0.0)
    *   looping quality tolerance [0,180]
    * - niter (int, 1)     
    *   max # iterations for smoothing
-   * - ctol (float, .99)    
+   * - ctol (double, .99)
    *   convergence subcycle tolerance [0,1]
    * - ncycle (int, 1)
    *   max # subcycles for convergence
@@ -463,7 +463,7 @@ protected: // Variables not currently modifiable via set_option
    const COM::Window           *_usr_window;         ///< The user's window
    COM::Window                 *_buf_window;          ///< The buffer window
 
-   std::vector<MAP::Pane_dual_connectivity*> _dcs;   // Pane dual connectivities 
+   std::vector<MAP::Pane_dual_connectivity*> _dcs;   ///< Pane dual connectivities
    
   bool                         _is_pmesh;            ///< pmesh or mesh ?
 
@@ -488,14 +488,14 @@ protected: // Variables not currently modifiable via set_option
 
    int _lazy; ///< Check quality before smoothing?
 
-   float _tol; ///< Smoother iterating tolerance
+   double _tol; ///< Smoother iterating tolerance
    // Smoother loops until either 
    //   worst element quality > tol 
    //   OR _niter iterations reached
 
    int _niter; ///< Maximum number of iterations for smoothing
 
-   float _ctol; ///< Subcycling tolerance 
+   double _ctol; ///< Subcycling tolerance
    // Parallel mesquite subcycles for convergence until either 
    //      (post communication quality)/(pre communication quality) > _tol
    //      OR _ncycle cycles performed.
@@ -509,15 +509,15 @@ protected: // Variables not currently modifiable via set_option
 
    int _invert; ///< If true (default false), then invert the mesh.
 
-   float _maxdisp; ///< Maximum displacement allowed
+   double _maxdisp; ///< Maximum displacement allowed
 
-   int _smoothfreq;         /// Smooth every _smoothfreq'th call
+   int _smoothfreq;         ///< Smooth every _smoothfreq'th call
  
-   int N;                   /// originally a static in smooth()
+   int N;                   ///< originally a static in smooth()
 
-   double disp_tally;        /// originally a static in check_displacements
+   double disp_tally;        ///< originally a static in check_displacements
 
-  float _disp_thresh; // Threshold for smoothing trigger
+   double _disp_thresh; ///< Threshold for smoothing trigger
 };
 
 MOP_END_NAMESPACE

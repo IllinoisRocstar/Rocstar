@@ -39,12 +39,7 @@
 MODULE ModRocstar
 
   USE ModGlobal, ONLY     : t_global
-#ifdef RFLO
-  USE ModDataStruct, ONLY : t_region
-#endif
-#ifdef RFLU
   USE ModDataStruct, ONLY: t_level
-#endif
   IMPLICIT NONE
 
 #ifdef GENX
@@ -55,12 +50,7 @@ MODULE ModRocstar
     LOGICAL :: isDummy
 
     TYPE(t_global), POINTER :: global
-#ifdef RFLO
-    TYPE(t_region), POINTER :: regions(:)
-#endif 
-#ifdef RFLU
     TYPE(t_level), POINTER :: levels(:)
-#endif
   END TYPE t_globalGenx
 
 CONTAINS  

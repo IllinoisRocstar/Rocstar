@@ -12,55 +12,55 @@
 #
 ################################################################################
 
-  SRCF90+=	PEUL_BuildVersionString.F90
+  SRCF90+=      PEUL_BuildVersionString.F90
 
 ifdef RFLO
-  SRCF90+=	PEUL_ModInterfaces.F90\
-		PEUL_ModParameters.F90\
+  SRCF90+=      PEUL_ModInterfaces.F90\
+                PEUL_ModParameters.F90\
                 PEUL_AllocateDataBuffers.F90\
-  		PEUL_AllocateMemory.F90\
-		PEUL_BcondInflow.F90\
-		PEUL_BcondInjection.F90\
-		PEUL_BcondOutflow.F90\
-		PEUL_BcondSlipWall.F90\
-		PEUL_BcondSymmetry.F90\
+                PEUL_AllocateMemory.F90\
+                PEUL_BcondInflow.F90\
+                PEUL_BcondInjection.F90\
+                PEUL_BcondOutflow.F90\
+                PEUL_BcondSlipWall.F90\
+                PEUL_BcondSymmetry.F90\
                 PEUL_BoundaryConditionsRecv.F90\
                 PEUL_BoundaryConditionsSend.F90\
-		PEUL_BoundaryConditionsSet.F90\
-		PEUL_CentralDissipation.F90\
-		PEUL_CentralFlux.F90\
-		PEUL_CentralFluxPatch.F90\
+                PEUL_BoundaryConditionsSet.F90\
+                PEUL_CentralDissipation.F90\
+                PEUL_CentralFlux.F90\
+                PEUL_CentralFluxPatch.F90\
                 PEUL_ClearSendRequests.F90\
-		PEUL_ConvectiveFluxes.F90\
-		PEUL_CorrectCornerEdgeCells.F90\
-		PEUL_DerivedInputValues.F90\
-		PEUL_EnforcePositivity.F90\
-		PEUL_ExchangeCornerEdgeCells.F90\
-		PEUL_ExchangeDummyConf.F90\
-		PEUL_InitInputValues.F90\
-		PEUL_InitSolution.F90\
-		PEUL_PrintUserInput.F90\
-		PEUL_ReadBcFarfSection.F90\
-		PEUL_ReadBcInflowSection.F90\
-		PEUL_ReadBcInjectSection.F90\
-		PEUL_ReadBcInputFile.F90\
-		PEUL_ReadConPartPtypeSection.F90\
-		PEUL_ReadConPartSection.F90\
-		PEUL_ReadInputFile.F90\
-		PEUL_ReadSolution.F90\
-		PEUL_ReadSolutionRegion.F90\
-		PEUL_ReceiveCornerEdgeCells.F90\
+                PEUL_ConvectiveFluxes.F90\
+                PEUL_CorrectCornerEdgeCells.F90\
+                PEUL_DerivedInputValues.F90\
+                PEUL_EnforcePositivity.F90\
+                PEUL_ExchangeCornerEdgeCells.F90\
+                PEUL_ExchangeDummyConf.F90\
+                PEUL_InitInputValues.F90\
+                PEUL_InitSolution.F90\
+                PEUL_PrintUserInput.F90\
+                PEUL_ReadBcFarfSection.F90\
+                PEUL_ReadBcInflowSection.F90\
+                PEUL_ReadBcInjectSection.F90\
+                PEUL_ReadBcInputFile.F90\
+                PEUL_ReadConPartPtypeSection.F90\
+                PEUL_ReadConPartSection.F90\
+                PEUL_ReadInputFile.F90\
+                PEUL_ReadSolution.F90\
+                PEUL_ReadSolutionRegion.F90\
+                PEUL_ReceiveCornerEdgeCells.F90\
                 PEUL_ReceiveDummyVals.F90\
-		PEUL_ResidualSmoothingCoeffs.F90\
-		PEUL_ResidualSmoothing.F90\
-		PEUL_SendCornerEdgeCells.F90\
-		PEUL_SetCornerEdgeCells.F90\
-		PEUL_SourceEqEul.F90\
-		PEUL_SourceTerms.F90\
-		PEUL_SpectralRadii.F90\
+                PEUL_ResidualSmoothingCoeffs.F90\
+                PEUL_ResidualSmoothing.F90\
+                PEUL_SendCornerEdgeCells.F90\
+                PEUL_SetCornerEdgeCells.F90\
+                PEUL_SourceEqEul.F90\
+                PEUL_SourceTerms.F90\
+                PEUL_SpectralRadii.F90\
                 PEUL_SendDummyConf.F90\
-		PEUL_UserInput.F90\
-		PEUL_WriteSolution.F90
+                PEUL_UserInput.F90\
+                PEUL_WriteSolution.F90
 endif
 
 ifdef RFLU

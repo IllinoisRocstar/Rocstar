@@ -81,8 +81,8 @@ SUBROUTINE PLAG_BinSortSpatialDist ( iReg, iLev, region, iRegBin )
   REAL(RFREAL)          :: xMinRange
   REAL(RFREAL), DIMENSION(0:500) :: compAlBin,compAlOxBin,diam32Bin,diam43Bin,&
                                     diam2Bin,diam3Bin,diam4Bin,massAlBin,     &
-				    massAlOxBin,massTotBin,uVelBin,vVelBin,   &
-				    volBin,wVelBin,xMomBin,yBin,yMomBin,zMomBin
+                                    massAlOxBin,massTotBin,uVelBin,vVelBin,   &
+                                    volBin,wVelBin,xMomBin,yBin,yMomBin,zMomBin
   REAL(RFREAL), POINTER :: cv(:,:), dv(:,:)
 
   TYPE(t_global), POINTER :: global
@@ -229,9 +229,9 @@ SUBROUTINE PLAG_BinSortSpatialDist ( iReg, iLev, region, iRegBin )
   DO iBin = 1, nBins
     WRITE(IF_PLOT,1020,err=10) iBin,(yBin(iBin)-yHeightMin)/yHeight,sizeBin(iBin),&
                                NINT(compAlBin(iBin)*100.0_RFREAL),&
-			       NINT(compAlOxBin(iBin)*100.0_RFREAL), &
-			       NINT(diam32Bin(iBin)),NINT(diam43Bin(iBin)),&
-			       uVelBin(iBin),vVelBin(iBin),wVelBin(iBin)
+                               NINT(compAlOxBin(iBin)*100.0_RFREAL), &
+                               NINT(diam32Bin(iBin)),NINT(diam43Bin(iBin)),&
+                               uVelBin(iBin),vVelBin(iBin),wVelBin(iBin)
   ENDDO ! iBin
 
 ! close file, handle errors ---------------------------------------------------
@@ -261,8 +261,8 @@ SUBROUTINE PLAG_BinSortSpatialDist ( iReg, iLev, region, iRegBin )
   DO iBin = 1, nBins
     WRITE(IF_PLOT,1030,err=10) iBin,(yBin(iBin)-yHeightMin)/yHeight,sizeBin(iBin),&
                                massAlBin(iBin),massAlOxBin(iBin),massTotBin(iBin),&
-			       diam2Bin(iBin),diam3Bin(iBin),diam4Bin(iBin),&
-			       xMomBin(iBin),yMomBin(iBin),zMomBin(iBin)
+                               diam2Bin(iBin),diam3Bin(iBin),diam4Bin(iBin),&
+                               xMomBin(iBin),yMomBin(iBin),zMomBin(iBin)
   ENDDO ! iBin
 
 ! close file, handle errors ---------------------------------------------------

@@ -81,7 +81,6 @@ MODULE ModInterfacesPeriodic
     TYPE(t_region), POINTER :: regions(:)
   END SUBROUTINE PERI_UserInput
 
-#ifdef RFLU
 ! =============================================================================
 ! Rocflu-specific routines
 ! =============================================================================
@@ -90,7 +89,6 @@ MODULE ModInterfacesPeriodic
     USE ModDataStruct, ONLY : t_region
     TYPE(t_region), POINTER :: region
   END SUBROUTINE PERI_RFLU_DeallocateMemory
-#endif
 
   END INTERFACE
 

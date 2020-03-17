@@ -118,67 +118,6 @@ MODULE ModInterfacesRadiation
     TYPE(t_region), POINTER :: regions(:)
   END SUBROUTINE RADI_UserInput
 
-#ifdef RFLO
-! =============================================================================
-! Rocflo-specific routines
-! =============================================================================
-
-  SUBROUTINE RADI_RFLO_FlimAllocDataBuffers( regions,iReg )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    INTEGER :: iReg
-  END SUBROUTINE RADI_RFLO_FlimAllocDataBuffers
-
-  SUBROUTINE RADI_RFLO_FlimBndConditionsRecv( regions,iReg )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    INTEGER :: iReg
-  END SUBROUTINE RADI_RFLO_FlimBndConditionsRecv
-
-  SUBROUTINE RADI_RFLO_FlimBndConditionsSend( regions,iReg )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    INTEGER :: iReg
-  END SUBROUTINE RADI_RFLO_FlimBndConditionsSend
-
-  SUBROUTINE RADI_RFLO_FlimBndConditionsSet( regions,iReg )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    INTEGER :: iReg
-  END SUBROUTINE RADI_RFLO_FlimBndConditionsSet
-
-  SUBROUTINE RADI_RFLO_FlimClearSendRequests( regions,iReg )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    INTEGER :: iReg
-  END SUBROUTINE RADI_RFLO_FlimClearSendRequests
-
-  SUBROUTINE RADI_RFLO_FlimResSmoothing( region )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region) :: region
-  END SUBROUTINE RADI_RFLO_FlimResSmoothing
-
-  SUBROUTINE RADI_RFLO_FlimResSmoothingCoeff( region )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region) :: region
-  END SUBROUTINE RADI_RFLO_FlimResSmoothingCoeff
-
-  SUBROUTINE RADI_RFLO_FlimSpectralRadii( region )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region) :: region
-  END SUBROUTINE RADI_RFLO_FlimSpectralRadii
-
-  SUBROUTINE RADI_RFLO_ReadSolution( regions )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-  END SUBROUTINE RADI_RFLO_ReadSolution
-
-  SUBROUTINE RADI_RFLO_WriteSolution( regions )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-  END SUBROUTINE RADI_RFLO_WriteSolution
-#endif
-
   END INTERFACE
 
 END MODULE ModInterfacesRadiation

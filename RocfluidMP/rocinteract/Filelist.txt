@@ -13,47 +13,47 @@
 ################################################################################
 
 ifdef INRT
-  SRCF90+=	INRT_ModInterfaces.F90\
-		INRT_ModParameters.F90\
-		INRT_AllocateAuxillary.F90\
-		INRT_AugmentConSources.F90\
-		INRT_AugmentDisSources.F90\
-		INRT_BuildVersionString.F90\
-		INRT_BurnStatusUpdate.F90\
-		INRT_CalcBurning.F90\
-		INRT_CalcDrag.F90\
-		INRT_CalcHeatTransferNonBurn.F90\
-		INRT_CalcScouring.F90\
-		INRT_CheckUserInput.F90\
-		INRT_ComputeMaxEdges.F90\
-		INRT_DefineBoilingRegulation.F90\
-		INRT_DefineBurning.F90\
-		INRT_DefineDrag.F90\
-		INRT_DefineHeatTransferNonBurn.F90\
-		INRT_DefineScouring.F90\
-		INRT_DetermineTokens.F90\
-		INRT_FinishMomentumEdge.F90\
-		INRT_Initialize.F90\
-		INRT_PrintMaterialInput.F90\
-		INRT_PrintUserInput.F90\
-		INRT_ReadBoilingRegulation.F90\
-		INRT_ReadBurning.F90\
-		INRT_ReadDefaultSection.F90\
-		INRT_ReadDrag.F90\
-		INRT_ReadHeatTransferNonBurn.F90\
-		INRT_ReadInputFile.F90\
-		INRT_ReadMaterialInput.F90\
-		INRT_ReadScouring.F90\
-		INRT_SetActiveness.F90\
-		INRT_SetMaterial.F90\
-		INRT_SetParticleTemp.F90\
-		INRT_SetPermission.F90\
-		INRT_SourceTerms.F90\
-		INRT_UserInput.F90\
-		INRT_VaporEnergyConversion.F90
+  SRCF90+=      INRT_ModInterfaces.F90\
+                INRT_ModParameters.F90\
+                INRT_AllocateAuxillary.F90\
+                INRT_AugmentConSources.F90\
+                INRT_AugmentDisSources.F90\
+                INRT_BuildVersionString.F90\
+                INRT_BurnStatusUpdate.F90\
+                INRT_CalcBurning.F90\
+                INRT_CalcDrag.F90\
+                INRT_CalcHeatTransferNonBurn.F90\
+                INRT_CalcScouring.F90\
+                INRT_CheckUserInput.F90\
+                INRT_ComputeMaxEdges.F90\
+                INRT_DefineBoilingRegulation.F90\
+                INRT_DefineBurning.F90\
+                INRT_DefineDrag.F90\
+                INRT_DefineHeatTransferNonBurn.F90\
+                INRT_DefineScouring.F90\
+                INRT_DetermineTokens.F90\
+                INRT_FinishMomentumEdge.F90\
+                INRT_Initialize.F90\
+                INRT_PrintMaterialInput.F90\
+                INRT_PrintUserInput.F90\
+                INRT_ReadBoilingRegulation.F90\
+                INRT_ReadBurning.F90\
+                INRT_ReadDefaultSection.F90\
+                INRT_ReadDrag.F90\
+                INRT_ReadHeatTransferNonBurn.F90\
+                INRT_ReadInputFile.F90\
+                INRT_ReadMaterialInput.F90\
+                INRT_ReadScouring.F90\
+                INRT_SetActiveness.F90\
+                INRT_SetMaterial.F90\
+                INRT_SetParticleTemp.F90\
+                INRT_SetPermission.F90\
+                INRT_SourceTerms.F90\
+                INRT_UserInput.F90\
+                INRT_VaporEnergyConversion.F90
 
   ifdef RFLO
-    SRCF90+=	INRT_TwoDimAverage.F90
+    SRCF90+=    INRT_TwoDimAverage.F90
   endif
 
   ifdef RFLU

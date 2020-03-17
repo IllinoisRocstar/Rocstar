@@ -161,8 +161,8 @@ PROGRAM ROCVAV_Post
 
 ! read argument list ----------------------------------------------------------
 
-  CALL GETARG(1,global%casename)
-  CALL GETARG(2,verbosity)
+  CALL GET_COMMAND_ARGUMENT(1,global%casename)
+  CALL GET_COMMAND_ARGUMENT(2,verbosity)
 
   IF (LEN_TRIM(global%casename)==0 .OR. LEN_TRIM(verbosity)==0) THEN
     WRITE(STDOUT,'(/,A,//,5(A,/))') &

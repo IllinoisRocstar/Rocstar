@@ -74,9 +74,6 @@ MODULE ModPartEul
     REAL(RFREAL), POINTER :: cv(:,:), cvOld(:,:), dv(:,:), tv(:,:)
     REAL(RFREAL), POINTER :: rhs(:,:), rhsSum(:,:), diss(:,:), fterm(:,:)
 
-#ifdef RFLO
-    REAL(RFREAL), POINTER :: srad(:,:), epsIrs(:,:)
-#endif
   END TYPE t_peul
 
 ! communication data structure -------------------------------------------------

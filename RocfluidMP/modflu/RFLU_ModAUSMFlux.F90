@@ -202,16 +202,16 @@ END SUBROUTINE RFLU_AUSM_ComputeFlux
 !   ul          x-component of velocity of left state
 !   vl          y-component of velocity of left state
 !   wl          z-component of velocity of left state   
-!   Hl		Total enthalpy of left state
-!   al		Speed of sound of left state
+!   Hl          Total enthalpy of left state
+!   al          Speed of sound of left state
 !   pl          Pressure of left state
 !   rr          Density of right state
 !   ur          x-component of velocity of right state
 !   vr          y-component of velocity of right state
 !   wr          z-component of velocity of right state  
 !   pr          Pressure of right state
-!   Hr		Total enthalpy of right state
-!   ar		Speed of sound of right state
+!   Hr          Total enthalpy of right state
+!   ar          Speed of sound of right state
 !
 ! Output: 
 !   flx         Fluxes

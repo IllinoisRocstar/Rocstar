@@ -602,25 +602,10 @@ protected:
     msq_std::string name;
   };
 
-#if 0
-  tagStruct::tagStruct()
-    : size(0), type(0), edata(NULL), ndata(NULL), dval(NULL)
-  {
-    ;
-  }
-#endif
-
   std::map<msq_std::string,tagStruct> s_to_t;
 
 };
   
-
-#if 0
-inline size_t Mesquite::vertices_in_topology(Mesquite::EntityTopology topo)
-{
-  return TopologyInfo::corners( topo );
-}
-#endif
 
 //! A class for iterating through a Panes vertices or elements.
 class MyEntityIterator : public Mesquite::EntityIterator{

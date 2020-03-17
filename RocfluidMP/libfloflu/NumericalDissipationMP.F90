@@ -65,9 +65,7 @@ SUBROUTINE NumericalDissipationMP( region )
   INTEGER :: spaceDiscr,spaceOrder
   TYPE(t_global), POINTER :: global
 
-#ifdef RFLU
   TYPE(t_region), POINTER :: pRegion
-#endif
 
 !******************************************************************************
 

@@ -1133,57 +1133,6 @@ eigen_analyze_vertex( Vector_3<double> A_io[3], Vector_3<double> &b_io,
   return nrank;
 }
 
-#if 0
-// Solve the minimization problem (x^T)Ax+2b^Tx with eigen-decomposition.
-int Rocmop::
-eigen_analyze_vertex( Vector_3<double> A_io[3], Vector_3<double> &b_io, 
-		      Vector_3<double> *nrm_nz) {
-
-  // A_io will be replaced by its eigenvectors.
-  Vector_3<double> *es = A_io;
-
-  // Create a backup of b_io, as b_io will be replaced by eigenvalues.
-  const Vector_3<double> b = b_io;
-  Vector_3<double> &lambdas = b_io;
-
-  // Compute the eigenvalues and eigenvectors of the matrix. 
-  // Note that lambdas will be in decreasing order!
-  compute_eigenvectors( es, lambdas);
-
-  int orank;
-  double eps = lambdas[0]*1.e-8;
-  double gs[] = { b*es[0]/lambdas[0],
-		  b*es[1]/std::max(eps,lambdas[1]), 
-		  b*es[2]/std::max(eps,lambdas[2]) };
-  double gs_abs[] = {std::abs(gs[0]), std::abs(gs[1]), std::abs(gs[2])};
-
-  // Classify offset intersection based on acos(-b.norm()/rv) and lambdas
-  if ( lambdas[2] >= _saliency_crn*
-       std::max(lambdas[0]-lambdas[1], lambdas[1]-lambdas[2]) || 
-       gs_abs[2]>=gs_abs[1] && gs_abs[2] >= gs_abs[0])
-    orank = 3;
-  else if ( gs_abs[1] >= gs_abs[0] || lambdas[0]*_dir_thres<lambdas[1]) {
-    if ( lambdas[1] < lambdas[0]*_eig_thres) { 
-      lambdas[1] = lambdas[0]*_eig_thres;
-      std::cerr << "Rocmop Warning: Mesh contains near cusp." << std::endl;
-    }
-    orank = 2; // ridge vertex
-  }
-  else
-    orank = 1; // smooth vertex
-
-  if ( !_reorthog || orank==1)
-    *nrm_nz=( es[0]*b>0)?-es[0]:es[0];
-  else {
-    // Solve for x within primary space
-    Vector_3<double> x(0,0,0);
-    for ( int k=0; k<orank; ++k) x -= gs[k]*es[k];
-    *nrm_nz = x.normalize();
-  }
-  return orank;
-}
-#endif
-
 // Compute eigenvalues and eigenvectors of a 3x3 matrix A.
 // At output, the eigenvalues are saved in lambdas in decending order.
 // The columns of A are replaced by the orthonormal eigenvectors. 

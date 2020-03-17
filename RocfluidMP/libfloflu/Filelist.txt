@@ -13,16 +13,16 @@
 ################################################################################
 
 ifdef RFLO
-  SRCF90+= 	AfterUpdateMP.F90\
-		AllocateMemoryWork.F90\
-		AverageVecVar.F90\
-		BcondFarfieldPerf.F90\
-		BcondInflowPerf.F90\
+  SRCF90+=      AfterUpdateMP.F90\
+                AllocateMemoryWork.F90\
+                AverageVecVar.F90\
+                BcondFarfieldPerf.F90\
+                BcondInflowPerf.F90\
                 BcondInjectionPerf.F90\
                 BcondOutflowPerf.F90\
                 BuildPatchIdentifier.F90\
                 CellCentroid.F90\
-		CellGradientsMP.F90\
+                CellGradientsMP.F90\
                 ControlVolume.F90\
                 ConvectiveFluxes.F90\
                 ConvectiveFluxesMP.F90\
@@ -32,7 +32,7 @@ ifdef RFLO
                 FaceVector.F90\
                 GlobalCommunicationMP.F90\
                 InitCommunicationMP.F90\
-		IntegrateSourceTermsMP.F90\
+                IntegrateSourceTermsMP.F90\
                 MakeNumberedKeys.F90\
                 MixtPerf_C.F90\
                 MixtPerf_D.F90\
@@ -60,7 +60,7 @@ ifdef RFLO
                 ReadInputUtil.F90\
                 ReadMultigridSection.F90\
                 ReadNumericsSection.F90\
-		ReadPostSection.F90\
+                ReadPostSection.F90\
                 ReadProbeSection.F90\
                 ReadRandomSection.F90\
                 ReadReferenceSection.F90\
@@ -68,10 +68,10 @@ ifdef RFLO
                 ReadTimestepSection.F90\
                 ReadTransformSection.F90\
                 ReadViscositySection.F90\
-		RkInitGeneric.F90\
-		RkInitMP.F90\
-		RkInitPointScalar.F90\
-		RkUpdateGeneric.F90\
+                RkInitGeneric.F90\
+                RkInitMP.F90\
+                RkInitPointScalar.F90\
+                RkUpdateGeneric.F90\
                 RkUpdateMP.F90\
                 RkUpdatePointScalar.F90\
                 RungeKuttaMP.F90\
@@ -94,29 +94,29 @@ ifdef RFLO
                 WriteThrust.F90\
                 WriteTotalMass.F90\
                 ZeroDummyCellsMP.F90\
-		ZeroResidualsMP.F90
-endif                
+                ZeroResidualsMP.F90
+endif
 
 ifdef RFLU
-  SRCF90+= 	AfterUpdateMP.F90\
-		BcondFarfieldPerf.F90\
-		BcondInflowPerf.F90\
+  SRCF90+=      AfterUpdateMP.F90\
+                BcondFarfieldPerf.F90\
+                BcondInflowPerf.F90\
                 BcondInflowPerf_GL.F90\
                 BcondInjectionPerf.F90\
                 BcondOutflowPerf.F90\
                 BcondOutflowPerf_GL.F90\
                 BuildPatchIdentifier.F90\
                 CellCentroid.F90\
-		CellGradientsMP.F90\
+                CellGradientsMP.F90\
                 ControlVolume.F90\
                 ConvectiveFluxes.F90\
                 ConvectiveFluxesMP.F90\
-		DescaleGridSpeeds.F90\
+                DescaleGridSpeeds.F90\
                 FaceCentroid.F90\
                 FaceVector.F90\
-		IntegrateSourceTermsMP.F90\
+                IntegrateSourceTermsMP.F90\
                 InitCommunicationMP.F90\
-		MakeNumberedKeys.F90\
+                MakeNumberedKeys.F90\
                 MixtGasLiq_C.F90\
                 MixtGasLiq_E.F90\
                 MixtGasLiq_P.F90\
@@ -139,7 +139,7 @@ ifdef RFLU
                 PerfgasDependentVars.F90\
                 PerfgasGasVars.F90\
                 PerfgasTransportVars.F90\
-		ReadAccelerationSection.F90\
+                ReadAccelerationSection.F90\
                 ReadFlowSection.F90\
                 ReadForcesSection.F90\
                 ReadFormatsSection.F90\
@@ -147,27 +147,27 @@ ifdef RFLU
                 ReadInitFlowSection.F90\
                 ReadInputFile.F90\
                 ReadInputUtil.F90\
-		ReadMixtureSection.F90\
+                ReadMixtureSection.F90\
                 ReadMultigridSection.F90\
                 ReadNumericsSection.F90\
-		ReadPostSection.F90\
-		ReadPrepSection.F90\
+                ReadPostSection.F90\
+                ReadPrepSection.F90\
                 ReadProbeSection.F90\
                 ReadRandomSection.F90\
                 ReadReferenceSection.F90\
                 ReadRocketSection.F90\
                 ReadThrustSection.F90\
                 ReadTimestepSection.F90\
-		ReadTimeZoomingSection.F90\
+                ReadTimeZoomingSection.F90\
                 ReadTransformSection.F90\
                 ReadViscositySection.F90\
-		ReflectPosition.F90\
-		ReflectVector.F90\
-		RkInitGeneric.F90\
-		RkInitMP.F90\
-		RkInitSD.F90\
-		RkUpdateGeneric.F90\
-		RkUpdateMP.F90\
+                ReflectPosition.F90\
+                ReflectVector.F90\
+                RkInitGeneric.F90\
+                RkInitMP.F90\
+                RkInitSD.F90\
+                RkUpdateGeneric.F90\
+                RkUpdateMP.F90\
                 RungeKuttaMP.F90\
                 ScaleGridSpeeds.F90\
                 ScaleRotateVector.F90\
@@ -178,21 +178,21 @@ ifdef RFLU
                 UpdateDependentVarsMP.F90\
                 UpdateTbc.F90\
                 UpdateTbcPiecewise.F90\
-		UpdateTbcSinusoidal.F90\
-		UpdateTbcStochastic.F90\
-		UpdateTbcWhitenoise.F90\
-		ViscousFluxes.F90\
-		ViscousFluxesMP.F90\
-		WriteConvergence.F90\
-		WriteProbe.F90\
-		WriteTotalMass.F90\
-		ZeroDummyCellsMP.F90\
-		ZeroResidualsMP.F90
-endif                
-                
-ifdef STATS                
-  SRCF90+= 	ReadStatisticSection.F90
-endif               
+                UpdateTbcSinusoidal.F90\
+                UpdateTbcStochastic.F90\
+                UpdateTbcWhitenoise.F90\
+                ViscousFluxes.F90\
+                ViscousFluxesMP.F90\
+                WriteConvergence.F90\
+                WriteProbe.F90\
+                WriteTotalMass.F90\
+                ZeroDummyCellsMP.F90\
+                ZeroResidualsMP.F90
+endif
+
+ifdef STATS
+  SRCF90+=      ReadStatisticSection.F90
+endif
 
 ################################################################################
 #

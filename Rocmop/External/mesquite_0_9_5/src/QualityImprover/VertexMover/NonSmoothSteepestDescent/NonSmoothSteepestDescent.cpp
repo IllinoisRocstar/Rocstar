@@ -125,7 +125,7 @@ void NonSmoothSteepestDescent::optimize_vertex_positions(PatchData &pd,
     msq_std::vector<size_t> indices;
     for (int i99=0;i99<numElements;i99++) {
       mConnectivity[i99].get_vertex_indices(indices);
-      MSQ_PRINT(3)("connectivity: %d %d %d\n",indices[0],
+      MSQ_PRINT(3)("connectivity: %zu %zu %zu\n",indices[0],
 	      indices[1],indices[2]);
     }
   }

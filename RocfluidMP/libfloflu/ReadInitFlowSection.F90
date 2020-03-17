@@ -70,13 +70,7 @@ SUBROUTINE ReadInitFlowSection(regions)
 ! ==============================================================================
 
   INTEGER :: i,iReg,nVals
-#ifdef RFLO
-  INTEGER :: brbeg, brend
-  INTEGER, PARAMETER :: NVALS_MAX = 1
-#endif
-#ifdef RFLU
   INTEGER, PARAMETER :: NVALS_MAX = 29
-#endif
 
   CHARACTER(10) :: keys(NVALS_MAX)
   LOGICAL :: defined(NVALS_MAX)
@@ -96,10 +90,6 @@ SUBROUTINE ReadInitFlowSection(regions)
 
   nVals = NVALS_MAX
 
-#ifdef RFLO
-  keys(1) = 'NDUMMY'
-#endif
-#ifdef RFLU
   keys( 1) = 'FLAG'
   keys( 2) = 'VELX'
   keys( 3) = 'VELY'
@@ -128,18 +118,8 @@ SUBROUTINE ReadInitFlowSection(regions)
   keys(26) = 'RVAL13'  
   keys(27) = 'RVAL14'
   keys(28) = 'RVAL15'
-  keys(29) = 'RVAL16'         
-#endif
+  keys(29) = 'RVAL16'
 
-
-#ifdef RFLO
-  CALL ReadregionSection( global,IF_INPUT,nVals,keys,vals, &
-                          brbeg,brend,defined )
-
-  IF (defined(1).eqv..true.) regions(brbeg:brend)%nDumCells = ABS(vals(1)+0.5_RFREAL)
-#endif
-
-#ifdef RFLU
   CALL ReadSection(global,IF_INPUT,nVals,keys,vals,defined )
 
   IF ( defined(1) .EQV. .FALSE. ) THEN
@@ -347,9 +327,8 @@ SUBROUTINE ReadInitFlowSection(regions)
       regions(iReg)%mixtInput%prepRealVal16 = REAL(CRAZY_VALUE_INT,KIND=RFREAL)
     ELSE
       regions(iReg)%mixtInput%prepRealVal16 = vals(29)
-    END IF ! defined        
-  END DO ! iReg           
-#endif
+    END IF ! defined
+  END DO ! iReg
 
 ! ******************************************************************************
 ! End

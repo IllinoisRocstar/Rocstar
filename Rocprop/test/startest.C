@@ -40,10 +40,10 @@
 
 using namespace std;
 
-COM_EXTERN_MODULE( Rocblas);
-COM_EXTERN_MODULE( Rocsurf);
-COM_EXTERN_MODULE( Rocprop);
-COM_EXTERN_MODULE( Rocout);
+COM_EXTERN_MODULE(Rocblas)
+COM_EXTERN_MODULE(Rocsurf)
+COM_EXTERN_MODULE(Rocprop)
+COM_EXTERN_MODULE(Rocout)
 
 void load_modules() {
   COM_LOAD_MODULE_STATIC_DYNAMIC(Rocblas, "BLAS");

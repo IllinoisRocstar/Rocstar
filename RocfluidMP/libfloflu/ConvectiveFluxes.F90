@@ -49,18 +49,9 @@ SUBROUTINE ConvectiveFluxes( region )
   USE ModError
   USE ModParameters
 
-#ifdef RFLU
   USE RFLU_ModNSCBC
 
   USE ModInterfaces, ONLY: RFLU_ComputeFluxInv
-#endif
-
-
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_GetDimensDummy, RFLO_GetCellOffset, &
-        RFLO_CentralFlux, RFLO_RoeFluxFirst, RFLO_RoeFluxSecond
-#include "Indexing.h"
-#endif
 
   IMPLICIT NONE
 
@@ -78,19 +69,11 @@ SUBROUTINE ConvectiveFluxes( region )
 ! Locals
 ! ==============================================================================
 
-#ifdef RFLO
-  INTEGER :: ibc, ic, idcbeg, idcend, iec, jdcbeg, jdcend, kdcbeg, kdcend
-  INTEGER :: iLev, iCOff, ijCOff
-#endif
-#ifdef RFLU
   INTEGER :: icg
-#endif
   INTEGER :: spaceDiscr, spaceOrder
   REAL(RFREAL), POINTER :: diss(:,:), rhs(:,:)
   TYPE(t_global), POINTER :: global
-#ifdef RFLU
   TYPE(t_region), POINTER :: pRegion
-#endif
 
 ! ******************************************************************************
 ! Start
@@ -105,68 +88,14 @@ SUBROUTINE ConvectiveFluxes( region )
 ! Get dimensions and pointers
 ! ******************************************************************************
 
-#ifdef RFLO
-  iLev = region%currLevel
-
-  CALL RFLO_GetDimensDummy( region,iLev,idcbeg,idcend,jdcbeg,jdcend, &
-                            kdcbeg,kdcend )
-  CALL RFLO_GetCellOffset( region,iLev,iCOff,ijCOff )
-  ibc = IndIJK(idcbeg,jdcbeg,kdcbeg,iCOff,ijCOff)
-  iec = IndIJK(idcend,jdcend,kdcend,iCOff,ijCOff)
-
-  diss => region%levels(iLev)%mixt%diss
-  rhs  => region%levels(iLev)%mixt%rhs
-#endif
-#ifdef RFLU
   pRegion => region
   
   diss => region%mixt%diss
   rhs  => region%mixt%rhs  
-#endif
 
   spaceDiscr = region%mixtInput%spaceDiscr
   spaceOrder = region%mixtInput%spaceOrder
 
-#ifdef RFLO
-! ******************************************************************************
-! Initialize residual (set = dissipation)
-! ******************************************************************************
-
-  DO ic=ibc,iec
-    rhs(CV_MIXT_DENS,ic) = -diss(CV_MIXT_DENS,ic)
-    rhs(CV_MIXT_XMOM,ic) = -diss(CV_MIXT_XMOM,ic)
-    rhs(CV_MIXT_YMOM,ic) = -diss(CV_MIXT_YMOM,ic)
-    rhs(CV_MIXT_ZMOM,ic) = -diss(CV_MIXT_ZMOM,ic)
-    rhs(CV_MIXT_ENER,ic) = -diss(CV_MIXT_ENER,ic)
-  ENDDO
-
-! ******************************************************************************
-! Compute fluxes
-! ******************************************************************************
-
-! ==============================================================================
-! 2nd-order central scheme
-! ==============================================================================
-
-  IF (spaceDiscr==DISCR_CEN_SCAL .AND. &
-      (spaceOrder==DISCR_ORDER_1 .OR. spaceOrder==DISCR_ORDER_2)) THEN
-    CALL RFLO_CentralFlux( region )
-  ENDIF
-
-! ==============================================================================
-! Roe upwind scheme 
-! ==============================================================================
-
-  IF (spaceDiscr == DISCR_UPW_ROE) THEN
-    IF (spaceOrder == DISCR_ORDER_1) THEN
-      CALL RFLO_RoeFluxFirst( region )
-    ELSE IF (spaceOrder == DISCR_ORDER_2) THEN
-      CALL RFLO_RoeFluxSecond( region )
-    ENDIF
-  ENDIF
-#endif
-
-#ifdef RFLU
 ! ******************************************************************************
 ! Initialize residual (set = dissipation). NOTE only need to do this for 
 ! unsteady flows because for steady flows this is now done by a dedicated 
@@ -208,7 +137,6 @@ SUBROUTINE ConvectiveFluxes( region )
   IF ( RFLU_NSCBC_DecideHaveNSCBC(pRegion) .EQV. .TRUE. ) THEN
     CALL RFLU_NSCBC_CompRhs(pRegion)
   END IF ! RFLU_NSCBC_DecideHaveNSCBC(pRegion)
-#endif
 
 ! ******************************************************************************
 ! End

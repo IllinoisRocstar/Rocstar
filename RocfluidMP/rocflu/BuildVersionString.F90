@@ -67,7 +67,7 @@ SUBROUTINE BuildVersionString(versionString)
 ! ==============================================================================
 
   CHARACTER(LEN=2) :: major,minor,patch
-  CHARACTER(LEN=3) :: build
+  CHARACTER(LEN=4) :: build
   CHARACTER(CHRLEN) :: date,RCSIdentString
 
 ! ******************************************************************************

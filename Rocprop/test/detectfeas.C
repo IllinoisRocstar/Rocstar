@@ -40,8 +40,8 @@
 
 using namespace std;
 
-COM_EXTERN_MODULE( Rocprop);
-COM_EXTERN_MODULE( Rocout);
+COM_EXTERN_MODULE(Rocprop)
+COM_EXTERN_MODULE(Rocout)
 
 void load_modules() {
   COM_LOAD_MODULE_STATIC_DYNAMIC(Rocprop, "PROP");
@@ -158,22 +158,18 @@ void output_solution( const string &wname, const char *timelevel,
     hdl = COM_get_dataitem_handle( (wname+".all").c_str());
 
     int OUT_set = COM_get_function_handle( "OUT.set_option");
-#if USE_CGNS
     if ( format != "HDF" && format != "hdf")
       COM_call_function( OUT_set, "format", "CGNS");
     else
-#endif
       COM_call_function( OUT_set, "format", "HDF");
   }
 
   std::string fname = wname+"_"+timelevel;
 
   if ( !COMMPI_Initialized()) {
-#if USE_CGNS
     if ( format != "HDF" && format != "hdf")
       fname.append(".cgns");
     else
-#endif
       fname.append(".hdf");
   }
   else fname.append("_");

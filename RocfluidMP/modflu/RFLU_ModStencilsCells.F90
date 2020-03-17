@@ -1403,12 +1403,12 @@ MODULE RFLU_ModStencilsCells
 ! Input:
 !   pRegion             Pointer to region
 !   icg                 Global cell index
-!   stencilSizeMax	Maximum allowed stencil size
-!   dir			Direction in which stencil is to be built
+!   stencilSizeMax      Maximum allowed stencil size
+!   dir                 Direction in which stencil is to be built
 !
 ! Output: 
-!   degr		Stencil size
-!   c2cs1D		Stencil
+!   degr                Stencil size
+!   c2cs1D              Stencil
 !
 ! Notes: None.
 !

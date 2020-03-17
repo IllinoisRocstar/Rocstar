@@ -30,6 +30,7 @@
 #include "MesqPane_95.h"
 #include "Element_accessors.hpp"
 #include "MsqVertex.hpp"
+#include <utility>
 
 using namespace MOP;
 using namespace std;
@@ -409,9 +410,9 @@ namespace Mesquite{
     int node_id = ((char*)vertex - (char*)NULL);		    
     std::vector<int> elist;
     _dc->incident_elements(node_id,elist);
-    return elist.size();
     if(_verb)
       cout << "MOP> MesqPane::vertex_get_attached_element_count finished" << endl;
+    return elist.size();
   }
 
   void MesqPane::vertex_get_attached_elements(VertexHandle vertex,
@@ -685,7 +686,7 @@ namespace Mesquite{
 			 "Unrecognized TagType.");
       break;
     }
-    s_to_t.insert(std::make_pair<msq_std::string,tagStruct>(tag_name,new_tag));
+    s_to_t.insert(std::make_pair(tag_name,new_tag));
     std::map<msq_std::string,tagStruct>::iterator pos;
     pos = s_to_t.find(tag_name);
     COM_assertion_msg(pos != s_to_t.end(),

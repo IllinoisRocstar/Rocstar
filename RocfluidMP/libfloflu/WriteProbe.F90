@@ -49,11 +49,7 @@ SUBROUTINE WriteProbe( regions,iReg )
   USE ModGlobal, ONLY     : t_global
   USE ModError
   USE ModParameters
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_GetCellOffset, RFLO_GetDimensPhys
 
-#include "Indexing.h"
-#endif
   IMPLICIT NONE
 
 ! ... parameters
@@ -88,16 +84,8 @@ SUBROUTINE WriteProbe( regions,iReg )
 
   nPeul = 0
 
-#ifdef RFLO
-#ifdef PEUL
-  IF (global%peulUsed) nPeul = regions(iReg)%peulInput%nPtypes
-#endif
-#endif
-
-#ifdef RFLU
 #ifdef SPEC
   IF (global%specUsed) nPeul = regions(iReg)%specInput%nSpecies
-#endif
 #endif
 
 ! loop over all specified probes ----------------------------------------------
@@ -106,51 +94,6 @@ SUBROUTINE WriteProbe( regions,iReg )
 
     wrtProbe = .false.
 
-#ifdef RFLO
-! - check if region number within range
-
-    IF (global%probePos(iprobe,1)<1 .OR. &
-        global%probePos(iprobe,1)>global%nRegions) &
-      CALL ErrorStop( global,ERR_PROBE_LOCATION,__LINE__ )
-
-! - prepare data
-
-    IF (regions(global%probePos(iprobe,1))%procid==global%myProcid .AND. &
-        regions(global%probePos(iprobe,1))%active==ACTIVE .AND. &
-        iReg==global%probePos(iprobe,1)) THEN
-
-! --- get dimensions
-
-      iLev = regions(iReg)%currLevel
-
-      CALL RFLO_GetDimensPhys( regions(iReg),iLev,ipcbeg,ipcend, &
-                               jpcbeg,jpcend,kpcbeg,kpcend )
-      CALL RFLO_GetCellOffset( regions(iReg),iLev,iCOff,ijCOff )
-
-! --- check if probe within index range; get cell pointer
-
-      IF ((global%probePos(iprobe,2)<ipcbeg  .OR. &
-           global%probePos(iprobe,2)>ipcend) .OR. &
-          (global%probePos(iprobe,3)<jpcbeg  .OR. &
-           global%probePos(iprobe,3)>jpcend) .OR. &
-          (global%probePos(iprobe,4)<kpcbeg  .OR. &
-           global%probePos(iprobe,4)>kpcend)) &
-        CALL ErrorStop( global,ERR_PROBE_LOCATION,__LINE__ )
-
-      i     = global%probePos(iprobe,2)
-      j     = global%probePos(iprobe,3)
-      k     = global%probePos(iprobe,4)
-      iCell = IndIJK(i,j,k,iCOff,ijCOff)
-
-      cv => regions(iReg)%levels(iLev)%mixt%cv
-      dv => regions(iReg)%levels(iLev)%mixt%dv
-#ifdef PEUL
-      IF (nPeul > 0) peulCv => regions(iReg)%levels(iLev)%peul%cv
-#endif
-      wrtProbe = .true.
-    ENDIF
-#endif
-#ifdef RFLU
     IF ( global%probePos(iprobe,PROBE_REGION) == &
          regions(iReg)%iRegionGlobal ) THEN
 
@@ -162,7 +105,6 @@ SUBROUTINE WriteProbe( regions,iReg )
 
       wrtProbe = .TRUE.
     END IF ! global%probePos
-#endif
 
 ! - write probe data to file
 
@@ -183,8 +125,6 @@ SUBROUTINE WriteProbe( regions,iReg )
                                                          rho,u,v,w,press,temp
         ENDIF
       ELSE
-#ifdef RFLO
-#ifdef PEUL
         IF (global%flowType == FLOW_STEADY) THEN
           WRITE(IF_PROBE+iprobe-1,1000,IOSTAT=errorFlag) global%currentIter,  &
                                                          rho,u,v,w,press,temp,&
@@ -194,19 +134,6 @@ SUBROUTINE WriteProbe( regions,iReg )
                                                          rho,u,v,w,press,temp,&
                                                          peulCv(1:nPeul,iCell)
         ENDIF
-#endif
-#endif
-#ifdef RFLU
-        IF (global%flowType == FLOW_STEADY) THEN
-          WRITE(IF_PROBE+iprobe-1,1000,IOSTAT=errorFlag) global%currentIter,  &
-                                                         rho,u,v,w,press,temp,&
-                                                         peulCv(1:nPeul,iCell)
-        ELSE
-          WRITE(IF_PROBE+iprobe-1,1005,IOSTAT=errorFlag) global%currentTime,  &
-                                                         rho,u,v,w,press,temp,&
-                                                         peulCv(1:nPeul,iCell)
-        ENDIF
-#endif
       ENDIF
 
       global%error = errorFlag
