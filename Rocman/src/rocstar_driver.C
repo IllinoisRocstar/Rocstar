@@ -102,12 +102,9 @@ RocstarCoupling *create_coupling(Control_parameters &param,
     COM_LOAD_MODULE_STATIC_DYNAMIC(SimOUT, "OUTTEST");
     COM_LOAD_MODULE_STATIC_DYNAMIC(SimIN, "INTEST");
     COM_LOAD_MODULE_STATIC_DYNAMIC(SurfX, "FACETEST");
-    COM_LOAD_MODULE_STATIC_DYNAMIC(Rocon, "PROPCONTEST");
     COM_LOAD_MODULE_STATIC_DYNAMIC(Rocmop, "MOPTEST");
     COM_LOAD_MODULE_STATIC_DYNAMIC(Rocflu, "FLUTEST");
-    COM_LOAD_MODULE_STATIC_DYNAMIC(Rocflo, "FLOTEST");
     COM_LOAD_MODULE_STATIC_DYNAMIC(Rocprop, "PROPTEST");
-    COM_LOAD_MODULE_STATIC_DYNAMIC(Rocfrac, "FRACTEST");
   } else {
     std::cerr << "Rocstar: ERROR: Unknown coupling scheme: " << name << "\n"
               << R"(
