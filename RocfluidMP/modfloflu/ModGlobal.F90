@@ -58,9 +58,6 @@ MODULE ModGlobal
 ! ==============================================================================
 
     LOGICAL :: calcCellCtr, calcFaceCtr
-#ifdef RFLO
-    LOGICAL :: degenrtEc
-#endif
     CHARACTER(CHRLEN) :: winName,caseName
     CHARACTER(CHRLEN) :: inDir,outDir
     INTEGER :: gridFormat,solutFormat
@@ -106,8 +103,6 @@ MODULE ModGlobal
     REAL(RFREAL) :: currentTime,dTimeSystem,dtImposed,maxTime,printTime, &
                     resTol,stopRun,timeStamp,timeStampPrep,tolSubIter, &
                     writeTime
-                    
-#ifdef RFLU
 
     LOGICAL :: restartFromScratch
     INTEGER :: iterSinceRestart,restartIter
@@ -136,9 +131,6 @@ MODULE ModGlobal
     REAL(RFREAL) :: cnstrLMinPlane, cnstrLMaxPlane, cnstrT1MinPlane
     REAL(RFREAL) :: cnstrT1MaxPlane, cnstrT2MinPlane, cnstrT2MaxPlane
     INTEGER :: cnstrCoordL, cnstrCoordT1, cnstrCoordT2
-
-
-#endif
 
 ! ==============================================================================
 !   Multigrid
@@ -176,15 +168,6 @@ MODULE ModGlobal
     INTEGER :: thrustType,thrustPlane,thrustSaveIter
     REAL(RFREAL) :: thrustCoord,thrustMom,thrustPamb,thrustPress, & 
                     thrustSaveTime,thrustTotal
-
-! ==============================================================================
-!   Boundary conditions
-! ==============================================================================
-
-#ifdef RFLO
-    INTEGER :: infloNijk, internDeform
-    REAL(RFREAL), POINTER :: infloPlanEdges(:,:,:), xyzMinmax(:,:)
-#endif
 
 #ifdef STATS
 ! ==============================================================================
@@ -290,16 +273,9 @@ MODULE ModGlobal
     REAL(RFREAL) :: forceX,forceY,forceZ
     REAL(RFREAL) :: forceRefArea,forceRefLength,forceRefXCoord,forceRefYCoord, &
                     forceRefZCoord
-#ifdef RFLO
-    INTEGER :: forcesOn, aeroCoeffs
-    REAL(RFREAL) :: forceCoeffs(3,2), momentCoeffs(3,2)
-    REAL(RFREAL) :: acBndBoxXmin, acBndBoxYmin, acBndBoxZmin
-    REAL(RFREAL) :: acBndBoxXmax, acBndBoxYmax, acBndBoxZmax
-#endif
-#ifdef RFLU
+
     LOGICAL :: forceFlag,patchCoeffFlag
     INTEGER :: forceWriteCntr,thrustWriteCntr
-#endif
 
 ! ==============================================================================
 !   Mass flow
@@ -331,9 +307,7 @@ MODULE ModGlobal
 ! ==============================================================================
 
     REAL(RFREAL) :: pi,rad
-#ifdef RFLU
     REAL(RFREAL) :: deg2rad,rad2deg
-#endif
 
 ! ==============================================================================
 !   Work-variables reserved for common use by physical modules
@@ -403,10 +377,9 @@ MODULE ModGlobal
 ! ==============================================================================
 
     LOGICAL, POINTER :: prepBcDefined(:)    
-#ifdef RFLU
+
     LOGICAL :: syPePatchesFlag
     INTEGER :: prepPartMode
-#endif
 
 ! ==============================================================================
 !   Postprocessing
@@ -414,13 +387,6 @@ MODULE ModGlobal
 
     INTEGER :: postPlotType
 
-#ifdef RFLO
-    INTEGER :: postIter,postOutFmt
-    LOGICAL :: postStatsFlag,postTurbFlag,postPlagFlag,postRadiFlag, & 
-               postSpecFlag
-    REAL(RFREAL) :: postTime
-#endif
-#ifdef RFLU
     LOGICAL :: postCompErrFlag,postDiscFlag,postExtractFlag,postGradFlag, &
                postLag2EulFlag,postMergeFlag,postPlotPatchFlag, &
                postPlotVolFlag,postSpecFlag,postVortFlag,postVortCoreFlag, &
@@ -428,9 +394,7 @@ MODULE ModGlobal
     INTEGER :: postInterpOrder,postInterpType,postNFringes,postNServers, &
                postOutputFormat,postPartNumber,postPartNumberSave,postSchType
     REAL(RFREAL) :: postSchExp
-#endif
 
-#ifdef RFLU
 ! ==============================================================================
 !   Picking
 ! ==============================================================================
@@ -438,20 +402,6 @@ MODULE ModGlobal
     LOGICAL :: pickCoordFlag
     REAL(RFREAL) :: pickXCoordLow,pickXCoordUpp,pickYCoordLow, & 
                     pickYCoordUpp,pickZCoordLow,pickZCoordUpp
-#endif
-
-#ifdef RFLO
-! ==============================================================================
-!   Flo2Flu conversion
-! ==============================================================================
-
-    INTEGER :: tofluNPatches,tofluNHexs,tofluNVerts,tofluNbfMax,tofluNbnMax
-    INTEGER :: tofluNFaces,tofluNEdges, tofluMaxBind
-    INTEGER, POINTER :: tofluNbVerts(:),tofluNbFaces(:)
-    INTEGER, POINTER :: tofluHex2v(:,:),tofluQuad2v(:,:,:),tofluBLoc2g(:,:)
-    INTEGER, POINTER :: tofluIq(:),tofluBType(:,:)
-    REAL(RFREAL), POINTER :: tofluXyz(:,:)
-#endif
 
   END TYPE t_global
 

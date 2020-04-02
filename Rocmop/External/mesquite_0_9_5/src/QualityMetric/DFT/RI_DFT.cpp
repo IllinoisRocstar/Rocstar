@@ -1776,39 +1776,6 @@ inline bool h_fcn_ridft3(double &obj, Vector3D g_obj[4], Matrix3D h_obj[10],
   return true;
 }
 
-#if 0
-bool RI_DFT::evaluate_element(PatchData& pd,
-                              MsqMeshEntity* element,
-                              double& value, MsqError &err)
-{
-  Matrix3D T[MSQ_MAX_NUM_VERT_PER_ENT];
-  double c_k[MSQ_MAX_NUM_VERT_PER_ENT];
-  double dft[MSQ_MAX_NUM_VERT_PER_ENT];
-  bool return_flag;
-  double h, tau;
-    
-  size_t num_T = element->vertex_count();
-  compute_T_matrices(*element, pd, T, num_T, c_k, err); MSQ_ERRZERO(err);
-
-  const double id[] = {1., 0., 0.,  0., 1., 0.,  0., 0., 1.};
-  const Matrix3D I(id);
-  Matrix3D TT;
-  for (size_t i=0; i<num_T; ++i) {
-    tau = det(T[i]);
-    TT = transpose(T[i]);
-    TT = TT * T[i];
-    TT -= I; 
-    dft[i] = .5 * Frobenius_2(TT);
-    return_flag = get_barrier_function(pd, tau, h, err); MSQ_ERRZERO(err);
-    dft[i] /= pow(h, 4.0/3.0);
-  }
-    
-  value = weighted_average_metrics(c_k, dft, num_T, err); MSQ_ERRZERO(err);
-    
-  return return_flag;
-}
-#endif
-
 bool RI_DFT::evaluate_element(PatchData& pd,
 			      MsqMeshEntity* e,
 			      double& m, 

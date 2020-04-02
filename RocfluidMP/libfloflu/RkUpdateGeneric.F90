@@ -83,10 +83,7 @@ SUBROUTINE RkUpdateGeneric(region,varType,iStage,icBeg,icEnd,ivBeg,ivEnd, &
   LOGICAL :: moveGrid
   CHARACTER(CHRLEN) :: RCSIdentString
   INTEGER :: ic,iv
-#ifdef RFLO
-  INTEGER :: iLev
-#endif  
-  REAL(RFREAL) :: adtv,fac,volRat  
+  REAL(RFREAL) :: adtv,fac,volRat
   REAL(RFREAL) :: ark(5),grk(5)
   REAL(RFREAL), DIMENSION(:), POINTER :: vol,volOld
   TYPE(t_global), POINTER :: global
@@ -116,23 +113,11 @@ SUBROUTINE RkUpdateGeneric(region,varType,iStage,icBeg,icEnd,ivBeg,ivEnd, &
   IF ( varType == VAR_TYPE_CELL ) THEN 
     moveGrid = region%mixtInput%moveGrid
 
-#ifdef RFLO
-    iLev = region%currLevel
-
-    vol => region%levels(iLev)%grid%vol
-
-    IF ( moveGrid .EQV. .TRUE. ) THEN 
-      volOld => region%levels(iLev)%gridOld%vol
-    END IF ! moveGrid
-#endif
-
-#ifdef RFLU
     vol => region%grid%vol
 
     IF ( moveGrid .EQV. .TRUE. ) THEN 
       volOld => region%gridOld%vol
     END IF ! moveGrid
-#endif
   END IF ! varType
 
 ! *****************************************************************************

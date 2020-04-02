@@ -416,16 +416,8 @@ END SUBROUTINE ReadBothRegionSection
 ! #############################################################################
 ! #############################################################################
 
-#ifdef RFLO
-SUBROUTINE ReadPatchSection( global,fileID,nvals,keys,vals,brbeg,brend, &
-                             prbeg,prend,distrib,fname,defined )
-#endif
-
-#ifdef RFLU
 SUBROUTINE ReadPatchSection( global,fileID,nvals,keys,vals, &
                              prbeg,prend,distrib,fname,bcName,defined )
-#endif
-
 
   USE ModDataTypes
   USE ModGlobal, ONLY : t_global
@@ -433,14 +425,9 @@ SUBROUTINE ReadPatchSection( global,fileID,nvals,keys,vals, &
   IMPLICIT NONE
 
 ! ... parameters
-#ifdef RFLO
-  INTEGER      :: brbeg, brend
-#endif
   INTEGER      :: fileID, nvals, prbeg, prend, distrib
   CHARACTER(*) :: keys(nvals), fname
-#ifdef RFLU
   CHARACTER(*) :: bcName
-#endif
   LOGICAL      :: defined(nvals)
   REAL(RFREAL) :: vals(nvals)
   TYPE(t_global), POINTER :: global
@@ -460,11 +447,6 @@ SUBROUTINE ReadPatchSection( global,fileID,nvals,keys,vals, &
 
 ! read lines from file until # or EOF found
 
-#ifdef RFLO
-  brbeg = 1               ! region range: input applies to all regions (default)
-  brend = global%nRegions
-#endif
-
   prbeg = 1               ! patch range: input applies to all patches (default)
   prend = 999999          ! can have different # of patches in each region
 
@@ -475,9 +457,7 @@ SUBROUTINE ReadPatchSection( global,fileID,nvals,keys,vals, &
     defined(:) = .false.  ! keeps track of values being provided by the user
   END IF ! nvals
 
-#ifdef RFLU
   bcName = 'None'
-#endif
 
   DO
     READ(fileID,'(A256)',iostat=errorFlag) line
@@ -485,18 +465,7 @@ SUBROUTINE ReadPatchSection( global,fileID,nvals,keys,vals, &
     IF (global%error /= 0) CALL ErrorStop( global,ERR_FILE_READ,__LINE__ )
     IF (line(1:1) == '#') EXIT
 
-#ifdef RFLO
-    IF (line(1:5) == 'BLOCK') THEN
-      READ(line(6:256),*) brbeg,brend
-      brend = MIN(brend,global%nRegions)
-      IF (brbeg <= 0    ) brbeg = 1
-      IF (brend <= 0    ) brend = global%nRegions
-      IF (brend <  brbeg) brend = brbeg
-    ELSE IF (line(1:5) == 'PATCH') THEN
-#endif
-#ifdef RFLU
     IF (line(1:5) == 'PATCH') THEN
-#endif
       READ(line(6:256),*) prbeg,prend
       IF (prbeg <= 0    ) prbeg = 1
       IF (prend <= 0    ) prend = 999999
@@ -505,17 +474,11 @@ SUBROUTINE ReadPatchSection( global,fileID,nvals,keys,vals, &
       READ(line(8:256),*) distrib
       distrib = MAX(distrib,0)
       distrib = MIN(distrib,1)
-#ifdef RFLO
-    ELSE IF (line(1:4) == 'FILE') THEN
-      READ(line(5:256),*) fname
-#endif
-#ifdef RFLU
     ELSE IF (line(1:4) == 'NAME') THEN
       READ(line(5:CHRLEN),*) bcName
       bcName = ADJUSTL(bcName)
     ELSE IF (line(1:4) == 'FILE') THEN
       fname = ADJUSTL(line(5:CHRLEN))
-#endif
     ELSE
       DO ival=1,nvals
         nc = LEN_TRIM(keys(ival))

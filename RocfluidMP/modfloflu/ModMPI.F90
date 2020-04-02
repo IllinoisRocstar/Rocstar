@@ -39,7 +39,11 @@
 
 MODULE ModMPI
 
-! Trying to fix ill-conceived tag management.  Note that the PLAG_TAG_SHIFT 
+  USE mpi
+
+  INTEGER, PARAMETER :: MPI_RFREAL = MPI_DOUBLE_PRECISION  ! goes with RFREAL
+
+! Trying to fix ill-conceived tag management.  Note that the PLAG_TAG_SHIFT
 ! exceeds the maximum value tags are allowed to take in the MPI standard.  Tags
 ! only need to be unique among pairs of processors.  All RocfluidMP comms are
 ! pair-wise. -mtc
@@ -63,19 +67,6 @@ MODULE ModMPI
                         TURB_TAG_SHIFT = 2049, & ! shift = n*base+1, n=1,2,..
                         RADI_TAG_SHIFT = 4097, & ! 
                         PLAG_TAG_SHIFT = 8193    ! PLAG always last
-
-#ifdef RFLO
-#ifdef MPI
-  INCLUDE 'mpif.h'
-
-  INTEGER, PARAMETER :: MPI_RFREAL = MPI_DOUBLE_PRECISION  ! goes with RFREAL
-#endif
-#endif
-#ifdef RFLU
-  INCLUDE 'mpif.h'
-
-  INTEGER, PARAMETER :: MPI_RFREAL = MPI_DOUBLE_PRECISION  ! goes with RFREAL
-#endif
 
 END MODULE ModMPI
 

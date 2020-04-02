@@ -27,7 +27,7 @@
 ! Description: None.
 !
 ! Input: 
-!   winName	Name of Rocflu window
+!   winName     Name of Rocflu window
 !
 ! Output: None.
 ! 
@@ -179,11 +179,11 @@ SUBROUTINE Rocflu_load_module(winName)
 ! Pre and Post IO
 ! ******************************************************************************
 
-  CALL COM_set_member_function(winName//'.pre_hdf_output', &
+  CALL COM_set_member_function(winName//'.pre_out_output', &
                                Fluid_preHdfOutput,winName//'.global','b', &
                                types)
 
-  CALL COM_set_member_function(winName//'.post_hdf_output', &
+  CALL COM_set_member_function(winName//'.post_out_output', &
                                Fluid_postHdfOutput,winName//'.global','b', &
                                types)
 

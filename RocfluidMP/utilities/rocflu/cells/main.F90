@@ -94,9 +94,9 @@ PROGRAM rflucells
 ! Get command-line options
 ! ******************************************************************************
 
-  CALL GETARG(1,casename)
-  CALL GETARG(2,stampStr)  
-  CALL GETARG(3,verbosity)
+  CALL GET_COMMAND_ARGUMENT(1,casename)
+  CALL GET_COMMAND_ARGUMENT(2,stampStr)
+  CALL GET_COMMAND_ARGUMENT(3,verbosity)
 
   IF ( LEN_TRIM(casename)  == 0 .OR. & 
        LEN_TRIM(stampStr)  == 0 .OR. & 

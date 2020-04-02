@@ -148,7 +148,7 @@ write(*,*)mfRat,phi,mach,hvinj
       cv(CV_MIXT_YMOM,ijkC) = -minj/rho*SIN( 0.5_RFREAL*pi*yc/delta )*rho
 
       Vm = SQRT( cv(CV_MIXT_XMOM,ijkC)*cv(CV_MIXT_XMOM,ijkC) + &
-                 cv(CV_MIXT_YMOM,ijkC)*cv(CV_MIXT_YMOM,ijkC) + &	
+                 cv(CV_MIXT_YMOM,ijkC)*cv(CV_MIXT_YMOM,ijkC) + &
                  cv(CV_MIXT_ZMOM,ijkC)*cv(CV_MIXT_ZMOM,ijkC))/rho
       Eo = MixtPerf_Eo_DGPVm(rho,gamma,pres,Vm)
       cv(CV_MIXT_ENER,ijkC) = rho*Eo

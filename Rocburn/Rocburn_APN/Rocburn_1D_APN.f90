@@ -48,9 +48,6 @@
 
   IMPLICIT NONE
 
-  INCLUDE 'mpif.h'
-
-
   CONTAINS
 
 !
@@ -59,9 +56,16 @@
 !     ------------------------------------------------------------------------
 
     SUBROUTINE CHECK_ALLOC( ierr)
+      USE mpi
+
       INTEGER, INTENT(IN) :: ierr
-      IF(ierr /= 0) PRINT *, "ROCBRUN_APN ERROR: unable to allocate memory"
-      CALL MPI_ABORT( MPI_COMM_WORLD, -1)
+      INTEGER :: ierr2
+
+      IF(ierr /= 0) THEN
+        PRINT *, "ROCBRUN_APN ERROR: unable to allocate memory"
+        CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr2)
+        STOP
+      END IF
     END SUBROUTINE CHECK_ALLOC
 ! ============================================================================
 

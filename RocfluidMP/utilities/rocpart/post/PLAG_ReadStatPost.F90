@@ -63,9 +63,9 @@ SUBROUTINE PLAG_ReadStatPost(regions,iReg)
   USE ModIndexing,   ONLY: IndIJKMap
   USE ModInterfaces, ONLY: RFLO_GetCellOffSet,     &
                            RFLO_GetDimensDummy,    &
-			   RFLO_GetPatchIndices,   &
-			   RFLO_GetPatchDirection, &
-			   RFLO_GetPatchMapping,   &
+                           RFLO_GetPatchIndices,   &
+                           RFLO_GetPatchDirection, &
+                           RFLO_GetPatchMapping,   &
                            RFLO_ReadDataFileInt,   &
                            RFLO_ReadDataFileReal,  &
                            RFLO_WriteDataFileInt,  &

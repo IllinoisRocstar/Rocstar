@@ -27,10 +27,10 @@ CONTAINS
 
   SUBROUTINE BURN_GET_BURNING_RATE1D (bp,delt,P,To,Tn,Qc,Qc_old,Qr,Qr_old,  &
                                       rhoc,Toa,rb,fr,bflag,Tnp1,Tflame,coor)
- 
-    IMPLICIT NONE
 
-    INCLUDE 'mpif.h'
+    USE mpi
+
+    IMPLICIT NONE
 !----------------------------------------------------------------------------
 
 !   Dummy Variables
@@ -152,7 +152,7 @@ CONTAINS
     IF (.TRUE. .AND. (.NOT. (rb > bp%rb_range(1) .AND. rb < bp%rb_range(2)) )) THEN
        write(*,*)"OUTPUT RB OUT OF RANGE",rb,bp%rb_range
        do i = 1,nx
-	  write(*,*)i,bp%x(i),Tnp1(i),Tn(i)
+         write(*,*)i,bp%x(i),Tnp1(i),Tn(i)
        enddo
        CALL MPI_Abort (bp%comm, 1, ierror)
        STOP
@@ -160,7 +160,7 @@ CONTAINS
     IF (.TRUE. .AND. (.NOT. (Tflame > bp%Tf_range(1) .AND. Tflame < bp%Tf_range(2)) )) THEN
        write(*,*)"OUTPUT TFLAME OUT OF RANGE",Tflame,bp%Tf_range,bflag,bw%Ts,P
        do i = 1,nx
-	  write(*,*)i,bp%x(i),Tnp1(i),Tn(i)
+         write(*,*)i,bp%x(i),Tnp1(i),Tn(i)
        enddo
        CALL MPI_Abort (bp%comm, 1, ierror)
        STOP

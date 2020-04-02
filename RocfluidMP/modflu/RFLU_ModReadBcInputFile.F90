@@ -322,8 +322,8 @@ MODULE RFLU_ModReadBcInputFile
 ! ------------------------------------------------------------------------------
 
         IF ( pPatch%mixt%distrib == BCDAT_DISTRIB ) THEN
-	  nBFacesTot = pPatch%nBTrisTot + pPatch%nBQuadsTot
-	
+          nBFacesTot = pPatch%nBTrisTot + pPatch%nBQuadsTot
+
           ALLOCATE(pPatch%mixt%vals(pPatch%mixt%nData,nBFacesTot), &
                    STAT=errorFlag)
           global%error = errorFlag
@@ -661,8 +661,8 @@ MODULE RFLU_ModReadBcInputFile
 ! ------------------------------------------------------------------------------
 
         IF ( pPatch%mixt%distrib == BCDAT_DISTRIB ) THEN
-	  nBFacesTot = pPatch%nBTrisTot + pPatch%nBQuadsTot
-	
+          nBFacesTot = pPatch%nBTrisTot + pPatch%nBQuadsTot
+
           ALLOCATE(pPatch%mixt%vals(pPatch%mixt%nData,nBFacesTot), &
                    STAT=errorFlag)
           global%error = errorFlag
@@ -992,8 +992,8 @@ MODULE RFLU_ModReadBcInputFile
 ! ------------------------------------------------------------------------------
 
         IF ( pPatch%mixt%distrib == BCDAT_DISTRIB ) THEN
-	  nBFacesTot = pPatch%nBTrisTot + pPatch%nBQuadsTot
-	
+          nBFacesTot = pPatch%nBTrisTot + pPatch%nBQuadsTot
+
           ALLOCATE(pPatch%mixt%vals(pPatch%mixt%nData,nBFacesTot), &
                    STAT=errorFlag)
           global%error = errorFlag
@@ -1219,13 +1219,13 @@ MODULE RFLU_ModReadBcInputFile
             WRITE(STDOUT,'(A,3X,A,1X,A,I3,A)') SOLVER_NAME,'*** WARNING ***', &
                   'Invalid coupling input for patch ',iPatch, &
                   '. Overriding coupling input.'
-		  
-            pPatch%bcCoupled       = BC_BURNING	  
+
+            pPatch%bcCoupled       = BC_BURNING
             pPatch%mixt%distrib = BCDAT_DISTRIB ! MUST have distribution
-	  ELSE IF ( NINT(vals(3)) == BC_NOT_COUPLED ) THEN 
-            pPatch%bcCoupled       = NINT(vals(3))	    
+          ELSE IF ( NINT(vals(3)) == BC_NOT_COUPLED ) THEN
+            pPatch%bcCoupled       = NINT(vals(3))
             pPatch%mixt%distrib = distrib
-	  ELSE 
+          ELSE
             global%warnCounter = global%warnCounter + 1
 
             WRITE(STDOUT,'(A,3X,A,1X,A,I3,A)') SOLVER_NAME,'*** WARNING ***', &
@@ -1233,7 +1233,7 @@ MODULE RFLU_ModReadBcInputFile
                   '. Overriding coupling input.'
                   
             pPatch%bcCoupled       = BC_NOT_COUPLED 
-            pPatch%mixt%distrib = distrib	    
+            pPatch%mixt%distrib = distrib
           END IF ! NINT(vals)
         ELSE
           pPatch%bcCoupled       = BC_NOT_COUPLED
@@ -1251,13 +1251,13 @@ MODULE RFLU_ModReadBcInputFile
             pPatch%bcCoupled = BC_NOT_COUPLED
           ELSE
             pPatch%bcCoupled = BC_NOT_COUPLED
-	  END IF ! NINT(vals(3))
-	  
+          END IF ! NINT(vals(3))
+
           pPatch%mixt%distrib = distrib        
         ELSE 
           pPatch%bcCoupled       = BC_NOT_COUPLED
           pPatch%mixt%distrib = BCDAT_CONSTANT
-	END IF ! defined(3)			
+        END IF ! defined(3)
 #endif
 
 #ifdef GENX
@@ -1889,11 +1889,11 @@ MODULE RFLU_ModReadBcInputFile
                   '. Overriding user input.'
                   
             pPatch%bcCoupled       = BC_NOT_BURNING
-            pPatch%mixt%distrib = BCDAT_DISTRIB ! MUST have distribution	    	    
+            pPatch%mixt%distrib = BCDAT_DISTRIB ! MUST have distribution
           ELSE IF ( NINT(vals(2)) == BC_NOT_COUPLED ) THEN
             pPatch%bcCoupled       = NINT(vals(2))
-            pPatch%mixt%distrib = distrib	    	  
-	  ELSE 
+            pPatch%mixt%distrib = distrib
+          ELSE
             global%warnCounter = global%warnCounter + 1
 
             WRITE(STDOUT,'(A,3X,A,1X,A,I3,A)') SOLVER_NAME,'*** WARNING ***', &
@@ -1919,13 +1919,13 @@ MODULE RFLU_ModReadBcInputFile
             pPatch%bcCoupled = BC_NOT_COUPLED
           ELSE
             pPatch%bcCoupled = BC_NOT_COUPLED
-	  END IF ! NINT(vals(2))
-	  
+          END IF ! NINT(vals(2))
+
           pPatch%mixt%distrib = distrib        
         ELSE
           pPatch%bcCoupled       = BC_NOT_COUPLED
           pPatch%mixt%distrib = BCDAT_CONSTANT
-	END IF ! defined(2)
+        END IF ! defined(2)
 #endif
 
 ! ------------------------------------------------------------------------------
@@ -1988,8 +1988,8 @@ MODULE RFLU_ModReadBcInputFile
 ! ------------------------------------------------------------------------------
 
         IF ( pPatch%mixt%distrib == BCDAT_DISTRIB ) THEN
-	  nBFacesTot = pPatch%nBTrisTot + pPatch%nBQuadsTot	
-	
+          nBFacesTot = pPatch%nBTrisTot + pPatch%nBQuadsTot
+
           ALLOCATE(pPatch%mixt%vals(pPatch%mixt%nData,nBFacesTot), &
                    STAT=errorFlag)
           global%error = errorFlag
@@ -2206,11 +2206,11 @@ MODULE RFLU_ModReadBcInputFile
                   '. Overriding user input.'
                   
             pPatch%bcCoupled       = BC_NOT_BURNING
-            pPatch%mixt%distrib = BCDAT_DISTRIB ! MUST have distribution	    	    
+            pPatch%mixt%distrib = BCDAT_DISTRIB ! MUST have distribution
           ELSE IF ( NINT(vals(2)) == BC_NOT_COUPLED ) THEN
             pPatch%bcCoupled       = NINT(vals(2))
-            pPatch%mixt%distrib = distrib	    	  
-	  ELSE 
+            pPatch%mixt%distrib = distrib
+          ELSE
             global%warnCounter = global%warnCounter + 1
 
             WRITE(STDOUT,'(A,3X,A,1X,A,I3,A)') SOLVER_NAME,'*** WARNING ***', &
@@ -2231,18 +2231,18 @@ MODULE RFLU_ModReadBcInputFile
           
             WRITE(STDOUT,'(A,3X,A,1X,A,I3,A)') SOLVER_NAME,'*** WARNING ***', &
                   'Invalid coupling input for patch ',iPatch, &
-                  '. Overriding user input.'                      
+                  '. Overriding user input.'
 
             pPatch%bcCoupled = BC_NOT_COUPLED
           ELSE
             pPatch%bcCoupled = BC_NOT_COUPLED
-	  END IF ! NINT(vals(2))
-	  
-          pPatch%mixt%distrib = distrib        
+          END IF ! NINT(vals(2))
+
+          pPatch%mixt%distrib = distrib
         ELSE
           pPatch%bcCoupled       = BC_NOT_COUPLED
           pPatch%mixt%distrib = BCDAT_CONSTANT
-	END IF ! defined(2)
+        END IF ! defined(2)
 #endif
 
 ! ------------------------------------------------------------------------------
@@ -2323,8 +2323,8 @@ MODULE RFLU_ModReadBcInputFile
 ! ------------------------------------------------------------------------------
 
         IF ( pPatch%mixt%distrib == BCDAT_DISTRIB ) THEN
-	  nBFacesTot = pPatch%nBTrisTot + pPatch%nBQuadsTot
-	
+          nBFacesTot = pPatch%nBTrisTot + pPatch%nBQuadsTot
+
           ALLOCATE(pPatch%mixt%vals(pPatch%mixt%nData,nBFacesTot), &
                    STAT=errorFlag)
           global%error = errorFlag
@@ -3361,7 +3361,7 @@ MODULE RFLU_ModReadBcInputFile
 
         pPatch%bcCoupled    = BC_NOT_COUPLED 
         pPatch%movePatchDir = MOVEPATCH_DIR_NONE
-	
+
         pPatch%mixt%nData     = 0
         pPatch%mixt%nSwitches = 0
         pPatch%mixt%distrib   = BCDAT_CONSTANT

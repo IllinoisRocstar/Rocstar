@@ -36,7 +36,7 @@ namespace Numerics {
 				*/
 				 inline double ___safe_fpt_division( const double f1, const double f2 )
 				 {
-					#ifdef ASSERT_ON
+					#ifdef ENABLE_DEBUG
 					 assert( f1 >= static_cast< double >( 0 ) );
 					 assert( f2 >= static_cast< double >( 0 ) );
 					#endif

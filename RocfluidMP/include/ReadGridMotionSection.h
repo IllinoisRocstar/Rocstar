@@ -21,18 +21,10 @@
 ! * USE OR OTHER DEALINGS WITH THE SOFTWARE.                          *
 ! *********************************************************************
 INTERFACE
-#ifdef RFLO
-  SUBROUTINE ReadGridMotionSection( global )
-    USE ModGlobal, ONLY     : t_global
-    TYPE(t_global), POINTER :: global
-  END SUBROUTINE ReadGridMotionSection
-#endif
-#ifdef RFLU
   SUBROUTINE ReadGridMotionSection(regions)
     USE ModDataStruct, ONLY : t_region
     TYPE(t_region), POINTER :: regions(:)
   END SUBROUTINE ReadGridMotionSection
-#endif
 END INTERFACE
 
 

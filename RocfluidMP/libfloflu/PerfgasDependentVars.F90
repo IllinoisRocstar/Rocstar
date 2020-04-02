@@ -52,10 +52,8 @@ SUBROUTINE PerfgasDependentVars( inBeg,inEnd,indCp,indMol,cv,gv,dv )
   USE ModDataTypes
   USE ModParameters
 
-#ifdef RFLU
-  USE ModInterfaces, ONLY: MixtPerf_C_GRT,MixtPerf_G_CpR, & 
+  USE ModInterfaces, ONLY: MixtPerf_C_GRT,MixtPerf_G_CpR, &
                            MixtPerf_P_DEoGVm2,MixtPerf_R_M,MixtPerf_T_DPR
-#endif
 
   IMPLICIT NONE
 
@@ -69,36 +67,11 @@ SUBROUTINE PerfgasDependentVars( inBeg,inEnd,indCp,indMol,cv,gv,dv )
 
 ! ... local variables
   REAL(RFREAL) :: rgas,rrho,Vm2
-#ifdef RFLO
-  REAL(RFREAL) :: gam1, g1cp
-#endif
-#ifdef RFLU
   REAL(RFREAL) :: Eo,gamma,rho
-#endif
 
 !******************************************************************************
 
   DO ic=inBeg,inEnd
-#ifdef RFLO
-    rgas = 8314.3_RFREAL/gv(GV_MIXT_MOL,ic*indMol)
-    gam1 = gv(GV_MIXT_CP,ic*indCp)/(gv(GV_MIXT_CP,ic*indCp)-rgas) - 1._RFREAL
-    g1cp = gam1*gv(GV_MIXT_CP,ic*indCp)
-    rrho = 1._RFREAL/cv(CV_MIXT_DENS,ic)
-
-    dv(DV_MIXT_UVEL,ic) = cv(CV_MIXT_XMOM,ic)*rrho
-    dv(DV_MIXT_VVEL,ic) = cv(CV_MIXT_YMOM,ic)*rrho
-    dv(DV_MIXT_WVEL,ic) = cv(CV_MIXT_ZMOM,ic)*rrho
-
-    vm2 = dv(DV_MIXT_UVEL,ic)*dv(DV_MIXT_UVEL,ic) + &
-          dv(DV_MIXT_VVEL,ic)*dv(DV_MIXT_VVEL,ic) + &
-          dv(DV_MIXT_WVEL,ic)*dv(DV_MIXT_WVEL,ic)
-
-    dv(DV_MIXT_PRES,ic) = gam1*(cv(CV_MIXT_ENER,ic)- &
-                                0.5_RFREAL*vm2*cv(CV_MIXT_DENS,ic))
-    dv(DV_MIXT_TEMP,ic) = dv(DV_MIXT_PRES,ic)*rrho/rgas
-    dv(DV_MIXT_SOUN,ic) = SQRT(g1cp*dv(DV_MIXT_TEMP,ic))
-#endif
-#ifdef RFLU
     rgas  = MixtPerf_R_M(gv(GV_MIXT_MOL,ic*indMol))
     gamma = MixtPerf_G_CpR(gv(GV_MIXT_CP,ic*indCp),rgas)
 
@@ -113,7 +86,6 @@ SUBROUTINE PerfgasDependentVars( inBeg,inEnd,indCp,indMol,cv,gv,dv )
     dv(DV_MIXT_PRES,ic) = MixtPerf_P_DEoGVm2(rho,Eo,gamma,Vm2)
     dv(DV_MIXT_TEMP,ic) = MixtPerf_T_DPR(rho,dv(DV_MIXT_PRES,ic),rgas)
     dv(DV_MIXT_SOUN,ic) = MixtPerf_C_GRT(gamma,rgas,dv(DV_MIXT_TEMP,ic))
-#endif
   ENDDO
 
 END SUBROUTINE PerfgasDependentVars

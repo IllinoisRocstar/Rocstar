@@ -30,9 +30,9 @@
 
 using namespace std;
 
-COM_EXTERN_MODULE( SimOut);
-COM_EXTERN_MODULE( Simpal);
-COM_EXTERN_MODULE( Rocprop);
+COM_EXTERN_MODULE(SimOut)
+COM_EXTERN_MODULE(Simpal)
+COM_EXTERN_MODULE(Rocprop)
 
 int main(int argc, char *argv[]) {
   COM_init( &argc, &argv);

@@ -90,7 +90,7 @@ MODULE TURB_RFLU_ModRocstarAdmin
 ! Description: None.
 !
 ! Input:
-!   pRegion		Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -144,7 +144,7 @@ MODULE TURB_RFLU_ModRocstarAdmin
 ! Description: None.
 !
 ! Input:
-!   pRegion		Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -295,7 +295,7 @@ MODULE TURB_RFLU_ModRocstarAdmin
 ! Description: None.
 !
 ! Input:
-!   pRegion		Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !

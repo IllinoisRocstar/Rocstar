@@ -30,10 +30,10 @@
 
 using namespace std;
 
-COM_EXTERN_MODULE( SurfMap);
-COM_EXTERN_MODULE( SimOUT);
-COM_EXTERN_MODULE( Rocmop);
-COM_EXTERN_MODULE( Simpal);
+COM_EXTERN_MODULE(SurfMap)
+COM_EXTERN_MODULE(SimOUT)
+COM_EXTERN_MODULE(Rocmop)
+COM_EXTERN_MODULE(Simpal)
 
 // build an unstructured tet mesh with 2 partitions
 void build_unstr_tet_2();
@@ -523,9 +523,9 @@ void build_unstr_prism_tet_2(){
   int    prisms2[num_prisms2*6];
   int    tets1[num_tets1*4];
   int    tets2[num_tets2*4];
-  const int pconn_size = 15;
-  int    pconn1[pconn_size] = {1,2,12,3,6,9,12,15,18,21,24,27,46,45,43};
-  int    pconn2[pconn_size] = {1,1,12,1,4,7,10,13,16,19,22,25,40,44,46};
+  //const int pconn_size = 15;
+  //int    pconn1[pconn_size] = {1,2,12,3,6,9,12,15,18,21,24,27,46,45,43};
+  //int    pconn2[pconn_size] = {1,1,12,1,4,7,10,13,16,19,22,25,40,44,46};
   
 
   // Create a new window named "unstr"

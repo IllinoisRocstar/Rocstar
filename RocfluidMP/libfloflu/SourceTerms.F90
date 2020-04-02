@@ -51,11 +51,6 @@ SUBROUTINE SourceTerms(region)
   
   IMPLICIT NONE
 
-#ifdef RFLO
-#include "Indexing.h"
-#endif
-
-! ******************************************************************************
 ! Declarations and definitions
 ! ******************************************************************************
 
@@ -70,10 +65,6 @@ SUBROUTINE SourceTerms(region)
 ! ==============================================================================
 
   INTEGER :: ibc,iec,ic
-#ifdef RFLO
-  INTEGER :: idcbeg,idcend,jdcbeg,jdcend,kdcbeg,kdcend
-  INTEGER :: iLev,iCOff,ijCOff
-#endif
   REAL(RFREAL) :: fac,fvol,rhoVol
   REAL(RFREAL), POINTER :: cv(:,:),cvOld(:,:),sDual(:,:),rhs(:,:),vol(:)
   TYPE(t_global), POINTER :: global
@@ -91,53 +82,12 @@ SUBROUTINE SourceTerms(region)
 ! Get dimensions and pointers
 ! ******************************************************************************
 
-#ifdef RFLO
-  iLev = region%currLevel
-
-  CALL RFLO_GetDimensDummy( region,iLev,idcbeg,idcend, &
-                            jdcbeg,jdcend,kdcbeg,kdcend )
-  CALL RFLO_GetCellOffset( region,iLev,iCOff,ijCOff )
-  ibc = IndIJK(idcbeg,jdcbeg,kdcbeg,iCOff,ijCOff)
-  iec = IndIJK(idcend,jdcend,kdcend,iCOff,ijCOff)
-  
-  cv    => region%levels(iLev)%mixt%cv
-  cvOld => region%levels(iLev)%mixt%cvOld
-  sDual => region%levels(iLev)%mixt%sDual
-  rhs   => region%levels(iLev)%mixt%rhs
-  vol   => region%levels(iLev)%grid%vol
-#endif
-
-#ifdef RFLU
   ibc = 1
   iec = region%grid%nCells
 
   cv  => region%mixt%cv
   rhs => region%mixt%rhs
   vol => region%grid%vol 
-#endif
-
-#ifdef RFLO
-! ******************************************************************************
-! Source term due to dual time-stepping
-! ******************************************************************************
-
-  IF (global%solverType==SOLV_IMPLICIT .AND. global%dualTstSource) THEN
-    fac = 1.5_RFREAL/global%dtMin
-    DO ic=ibc,iec
-      fvol = fac*vol(ic)
-      rhs(CV_MIXT_DENS,ic) = rhs(CV_MIXT_DENS,ic) - sDual(CV_MIXT_DENS,ic) + &
-                             fvol*cv(CV_MIXT_DENS,ic)
-      rhs(CV_MIXT_XMOM,ic) = rhs(CV_MIXT_XMOM,ic) - sDual(CV_MIXT_XMOM,ic) + &
-                             fvol*cv(CV_MIXT_XMOM,ic)
-      rhs(CV_MIXT_YMOM,ic) = rhs(CV_MIXT_YMOM,ic) - sDual(CV_MIXT_YMOM,ic) + &
-                             fvol*cv(CV_MIXT_YMOM,ic)
-      rhs(CV_MIXT_ZMOM,ic) = rhs(CV_MIXT_ZMOM,ic) - sDual(CV_MIXT_ZMOM,ic) + &
-                             fvol*cv(CV_MIXT_ZMOM,ic)
-      rhs(CV_MIXT_ENER,ic) = rhs(CV_MIXT_ENER,ic) - sDual(CV_MIXT_ENER,ic) + &
-                             fvol*cv(CV_MIXT_ENER,ic)
-    ENDDO
-  ENDIF
-#endif
 
 ! ******************************************************************************
 ! Source term due to acceleration

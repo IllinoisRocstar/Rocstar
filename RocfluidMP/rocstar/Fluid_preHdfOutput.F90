@@ -68,12 +68,7 @@ SUBROUTINE Fluid_preHdfOutput( globalGenx )
 
   global  => globalGenx%global
 
-#ifdef RFLO
-  regions => globalGenx%regions
-#endif
-#ifdef RFLU
   regions => globalGenx%levels(1)%regions
-#endif
 
   CALL RegisterFunction( global,'Fluid_preHdfOutput',&
   'Fluid_preHdfOutput.F90' )
@@ -85,29 +80,15 @@ SUBROUTINE Fluid_preHdfOutput( globalGenx )
 
 #ifdef STATS
 
-#ifdef RFLO
-  DO iReg=1,global%nRegions
-    IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-        regions(iReg)%active==ACTIVE) THEN              ! on my processor
-      iLev = regions(iReg)%currLevel
-#endif
-#ifdef RFLU
   DO iReg=1,global%nRegionsLocal
-#endif
 
       IF ((global%flowType==FLOW_UNSTEADY) .AND. (global%doStat==ACTIVE)) THEN
         IF (global%integrTime > eps) THEN
           IF (global%mixtNStat > 0) THEN
             DO iStat=1,global%mixtNStat
 
-#ifdef RFLO
-              regions(iReg)%levels(iLev)%mixt%tav(iStat,:) = &
-              regions(iReg)%levels(iLev)%mixt%tav(iStat,:)/global%integrTime
-#endif
-#ifdef RFLU
               regions(iReg)%mixt%tav(iStat,:) = &
               regions(iReg)%mixt%tav(iStat,:)/global%integrTime
-#endif
 
             ENDDO
           ENDIF  ! mixtNstat
@@ -116,14 +97,8 @@ SUBROUTINE Fluid_preHdfOutput( globalGenx )
           IF ((global%turbActive .EQV. .true.) .AND. (global%turbNStat > 0)) THEN
             DO iStat=1,global%turbNStat
 
-#ifdef RFLO
-              regions(iReg)%levels(iLev)%turb%tav(iStat,:) = &
-              regions(iReg)%levels(iLev)%turb%tav(iStat,:)/global%integrTime
-#endif
-#ifdef RFLU
               regions(iReg)%turb%tav(iStat,:) = &
               regions(iReg)%turb%tav(iStat,:)/global%integrTime
-#endif
 
             ENDDO
           ENDIF  ! turbNstat
@@ -132,13 +107,7 @@ SUBROUTINE Fluid_preHdfOutput( globalGenx )
         ENDIF    ! integrTime
       ENDIF      ! unsteady and dostat
 
-#ifdef RFLO
-    ENDIF        ! region on this processor and active
   ENDDO          ! iReg
-#endif
-#ifdef RFLU
-  ENDDO          ! iReg
-#endif
 
 #endif
 

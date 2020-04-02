@@ -247,7 +247,7 @@ void RocMeshData::showAllInfo() const
 
 int RocMeshData::pconnCheck(string pltFile) const
 {
-  int result = 0;
+  //int result = 0;
   bool OORGhostNodes  = false;    // found out of range ghost node
   bool missGhostNodes = false;    // ghost nodes missed from pconn
   int minGhostNodeID = 0;
@@ -680,7 +680,7 @@ void RocMeshData::free()
   _fieldTypes.clear();
   _fieldComp.clear();
   
-  for (int i = 0; i < _fieldVals.size(); i++)
+  for (unsigned int i = 0; i < _fieldVals.size(); i++)
     if (_fieldVals[i] != NULL) delete [] _fieldVals[i];
   _fieldVals.clear();  
 }
@@ -726,7 +726,7 @@ void RocMeshData::copy(RocMeshData const & origVal)
   _fieldTypes   = origVal._fieldTypes;
   _fieldComp    = origVal._fieldComp;
   
-  for (int i = 0; i < origVal._fieldVals.size(); i++)
+  for (unsigned int i = 0; i < origVal._fieldVals.size(); i++)
   {
     int size;
     if (_fieldTypes[i] == 'n')
@@ -1218,7 +1218,7 @@ int RocMeshData::getSimElemTypeNum(string type)
 
 int RocMeshData::getNodePerElem(int num) const
 {
-  int nodePerElem;
+  int nodePerElem = -1;
   switch (num)
   {
   case -1: nodePerElem = 0; break;

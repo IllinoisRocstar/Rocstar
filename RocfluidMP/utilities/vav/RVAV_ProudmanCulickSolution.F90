@@ -139,7 +139,7 @@ SUBROUTINE RVAV_ProudmanCulickSolution( fname,regionsS1 )
     DO j = jpcbeg, jpcend 
     DO i = ipcbeg, ipcend 
       ijkCell = IndIJK(i,j,k,iCOff,ijCOff)
-	
+
       cvSA(1,ijkCell) = SIN(0.5_RFREAL*pi*cofg(YCOORD,ijkCell)/heightC0)
       cvSA(2,ijkCell) = COS(0.5_RFREAL*pi*cofg(YCOORD,ijkCell)/heightC0)
       cvSA(3,ijkCell) = pressureHeadEnd

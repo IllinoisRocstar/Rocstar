@@ -48,27 +48,14 @@ SUBROUTINE RKUpdateMP( region,iReg,istage )
   USE ModDataStruct, ONLY : t_region
   USE ModGlobal,     ONLY : t_global
   USE ModMixture,    ONLY : t_mixt
-#ifdef RFLO
-#ifdef PEUL
-  USE ModPartEul,    ONLY : t_peul
-#endif
-#endif
-#ifdef RFLU
   USE ModSpecies,    ONLY : t_spec
 
   USE RFLU_ModNSCBC, ONLY: RFLU_NSCBC_DecideHaveNSCBC
-#endif
   USE ModError
   USE ModParameters
   USE ModBndPatch, ONLY: t_patch
 
   USE ModInterfaces, ONLY: RkUpdateGeneric
-
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_GetDimensDummy, RFLO_GetCellOffset
-
-#include "Indexing.h"
-#endif
 
 #ifdef PLAG
   USE ModInterfacesLagrangian, ONLY : PLAG_RkUpdateWrapper
@@ -89,23 +76,12 @@ SUBROUTINE RKUpdateMP( region,iReg,istage )
   INTEGER, INTENT(IN) :: iReg, istage
 
 ! ... local variables
-#ifdef RFLO
-  INTEGER :: idcbeg, idcend, jdcbeg, jdcend, kdcbeg, kdcend
-  INTEGER :: iLev, iCOff, ijCOff
-#endif
   INTEGER :: ibc, iec
 
   LOGICAL :: peulUsed, plagUsed, specUsed, periUsed, turbUsed
 
   TYPE(t_mixt),   POINTER :: mixt
-#ifdef RFLO
-#ifdef PEUL
-  TYPE(t_peul),   POINTER :: peul
-#endif
-#endif
-#ifdef RFLU
   TYPE(t_spec),   POINTER :: spec
-#endif
   TYPE(t_global), POINTER :: global
 
   INTEGER :: iPatch
@@ -140,26 +116,10 @@ SUBROUTINE RKUpdateMP( region,iReg,istage )
 
 ! get dimensions and pointers -------------------------------------------------
 
-#ifdef RFLO
-  iLev = region%currLevel
-  CALL RFLO_GetDimensDummy( region,iLev,idcbeg,idcend, &
-                            jdcbeg,jdcend,kdcbeg,kdcend )
-  CALL RFLO_GetCellOffset( region,iLev,iCOff,ijCOff )
-
-  ibc = IndIJK(idcbeg,jdcbeg,kdcbeg,iCOff,ijCOff)
-  iec = IndIJK(idcend,jdcend,kdcend,iCOff,ijCOff)
-  mixt => region%levels(iLev)%mixt
-#ifdef PEUL
-  peul => region%levels(iLev)%peul
-#endif
-#endif
-
-#ifdef RFLU
   ibc = 1
   iec = region%grid%nCellsTot
   mixt => region%mixt
   spec => region%spec
-#endif
 
 ! update solution for flow itself and all multiphysics modules ----------------
 
@@ -168,7 +128,6 @@ SUBROUTINE RKUpdateMP( region,iReg,istage )
                          mixt%cv,mixt%cvOld,mixt%rhs,mixt%rhsSum)
   END IF ! region%mixtInput%frozenFlag
 
-#ifdef RFLU
 ! loop over patches in a region and update boundary variables -------------
   DO iPatch = 1,region%grid%nPatches
     pPatch => region%patches(iPatch)
@@ -180,25 +139,13 @@ SUBROUTINE RKUpdateMP( region,iReg,istage )
 
     END IF ! pPatch%bcKind
   END DO ! iPatch
-#endif
 
-#ifdef RFLO
-#ifdef PEUL
-  IF ( peulUsed ) THEN
-    CALL RkUpdateGeneric(region,VAR_TYPE_CELL,istage,ibc,iec,1,peul%nCv, &
-                         peul%cv,peul%cvOld,peul%rhs,peul%rhsSum)
-  END IF ! peulUsed
-#endif
-#endif
-
-#ifdef RFLU
 #ifdef SPEC
   IF ( specUsed ) THEN
     CALL RkUpdateGeneric(region,VAR_TYPE_CELL,istage,ibc,iec,1, & 
                          region%specInput%nSpecies,spec%cv,spec%cvOld, &
                          spec%rhs,spec%rhsSum)
   END IF ! specUsed
-#endif
 #endif
 
 #ifdef PLAG

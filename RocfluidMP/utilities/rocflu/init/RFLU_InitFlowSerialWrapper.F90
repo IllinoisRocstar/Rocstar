@@ -27,8 +27,8 @@
 ! Description: None.
 !
 ! Input:
-!   pRegion     	Pointer to region
-!   pRegionSerial	Pointer to serial region
+!   pRegion             Pointer to region
+!   pRegionSerial       Pointer to serial region
 !
 ! Output: None.
 !

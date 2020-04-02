@@ -50,7 +50,6 @@ MODULE ModStatsPost
 
   PRIVATE
 
-#ifdef RFLU
   PUBLIC :: STAT_RFLU_AllocMemPost, &
             STAT_RFLU_AllocMemPostVert, &
             STAT_RFLU_DeallocMemPost, &
@@ -446,8 +445,7 @@ END SUBROUTINE STAT_RFLU_DeallocMemPostVert
 ! ******************************************************************************
 ! End
 ! ******************************************************************************
-#endif
-      
+
 END MODULE ModStatsPost
 
 ! ******************************************************************************

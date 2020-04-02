@@ -101,9 +101,9 @@ SUBROUTINE RFLU_AllocateMemoryTbc(pRegion)
           CYCLE
         CASE ( FTYPE_SPEC )
           IF ( global%specUsed .EQV. .FALSE. ) THEN 
-	    CYCLE
-	  END IF ! global%specUsed
-	  
+            CYCLE
+          END IF ! global%specUsed
+
           bc => pPatch%spec
         CASE ( FTYPE_RADI )
           IF ( input%radiUsed .EQV. .FALSE. ) THEN

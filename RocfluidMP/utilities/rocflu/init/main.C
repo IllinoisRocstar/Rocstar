@@ -96,11 +96,11 @@ main(int argc,char *argv[])
   string casename;
   string sverb;
   int verbosity;
-  bool help;
-  bool isset;
+  //bool help;
+  //bool isset;
   
   // See if the help option is specified, if so give'm the usage text
-  if(help = GetOp("help",args)){
+  if(/*help = */GetOp("help",args)){
     Usage(program_name);
     exit(0);
   }
@@ -109,17 +109,17 @@ main(int argc,char *argv[])
   if(GetOp("casename",casename,args)){
     if(casename.empty()){ // casename was empty
       cerr << program_name 
-	   << ": Expected casename after casename option."
-	   << " Use -h for usage instructions."
-	   << endl;
+           << ": Expected casename after casename option."
+           << " Use -h for usage instructions."
+           << endl;
       exit(1);
     }
   }
   else{ // option not specified (but it's required!)
     cerr << program_name
-	 << ": Missing required casename option."
-	 << "  Use -h for usage instructions."
-	 << endl;
+         << ": Missing required casename option."
+         << "  Use -h for usage instructions."
+         << endl;
     exit(1);
   }      
 
@@ -127,16 +127,16 @@ main(int argc,char *argv[])
   if(GetOp("verbosity",sverb,args)){
     if(sverb.empty()){
       cerr << program_name
-	   << ": Expected verbosity level. "
-	   << "Use -h for usage instructions." << endl;
+           << ": Expected verbosity level. "
+           << "Use -h for usage instructions." << endl;
       exit(1);
     }
     istringstream Istr(sverb);
     Istr >> verbosity;
     if(verbosity < 0 || verbosity > 2){ // Some jerk specified a non numeric or negative
       cerr << program_name
-	   << ": Invalid verbosity value.  Use -h for usage "
-	   << "instructions." << endl;
+           << ": Invalid verbosity value.  Use -h for usage "
+           << "instructions." << endl;
       exit(1);
     }
   }

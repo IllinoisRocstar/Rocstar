@@ -40,18 +40,13 @@
 
 #include "IM_Reader.h"
 
-#ifdef MESH_ADAPT
-#include "AdaptCOMWindow.h"
-#endif
-
-
 using namespace std;
 
-COM_EXTERN_MODULE( Rocblas);
-COM_EXTERN_MODULE( Rocmap);
-COM_EXTERN_MODULE( Rocprop);
-COM_EXTERN_MODULE( Rocsurf);
-COM_EXTERN_MODULE( Rocout);
+COM_EXTERN_MODULE(Rocblas)
+COM_EXTERN_MODULE(Rocmap)
+COM_EXTERN_MODULE(Rocprop)
+COM_EXTERN_MODULE(Rocsurf)
+COM_EXTERN_MODULE(Rocout)
 
 void load_modules() {
   COM_LOAD_MODULE_STATIC_DYNAMIC(Rocblas, "BLAS");
@@ -814,22 +809,18 @@ void output_solution( const string &wname, const char *timelevel,
     hdl = COM_get_dataitem_handle( (wname+".all").c_str());
 
     int OUT_set = COM_get_function_handle( "OUT.set_option");
-#if USE_CGNS
     if ( format != "HDF" && format != "hdf")
       COM_call_function( OUT_set, "format", "CGNS");
     else
-#endif
       COM_call_function( OUT_set, "format", "HDF");
   }
 
   std::string fname = wname+"_"+timelevel;
 
   if ( !COMMPI_Initialized()) {
-#if USE_CGNS
     if ( format != "HDF" && format != "hdf")
       fname.append(".cgns");
     else
-#endif
       fname.append(".hdf");
   }
   else fname.append("_");
@@ -945,36 +936,6 @@ int main(int argc, char *argv[]) {
   char fname[40];
   std::sprintf(fname, "timedata_%03d.txt", rank);
 
-#ifdef MESH_ADAPT
-  AdaptCOMWindow acw( wname.c_str());
-  acw.set_option( "adapt_iter", 1); // cntr_param.adapt_iter);
-  acw.set_option( "redist_iter", 0); // cntr_param.do_redist);
-
-  acw.set_option( "do_collapse", cntr_param.do_collapse);
-  acw.set_option( "do_flip", cntr_param.do_flip);
-  acw.set_option( "do_split", cntr_param.do_split);
-  acw.set_option( "refine", cntr_param.refine);
-  if ( cntr_param.edge_len>0)
-    acw.set_option( "edge_len", cntr_param.edge_len);
-
-  if ( !cntr_param.fangle.empty())
-    acw.set_option( "fangle_weak", 
-		    std::atof(cntr_param.fangle.c_str())/180*M_PI);
-  if ( !cntr_param.sangle.empty())
-    acw.set_option( "fangle_strong", 
-		    std::atof(cntr_param.sangle.c_str())/180*M_PI);
-  if ( !cntr_param.eigthres.empty())
-    acw.set_option( "eig_thres", std::atof(cntr_param.eigthres.c_str()));
-  if ( cntr_param.collapse_ratio>0)
-    acw.set_option( "collapse_ratio", cntr_param.collapse_ratio);
-  if ( cntr_param.split_angle > 0)
-    acw.set_option( "split_angle", cntr_param.split_angle);
-
-  acw.set_option( "anisotropic", cntr_param.smoother == "anisotropic");
-  if ( !cntr_param.feature_layer.empty())
-    acw.set_option( "feature_layer", std::atof(cntr_param.feature_layer.c_str()));
-#endif
-
   double t=cntr_param.start*cntr_param.timestep; 
   for ( int i=1+cntr_param.start; i<=cntr_param.steps; ++i, t+=cntr_param.timestep) {
     cntr_param.start = i; // Save current time step
@@ -984,33 +945,6 @@ int main(int argc, char *argv[]) {
     while ( t_rem > 0) {
       // If speed is 0, then do smoothing only.
       if ( cntr_param.speed==0) t_rem=0;
-
-#ifdef MESH_ADAPT
-      if ( i>1 && cntr_param.adapt_iter>0 && 
-	   ( local_t!=0 && t_elapsed < cntr_param.subadapt*cntr_param.timestep ||
-	     local_t==0 && (i-1)%cntr_param.remesh_interval==0)) {
-      
-        for (int j=0; j<cntr_param.adapt_iter; ++j) {
-	  if ( !acw.adapt()) break;
-
-	  // Reset the constraints
-	  init_constraints( wname, cntr_param);
-
-	  // If the window has changed, reinitialize Rocprop.
-	  COM_call_function( PROP_init, &pmesh);
-
-	  for ( int k=0; k<std::max(1,cntr_param.do_redist); ++k) {
-	    // Perform mesh smoothing
-	    double zero=0.;
-	    std::cout << "Perform anisotropic smoothing" << std::endl;
-	    COM_call_function( PROP_propagate, &pmesh, &spds, 
-			       &zero, &disps, &t_elapsed);
-	    COM_call_function( BLAS_add, &nc, &disps, &nc);
-	    COM_call_function( BLAS_add, &disps_total, &disps, &disps_total);
-	  }
-	}
-      }
-#endif
 
       COM_call_function( PROP_propagate, &pmesh, &spds, 
 			 &t_rem, &disps, &t_elapsed);

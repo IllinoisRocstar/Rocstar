@@ -27,9 +27,9 @@
 ! Description: None.
 !
 ! Input: 
-!   caseString	String with casename
-!   stampString	String with iteration or time stamp
-!   verbLevel	Verbosity level
+!   caseString          String with casename
+!   stampString         String with iteration or time stamp
+!   verbLevel           Verbosity level
 !
 ! Output: None.
 !
@@ -100,7 +100,7 @@ SUBROUTINE rfluconv(caseString,stampString,verbLevel)
                         CONV_RFLU2RFLU_BIN2ASC_GRID     = 20, & 
                         CONV_RFLU2RFLU_BIN2ASC_GRIDFLOW = 21, & 
                         CONV_RFLU2TETM_GRID             = 40, & 
-			CONV_RFLU2STL_GRID              = 50                        
+                        CONV_RFLU2STL_GRID              = 50
   INTEGER :: convOption,errorFlag,iReg
   TYPE(t_region), POINTER :: pRegion
   TYPE(t_global), POINTER :: global
@@ -157,7 +157,7 @@ SUBROUTINE rfluconv(caseString,stampString,verbLevel)
   WRITE(STDOUT,'(A,5X,I2,A)') SOLVER_NAME,CONV_RFLU2TETM_GRID, &
                               ': Tetmesh/YAMS surface grid (msh2 format)' 
   WRITE(STDOUT,'(A,5X,I2,A)') SOLVER_NAME,CONV_RFLU2STL_GRID, &
-                              ': STL surface grid' 			                                                                 
+                              ': STL surface grid'
   WRITE(STDOUT,'(A,1X,A)')    SOLVER_NAME,'Enter selection:'
 
   READ(STDIN,*) convOption
@@ -428,7 +428,7 @@ SUBROUTINE rfluconv(caseString,stampString,verbLevel)
         CALL RFLU_WriteSurfGridTETMESH(pRegion)                
 
         CALL RFLU_DestroyFaceList(pRegion)                    
-        CALL RFLU_DestroyBVertexLists(pRegion)	
+        CALL RFLU_DestroyBVertexLists(pRegion)
         CALL RFLU_DestroyCellMapping(pRegion)                            
       ELSE ! multiple regions, must not happen
         CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)       
@@ -460,13 +460,13 @@ SUBROUTINE rfluconv(caseString,stampString,verbLevel)
         CALL RFLU_RenumberBFaceLists(pRegion)                  
 
         CALL RFLU_CreateGeometry(pRegion)
-	CALL RFLU_BuildGeometry(pRegion)			   
+        CALL RFLU_BuildGeometry(pRegion)
 
         CALL RFLU_STL_WriteSurfGridASCII(pRegion)                
 
         CALL RFLU_DestroyGeometry(pRegion)
         CALL RFLU_DestroyFaceList(pRegion)
-        CALL RFLU_DestroyBVertexLists(pRegion)	                    
+        CALL RFLU_DestroyBVertexLists(pRegion)
         CALL RFLU_DestroyCellMapping(pRegion)                            
       ELSE ! multiple regions, must not happen
         CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)       

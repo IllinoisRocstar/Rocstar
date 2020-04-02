@@ -24,62 +24,44 @@
 #ifndef _FLUIDAGENT_H_
 #define _FLUIDAGENT_H_
 
-#include "Agent.h"
+#include "RocstarAgent.h"
 
-class FluidAgent: public Agent {
+class FluidAgent : public RocstarAgent {
 public:
+  FluidAgent(RocstarCoupling *coup, std::string mod, std::string obj,
+             MPI_Comm com, bool withSolid = false);
 
-  FluidAgent(Coupling *coup, std::string mod, std::string obj, MPI_Comm com, int withSolid=0);
+  void read_restart_data() override;
+  void output_visualization_files(double t) override;
 
-  virtual void input( double t);
+  void init_convergence(int iPredCorr) override;
+  bool check_convergence() const override;
 
-  virtual void load_module();
-  virtual void unload_module();
-  virtual void init_module(double t, double dt);
-  virtual void finalize();
+  int compute_integrals() override;
 
-  virtual void read_restart_data();
-  virtual void output_restart_files( double t);
-  virtual void output_visualization_files( double t);
+private:
+  bool with_plag;
+  std::string plag_window;
 
-  virtual void create_buffer_all();
+  const bool with_solid;
 
-  virtual void init_convergence( int iPredCorr);
-  virtual int check_convergence( double tolerMass, double tolerTract, double tolerVelo);
-
-  virtual int compute_integrals();
-protected:
-  bool   with_plag;
-  string plag_window;
-  int    with_solid;
-  
-  // Window name.
-//  static const char *window_name;  
-
-public:
-  std::string ifluid;
-  std::string fluid;
+private:
   std::string fluid_plag;
 
-  std::string fluidSurfIn;
-  std::string fluidVolIn;
   std::string fluidPlagIn;
   std::string fluidVPIn;
 
-  std::string ifluid_all;
-  std::string ifluid_i;			// FluidBuf
+public:
+  std::string ifluid_i; // FluidBuf
 
-    // Surface windows for Rocout, Surface window buffers
-  std::string ifluid_b;
-  std::string ifluid_nb;
-  std::string ifluid_ni;
-
+public:
   std::string propBufAll;
   std::string fluidBufNG;
   std::string propBuf;
   std::string fluidBufB;
   std::string fluidBufNB;
 
+private:
   std::string fluidBufPC;
   std::string fluidBufBak;
   std::string fluidBufPRE;
@@ -87,16 +69,28 @@ public:
   std::string fluidVolBak;
   std::string fluidPlagBak;
 
-  int f_mdot_hdl, f_mdot_pre_hdl, f_ts_hdl, f_ts_pre_hdl, f_vm_hdl, f_vm_pre_hdl;
-    // for update distances
+  /**
+   * @name Predictor-corrector iteration data
+   */
+  ///@{
+  double tolerTrac;   ///< Traction tolerance for convergence check
+  double tolerVelo;   ///< Mesh motion velocity tolerance for convergence check
+  double tolerMass;   ///< Mass flux tolerance for convergence check
+  int f_vm_hdl;       ///< COM handle to mesh motion velocity
+  int f_vm_pre_hdl;   ///< COM handle to previous mesh motion velocity
+  int f_mdot_hdl;     ///< COM handle to mass flux
+  int f_mdot_pre_hdl; ///< COM handle to previous mass flux
+  int f_ts_hdl;       ///< COM handle to traction
+  int f_ts_pre_hdl;   ///< COM handle to previous traction
+  ///@}
+
+  // for update distances
   int nc_hdl, nc_tmp_hdl, sq_dist_hdl;
+
+private:
+  void finalize_windows() override;
+
+  void create_buffer_all() override;
 };
 
-
 #endif
-
-
-
-
-
-

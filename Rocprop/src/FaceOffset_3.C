@@ -346,8 +346,8 @@ obtain_face_offset( const Point_3 *pnts, const double *spd_ptr,
 
   // Compute new position for all vertices 
   int ncomp = spd?spd->size_of_components():0;
-  COM_assertion_msg( !ncomp || ncomp==1 && spd->is_elemental() ||
-		     ncomp==3 && spd->is_nodal(), 
+  COM_assertion_msg( !ncomp || (ncomp==1 && spd->is_elemental()) ||
+		     (ncomp==3 && spd->is_nodal()),
 		     "Speed must be scalar-elemental or 3-vector-nodal");
 
   // Copy coordinates into buffer.
@@ -509,7 +509,7 @@ obtain_constrained_directions( COM::DataItem *disps_buf,
 
   // Loop through the panes and its real faces
   std::vector< COM::Pane*>::iterator it = _panes.begin();
-  Manifold::PM_iterator pm_it=_surf->pm_begin();
+  //Manifold::PM_iterator pm_it=_surf->pm_begin();
   
   const Vector_3 null_vec(0,0,0);
 
@@ -621,8 +621,8 @@ obtain_constrained_directions( COM::DataItem *disps_buf,
 	}
       }
       else if ( vcnts && !val_bndry_nodes[j] &&
-		( tranks[j]==1 && std::abs(V[0]*es_v[2]) > cos_fangle ||
-		  tranks[j]==2 && std::abs(V[0]*nrm_v) < sin_fangle)) {
+		( (tranks[j]==1 && std::abs(V[0]*es_v[2]) > cos_fangle) ||
+		  (tranks[j]==2 && std::abs(V[0]*nrm_v) < sin_fangle))) {
 	// ndir == 1
 	vcnts[j] = vcnts[j]*V[0]*V[0];
 	if ( ds) ds[j] = null_vec;
@@ -719,9 +719,9 @@ rescale_displacements( COM::DataItem *disps,
 	    (*pm_it)->get_bd_normal( eid_opp) : fnrms[eid_opp.eid()-1];
 
 	  nrm = n1+n2;
-	  double a = dd*nrm;
-	  double b = dt*nrm;
-	  double c = nrm*nrm;
+	  a = dd*nrm;
+	  b = dt*nrm;
+	  c = nrm*nrm;
 
 	  roots=solve_quadratic_func(a,b,c);
 	  if ( roots.first<alpha && roots.first>0) alpha = roots.first;

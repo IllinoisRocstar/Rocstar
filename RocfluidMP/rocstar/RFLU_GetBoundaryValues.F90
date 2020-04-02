@@ -27,10 +27,10 @@
 ! Description: None.
 !
 ! Input: 
-!   region	Dimensions and topology
+!   region      Dimensions and topology
 !
-! Output: 
-!   region%levels%patch 	Input values for boundary conditions
+! Output:
+!   region%levels%patch         Input values for boundary conditions
 !
 ! Notes: None.
 !
@@ -105,13 +105,13 @@ SUBROUTINE RFLU_GetBoundaryValues(region)
          global%verbLevel >= VERBOSE_HIGH ) THEN 
       IF ( pPatch%bcCoupled == BC_NOT_COUPLED ) THEN
         WRITE(STDOUT,'(A,3X,A,1X,I3,1X,A)') SOLVER_NAME,'Patch:',iPatch, & 
-	                                    '(not interacting)'
+                                            '(not interacting)'
       ELSE IF ( pPatch%bcCoupled == BC_NOT_BURNING ) THEN 
         WRITE(STDOUT,'(A,3X,A,1X,I3,1X,A)') SOLVER_NAME,'Patch:',iPatch, & 
-	                                    '(interacting)'      
+                                            '(interacting)'
       ELSE IF ( pPatch%bcCoupled == BC_BURNING ) THEN
         WRITE(STDOUT,'(A,3X,A,1X,I3,1X,A)') SOLVER_NAME,'Patch:',iPatch, & 
-	                                    '(interacting and burning)'          
+                                            '(interacting and burning)'
       END IF ! pPatch%bcCoupled        
     END IF ! global%myProcid 
            
@@ -134,7 +134,7 @@ SUBROUTINE RFLU_GetBoundaryValues(region)
            pVals(BCDAT_INJECT_MFRATE,ifl) = (pPatch%mdotAlp(ifl))
 !KJM           pVals(BCDAT_INJECT_MFRATE,ifl) = ABS(pPatch%mdotAlp(ifl))
         ELSE
-	   boCount = boCount + 1
+           boCount = boCount + 1
            pVals(BCDAT_INJECT_MFRATE,ifl) = 0.0
            pPatch%mdotAlp(ifl) = 0.0
         ENDIF
@@ -180,17 +180,17 @@ SUBROUTINE RFLU_GetBoundaryValues(region)
     
     ELSE IF ( pPatch%bcCoupled == BC_NOT_BURNING ) THEN
       IF ( pPatch%bcType == BC_NOSLIPWALL_TEMP ) THEN  
-	pVals => pPatch%mixt%vals
+        pVals => pPatch%mixt%vals
 
-	DO ifl = 1,pPatch%nBFaces      
+        DO ifl = 1,pPatch%nBFaces
           pVals(BCDAT_NOSLIP_T,ifl) = pPatch%tbAlp(ifl)
-	END DO ! ifl
+        END DO ! ifl
 
-	DO ifl = pPatch%nBFaces+1,pPatch%nBFacesTot
+        DO ifl = pPatch%nBFaces+1,pPatch%nBFacesTot
           pVals(BCDAT_NOSLIP_T,ifl) = REAL(CRAZY_VALUE_INT,KIND=RFREAL)
-	END DO ! ifl
+        END DO ! ifl
 
-	IF ( global%myProcid == MASTERPROC .AND. & 
+        IF ( global%myProcid == MASTERPROC .AND. &
              global%checkLevel == CHECK_HIGH .AND. & 
              global%verbLevel >= VERBOSE_HIGH ) THEN 
           IF ( pPatch%nBFaces > 0 ) THEN
@@ -199,12 +199,12 @@ SUBROUTINE RFLU_GetBoundaryValues(region)
                   MINVAL(pPatch%tbAlp(1:pPatch%nBFaces)), & 
                   MAXVAL(pPatch%tbAlp(1:pPatch%nBFaces))
           END IF ! pPatch%nBFaces
-	END IF ! global%myProcid       
+        END IF ! global%myProcid
 
-	IF ( MINVAL(pPatch%tbAlp(1:pPatch%nBFaces)) < 0.0_RFREAL ) THEN 
+        IF ( MINVAL(pPatch%tbAlp(1:pPatch%nBFaces)) < 0.0_RFREAL ) THEN
           WRITE(errorString,*) 'Patch:',pPatch%iPatchGlobal
           CALL ErrorStop(global,ERR_TB_NEGATIVE,__LINE__,TRIM(errorString))
-	END IF ! MINVAL 
+        END IF ! MINVAL
       END IF ! pPatch%bcType   
     
 ! ==============================================================================

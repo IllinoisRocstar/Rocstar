@@ -896,9 +896,9 @@ MODULE RFLU_ModWENO
 ! DEBUG
 !    DO iGrad = iBegGrad,iEndGrad
 !      WRITE(*,*) iGrad,MINVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot))
+!                       MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot))
 !    END DO ! iGrad
 !    
 !    STOP
@@ -1112,11 +1112,11 @@ MODULE RFLU_ModWENO
 ! DEBUG
 !    DO iGrad = iBegGrad,iEndGrad
 !      WRITE(*,*) iGrad,MINVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
-!		       MINVAL(grad(ZCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
-!		       MAXVAL(grad(ZCOORD,iGrad,1:pGrid%nCellsTot))
+!                       MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MINVAL(grad(ZCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(ZCOORD,iGrad,1:pGrid%nCellsTot))
 !    END DO ! iGrad
 !    
 !    STOP
@@ -1314,9 +1314,9 @@ MODULE RFLU_ModWENO
 ! DEBUG
 !    DO iGrad = iBegGrad,iEndGrad
 !      WRITE(*,*) iGrad,MINVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot))
+!                       MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot))
 !    END DO ! iGrad
 !    
 !    STOP
@@ -1462,17 +1462,17 @@ MODULE RFLU_ModWENO
       icg_ary(nCellMembs+2) = icg
 
       DO iGrad = iBegGrad,iEndGrad
-	termX = grad(XCOORD,iGrad,icg)
-	termY = grad(YCOORD,iGrad,icg)
-	termZ = grad(ZCOORD,iGrad,icg)
+        termX = grad(XCOORD,iGrad,icg)
+        termY = grad(YCOORD,iGrad,icg)
+        termZ = grad(ZCOORD,iGrad,icg)
                      
-	nextX = grad(XCOORD,iGrad,icg_ary(1))
-	nextY = grad(YCOORD,iGrad,icg_ary(1))
-	nextZ = grad(ZCOORD,iGrad,icg_ary(1))
+        nextX = grad(XCOORD,iGrad,icg_ary(1))
+        nextY = grad(YCOORD,iGrad,icg_ary(1))
+        nextZ = grad(ZCOORD,iGrad,icg_ary(1))
        
-	nextX2 = grad(XCOORD,iGrad,icg_ary(2))
-	nextY2 = grad(YCOORD,iGrad,icg_ary(2))
-	nextZ2 = grad(ZCOORD,iGrad,icg_ary(2))
+        nextX2 = grad(XCOORD,iGrad,icg_ary(2))
+        nextY2 = grad(YCOORD,iGrad,icg_ary(2))
+        nextZ2 = grad(ZCOORD,iGrad,icg_ary(2))
 
         smooIndSumX = 1.0_RFREAL/(termX*termX + 1.0E-15_RFREAL)
         smooIndSumY = 1.0_RFREAL/(termY*termY + 1.0E-15_RFREAL)
@@ -1527,11 +1527,11 @@ MODULE RFLU_ModWENO
 ! DEBUG
 !    DO iGrad = iBegGrad,iEndGrad
 !      WRITE(*,*) iGrad,MINVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
-!		       MINVAL(grad(ZCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
-!		       MAXVAL(grad(ZCOORD,iGrad,1:pGrid%nCellsTot))
+!                       MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MINVAL(grad(ZCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(ZCOORD,iGrad,1:pGrid%nCellsTot))
 !    END DO ! iGrad
 !    
 !    STOP
@@ -1630,7 +1630,7 @@ MODULE RFLU_ModWENO
         CALL RFLU_WENOGradCellsXYZ_1D(pRegion,iBegGrad,iEndGrad,grad)               
       CASE ( 2 ) 
 !        CALL RFLU_WENOGradCellsXYZ_2D(pRegion,iBegGrad,iEndGrad,grad)
-        CALL RFLU_WENOGradCellsXYZFast_2D(pRegion,iBegGrad,iEndGrad,grad)	  
+        CALL RFLU_WENOGradCellsXYZFast_2D(pRegion,iBegGrad,iEndGrad,grad)
       CASE ( 3 ) 
 !        CALL RFLU_WENOGradCellsXYZ_3D(pRegion,iBegGrad,iEndGrad,grad)
         CALL RFLU_WENOGradCellsXYZFast_3D(pRegion,iBegGrad,iEndGrad,grad)                    

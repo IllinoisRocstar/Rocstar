@@ -12,21 +12,21 @@
 #
 ################################################################################
 
-SRCCXX+=	main.C
+SRCCXX+=        main.C
 
-SRCF90+= 	BuildVersionString.F90\
-		RFLU_AllocMemSolWrapper.F90\
+SRCF90+=        BuildVersionString.F90\
+                RFLU_AllocMemSolWrapper.F90\
                 RFLU_DeallocMemSolWrapper.F90\
-		RFLU_InitBcDataHardCode.F90\
+                RFLU_InitBcDataHardCode.F90\
                 RFLU_InitFlowHardCode.F90\
                 RFLU_InitFlowHardCodeLim.F90\
                 RFLU_InitFlowHardCodeLimWrapper.F90\
                 RFLU_InitFlowHardCodeWrapper.F90\
                 RFLU_InitFlowScratch.F90\
                 RFLU_InitFlowScratchWrapper.F90\
-		RFLU_InitFlowSerialWrapper.F90\
-		RFLU_PrintHeader.F90\
-		RFLU_WriteVersionString.F90\
+                RFLU_InitFlowSerialWrapper.F90\
+                RFLU_PrintHeader.F90\
+                RFLU_WriteVersionString.F90\
                 rfluinit.F90
 
 ################################################################################

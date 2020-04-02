@@ -54,19 +54,7 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
   USE ModError
   USE ModMPI
   USE ModParameters
-#ifdef RFLO
-  USE RFLO_ModBoundaryConditions, ONLY : RFLO_BoundaryConditionsSet, &
-        RFLO_BoundaryConditionsRecv, RFLO_BoundaryConditionsSend
-  USE ModInterfaces, ONLY : RFLO_GetDimensDummy, RFLO_GetCellOffset, &
-        NumericalDissipation, ViscousFluxes, ConvectiveFluxes, &
-        MixtureProperties, RFLO_ResidualSmoothing, RFLO_CheckValidity, &
-        RFLO_ZeroDummyCells, RFLO_TimeStepInviscid, RFLO_TimeStepViscous, &
-        RFLO_ClearSendRequests, RFLO_ResidualSmoothingCoeffs, &
-        RFLO_GetBoundaryValues, RFLO_SendBoundaryValues, SourceTerms, &
-        RFLO_SendBoundaryValuesAlpha, UpdateTbc, GlobalCommunicationMP
-#include "Indexing.h"
-#endif
-#ifdef RFLU
+
   USE RFLU_ModConvertCv
   USE RFLU_ModDifferentiationCells
   USE RFLU_ModLimiters, ONLY: RFLU_LimitGradCellsSimple
@@ -83,7 +71,6 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
                            SourceTerms, &
                            UpdateTbc, &
                            ViscousFluxes
-#endif
 #ifdef PEUL
   USE ModInterfacesEulerian, ONLY : PEUL_SpectralRadii, &
                                     PEUL_ResidualSmoothingCoeffs, &
@@ -97,20 +84,11 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
 #endif
 #ifdef PERI
   USE ModInterfacesPeriodic, ONLY : PERI_SourceTerms, PERI_SolutionUpdate
-!#ifdef RFLO 
-!  USE PERI_ModHybridDES, ONLY : PERI_CoMeanCorrection 
-!#endif 
 #endif
 #ifdef TURB
   USE ModInterfacesTurbulence, ONLY : TURB_EmsInit, TURB_RansConvectiveFluxes, &
                 TURB_RansNumericalDissipation,      TURB_RansSourceTerms, &
                 TURB_RansZeroDummyCells,            TURB_SolutionUpdate
-#ifdef RFLO
-  USE ModInterfacesTurbulence, ONLY : TURB_RFLO_RansBndConditionsSend, &    
-          TURB_RFLO_RansBndConditionsSet,     TURB_RFLO_RansBndConditionsRecv, &
-          TURB_RFLO_RansClearSendRequests,    TURB_RFLO_RansResSmoothing, &
-          TURB_RFLO_RansResSmoothingCoeff,    TURB_RFLO_RansSpectralRadii
-#endif
 #endif
 
   IMPLICIT NONE
@@ -128,17 +106,9 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
   INTEGER :: iReg, iRegLocal, ic, istage
 
 ! ... local variables
-#ifdef RFLO
-  INTEGER :: idcbeg, idcend, jdcbeg, jdcend, kdcbeg, kdcend
-  INTEGER :: iLev, iCOff, ijCOff
-#endif
   INTEGER :: ibc, iec, iecTot, ldiss(5), flowModel, gasModel
 
   LOGICAL :: moveGrid
-
-#ifdef RFLO
-  REAL(RFREAL) :: smoocf
-#endif
 
   REAL(RFREAL)          :: cfl, ark(5), betrk(5), blend1, fac, adtv
   REAL(RFREAL)          :: alpha, time
@@ -146,9 +116,7 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
   REAL(RFREAL), POINTER :: vol(:), fterm(:,:)
 
   TYPE(t_global), POINTER :: global
-#ifdef RFLU
   TYPE(t_region), POINTER :: pRegion
-#endif
 
 !******************************************************************************
 
@@ -157,25 +125,11 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
   CALL RegisterFunction( global,'ExplicitMultistage',&
   'ExplicitMultistage.F90' )
 
-#ifdef RFLO
-! set time for time-dependent BC data (for dual-time stepping)-----------------
-
-  time  = global%currentTime + global%dtMin
-  alpha = (time-global%timeStamp)/global%dTimeSystem
-#endif
-
 ! loop over stages and regions ------------------------------------------------
 
   DO istage=1,regions(1)%global%nrkSteps
-#ifdef RFLO
-    DO iReg=1,global%nRegions
-      IF (regions(iReg)%procid==global%myProcid .AND. & ! region active and
-          regions(iReg)%active==ACTIVE) THEN            ! on my processor
-#endif
-#ifdef RFLU
     DO iRegLocal = 1,global%nRegionsLocal
       iReg = iRegLocal
-#endif
         regions(iReg)%irkStep = istage
 
 ! ----- get dimensions and pointers
@@ -188,28 +142,6 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
         gasModel  = regions(iReg)%mixtInput%gasModel
         moveGrid  = regions(iReg)%mixtInput%moveGrid
 
-#ifdef RFLO
-        iLev = regions(iReg)%currLevel
-
-        CALL RFLO_GetDimensDummy( regions(iReg),iLev,idcbeg,idcend, &
-                                  jdcbeg,jdcend,kdcbeg,kdcend )
-        CALL RFLO_GetCellOffset( regions(iReg),iLev,iCOff,ijCOff )
-        ibc    = IndIJK(idcbeg,jdcbeg,kdcbeg,iCOff,ijCOff)
-        iec    = IndIJK(idcend,jdcend,kdcend,iCOff,ijCOff)
-        iecTot = iec
-
-        smoocf = regions(iReg)%mixtInput%smoocf
-
-        cv    => regions(iReg)%levels(iLev)%mixt%cv
-        cvOld => regions(iReg)%levels(iLev)%mixt%cvOld
-        diss  => regions(iReg)%levels(iLev)%mixt%diss
-        rhs   => regions(iReg)%levels(iLev)%mixt%rhs
-        vol   => regions(iReg)%levels(iLev)%grid%vol
-        dt    => regions(iReg)%levels(iLev)%dt
-        IF (residFterm) fterm => regions(iReg)%levels(iLev)%mixt%fterm
-#endif
-
-#ifdef RFLU
         pRegion => regions(iReg)
 
         ibc    = 1
@@ -223,41 +155,6 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
         vol   => pRegion%grid%vol
         dt    => pRegion%dt
         IF (residFterm) fterm => pRegion%mixt%fterm
-#endif
-
-#ifdef RFLO
-! ----- compute local time step (first stage only)
-
-        IF (istage == 1) THEN
-          IF (flowModel == FLOW_EULER) THEN
-            CALL RFLO_TimeStepInviscid( regions(iReg) )
-          ELSE
-            CALL RFLO_TimeStepViscous( regions(iReg) )
-          ENDIF
-          IF (smoocf > 0._RFREAL) THEN
-            CALL RFLO_ResidualSmoothingCoeffs( regions(iReg) )
-          END IF ! smoocf
-#ifdef PEUL
-          IF (global%peulUsed) THEN
-            CALL PEUL_SpectralRadii( regions(iReg) )
-
-            IF (regions(iReg)%peulInput%smoocf > 0._RFREAL) THEN
-              CALL PEUL_ResidualSmoothingCoeffs( regions(iReg) )
-            ENDIF ! smoocf
-          ENDIF   ! peulUsed
-#endif
-#ifdef TURB
-          IF (flowModel == FLOW_NAVST .AND. &
-              regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE) THEN
-            CALL TURB_RFLO_RansSpectralRadii( regions(iReg) )
-
-            IF (regions(iReg)%turbInput%smoocf > 0._RFREAL) THEN
-              CALL TURB_RFLO_RansResSmoothingCoeff( regions(iReg) )
-            ENDIF ! smoocf
-          ENDIF   ! flowModel
-#endif
-        ENDIF
-#endif
 
 ! ----- store previous solution; set dissipation to zero (first stage)
 
@@ -289,7 +186,6 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
           ENDDO
         ENDIF
 
-#ifdef RFLU
 ! ----- Compute cell gradients for higher-order scheme
 
         IF ( regions(iReg)%mixtInput%spaceOrder > 1 ) THEN
@@ -306,7 +202,6 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
                                          pRegion%mixt%gradCell)
           CALL RFLU_ConvertCvPrim2Cons(pRegion,CV_MIXT_STATE_CONS)
         END IF ! regions
-#endif
 
 #ifdef TURB
           IF (flowModel == FLOW_NAVST .AND. &
@@ -368,13 +263,8 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
 
 ! ----- zero out residuals in dummy cells
 
-#ifdef RFLO
-        CALL RFLO_ZeroDummyCells( regions(iReg),rhs )
-#endif
-#ifdef RFLU
         pRegion => regions(iReg)
         CALL RFLU_ZeroVirtualCellVars(pRegion,rhs)
-#endif
 #ifdef TURB
         IF (flowModel == FLOW_NAVST .AND. &
             regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE) THEN
@@ -430,31 +320,6 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
           ENDDO
         ENDIF
 
-#ifdef RFLO
-! ----- implicit residual smoothing
-
-        IF (smoocf > 0._RFREAL) THEN
-          CALL RFLO_ZeroDummyCells( regions(iReg),rhs )
-          CALL RFLO_ResidualSmoothing( regions(iReg) )
-        ENDIF
-#ifdef PEUL
-        IF (global%peulUsed .AND. &
-            regions(iReg)%peulInput%smoocf > 0._RFREAL) THEN
-          CALL RFLO_ZeroDummyCells( regions(iReg), &
-            regions(iReg)%levels(iLev)%peul%rhs )
-          CALL PEUL_ResidualSmoothingCoeffs( regions(iReg) )
-        ENDIF
-#endif
-#ifdef TURB
-        IF (flowModel == FLOW_NAVST .AND. &
-            regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE .AND. &
-            regions(iReg)%turbInput%smoocf > 0._RFREAL) THEN
-          CALL TURB_RansZeroDummyCells( regions(iReg) )
-          CALL TURB_RFLO_RansResSmoothing( regions(iReg) )
-        ENDIF
-#endif
-#endif
-
 ! ----- update solution
 
         IF (global%solverType == SOLV_IMPLICIT) THEN
@@ -496,140 +361,20 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
 
 ! ----- check for positivity/validity -----------------------------------------
 
-#ifdef RFLO
-        CALL RFLO_CheckValidity( regions(iReg) )
-#endif
-
-#ifdef RFLU
         pRegion => regions(iReg)
         CALL RFLU_CheckValidityWrapper(pRegion)
         CALL RFLU_CheckPositivityWrapper(pRegion)
-#endif
 
-#ifdef RFLO
-! ----- send conservative variables to other processors
-
-        CALL RFLO_BoundaryConditionsSend( regions,iReg )
-
-#ifdef TURB
-        IF (flowModel == FLOW_NAVST .AND. &
-            regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE) THEN
-          CALL TURB_RFLO_RansBndConditionsSend( regions,iReg )
-        ENDIF
-#endif
-#endif
-#ifdef RFLU
 ! ----- exchange conservative variables with other processors
 
         pRegion => regions(iReg)
         CALL RFLU_MPI_ISendWrapper(pRegion)
         CALL RFLU_SetVars(pRegion,1,pRegion%grid%nCells)
-#endif
 
 ! ----- update dependent variables
 
-#ifdef RFLO
-        IF (gasModel == GAS_MODEL_TCPERF) THEN   ! cp, Mol=const.
-          CALL MixtureProperties( regions(iReg),ibc,iec,.false. )
-        ELSE
-          CALL MixtureProperties( regions(iReg),ibc,iec,.true. )
-        ENDIF
-#endif
-
-#ifdef RFLO
-      ENDIF  ! region on this processor and active
-#endif
     ENDDO    ! iReg
 
-#ifdef RFLO
-! - facilitate global non-dummy communication ---------------------------------
-
-    CALL GlobalCommunicationMP( regions )
-
-#ifdef GENX
-! - send fluids density at interface
-
-    CALL COM_call_function( global%genxHandleBc,2,alpha,1 )
-
-    DO iReg=1,global%nRegions
-      IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-          regions(iReg)%active==ACTIVE) THEN              ! on my processor
-        IF (regions(iReg)%mixtInput%externalBc) THEN
-          CALL RFLO_SendBoundaryValuesAlpha( regions(iReg) )
-        ENDIF
-      ENDIF
-    ENDDO
-
-! - get BC values at the interface; set BC values in dummy cells
-
-    CALL COM_call_function( global%genxHandleBc,2,alpha,2 )
-#endif
-
-    DO iReg=1,global%nRegions
-      IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-          regions(iReg)%active==ACTIVE) THEN              ! on my processor
-        IF (regions(iReg)%mixtInput%externalBc) THEN
-          CALL RFLO_GetBoundaryValues( regions(iReg) )
-        ENDIF
-        IF (global%solverType == SOLV_IMPLICIT) THEN
-          CALL UpdateTbc( regions(iReg),time,global%dtMin,.true. )
-        ENDIF
-        CALL RFLO_BoundaryConditionsSet( regions,iReg )
-#ifdef TURB
-        IF (flowModel == FLOW_NAVST .AND. &
-            regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE) THEN
-          CALL TURB_RFLO_RansBndConditionsSet( regions,iReg )
-        ENDIF
-#endif
-      ENDIF
-    ENDDO
-
-! - receive variables from other processors; send BC values to external code
-
-    DO iReg=1,global%nRegions
-      IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-          regions(iReg)%active==ACTIVE) THEN              ! on my processor
-        CALL RFLO_BoundaryConditionsRecv( regions,iReg )
-#ifdef TURB
-        IF (flowModel == FLOW_NAVST .AND. &
-            regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE) THEN
-          CALL TURB_RFLO_RansBndConditionsRecv( regions,iReg )
-        ENDIF
-#endif
-      ENDIF
-    ENDDO
-
-! - clear send requests
-
-    DO iReg=1,global%nRegions
-      IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-          regions(iReg)%active==ACTIVE) THEN              ! on my processor
-        CALL RFLO_ClearSendRequests( regions,iReg,.false. )
-#ifdef TURB
-        IF (flowModel == FLOW_NAVST .AND. &
-            regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE) THEN
-          CALL TURB_RFLO_RansClearSendRequests( regions,iReg )
-        ENDIF
-#endif
-      ENDIF
-    ENDDO
-
-#ifdef PERI
-!    DO iReg=1,global%nRegions
-!      IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-!          regions(iReg)%active==ACTIVE) THEN              ! on my processor
-!        IF (regions(iReg)%periInput%flowKind /= OFF) THEN
-!          CALL PERI_CoMeanCorrection( regions(iReg) ) 
-!        ENDIF
-!      ENDIF
-!    ENDDO
-#endif
-
-#endif
-
-
-
-#ifdef RFLU
     CALL RFLU_MPI_CopyWrapper(regions)
 
     DO iReg = 1,global%nRegionsLocal
@@ -644,8 +389,6 @@ SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
 
       CALL RFLU_MPI_ClearRequestWrapper(pRegion)
     END DO ! iReg
-#endif
-
 
   ENDDO   ! istage
 

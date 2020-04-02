@@ -54,18 +54,10 @@ MODULE ModBndPatch
 ! ******************************************************************************
 
   TYPE t_bcvalues
-#ifdef RFLO
-    LOGICAL :: bcSet, setMotion
-    INTEGER :: nSendBuff, nRecvBuff, iRequest
-#endif
     INTEGER :: distrib, nData, nSwitches
 
     INTEGER, POINTER      :: switches(:)
     REAL(RFREAL), POINTER :: vals(:,:)
-#ifdef RFLO
-    REAL(RFREAL)          :: maxChange, bndVel(3), amplitude
-    REAL(RFREAL), POINTER :: sendBuff(:), recvBuff(:)
-#endif
 
     TYPE(t_tbcvalues), POINTER :: tbcs(:)
 
@@ -94,38 +86,8 @@ MODULE ModBndPatch
 
     INTEGER      :: bcType, bcCoupled, bcMotion
     REAL(RFREAL) :: periodAngle     ! angle between rotat. periodic boundaries
-#ifdef RFLO
-    INTEGER :: srcRegion, srcPatch
-    INTEGER :: lbound, l1beg, l1end, l2beg, l2end
-    INTEGER :: srcLbound, srcL1beg, srcL1end, srcL2beg, srcL2end
-    INTEGER :: corns(4), position(4)
-    INTEGER :: dirFlat
-    LOGICAL :: align, thrustCalc, bndFlat, globalAeroCoeffs
-    REAL(RFREAL) :: l1VecSrc(3), l2VecSrc(3)
-    REAL(RFREAL), POINTER :: surfCoord(:,:,:)
-    REAL(RFREAL), POINTER :: arclen1(:), arclen2(:)
-    REAL(RFREAL), POINTER :: cp(:), ch(:)    
-    REAL(RFREAL), POINTER :: cf(:,:), forceCoeffs(:,:), momentCoeffs(:,:)    
 
-    REAL(RFREAL), POINTER :: st(:,:,:), stOld(:,:,:)             ! prmgrd (EPDE)
-    REAL(RFREAL), POINTER :: sti(:,:,:), stj(:,:,:)              ! 1st deriv. st
-    REAL(RFREAL), POINTER :: stii(:,:,:),stjj(:,:,:),stij(:,:,:) ! 2nd deriv. st
-    REAL(RFREAL), POINTER :: pfun(:,:,:,:)                       ! ctrl function
-
-    REAL(RFREAL), POINTER :: aij(:,:), aimj(:,:), aipj(:,:)      ! matrix coeffs
-    REAL(RFREAL), POINTER :: aimjm(:,:), aijm(:,:), aipjm(:,:)   ! of EPDE
-    REAL(RFREAL), POINTER :: aimjp(:,:), aijp(:,:), aipjp(:,:)
-
-#ifdef GENX
-    INTEGER, POINTER      :: bcFlag(:), bFlag(:,:)
-    REAL(RFREAL), POINTER :: duAlp(:,:,:), mdotAlp(:,:), &
-                             rhofvfAlp(:,:,:), tflmAlp(:,:), pf(:,:)     , &
-                             qc(:,:), qr(:,:), rhofAlp(:,:), nfAlp(:,:,:), &
-                             tracf(:,:,:), tempf(:,:), tempv(:,:), dnml(:,:)
-#endif
-#endif
-#ifdef RFLU
-    CHARACTER(CHRLEN) :: bcName 
+    CHARACTER(CHRLEN) :: bcName
     LOGICAL :: flatFlag,movePatch,plotFlag,plotStatsFlag,renumFlag,smoothGrid, &
                thrustFlag,transformFlag
     LOGICAL, DIMENSION(:), POINTER :: nbMap
@@ -161,7 +123,6 @@ MODULE ModBndPatch
 #ifndef NO_TECPLOT
     REAL(RFREAL), DIMENSION(:,:), POINTER :: varFaceTEC,varVertTEC
 #endif   
-#endif 
 
 #ifdef RADI
     INTEGER :: radBcType

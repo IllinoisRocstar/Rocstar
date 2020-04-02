@@ -481,7 +481,7 @@ SUBROUTINE RFLU_ComputeGradBFaces(pRegion,pPatch,iBegVar,iEndVar,iBegGrad, &
               grad(XCOORD,iGrad,ifl) = grad(XCOORD,iGrad,ifl) + wx*var(iVar,icg)
               grad(YCOORD,iGrad,ifl) = grad(YCOORD,iGrad,ifl) + wy*var(iVar,icg)
  
-!              dVar = var(iVar,icg) - pPatch%mixt%cv(iVar,ifl)	           
+!              dVar = var(iVar,icg) - pPatch%mixt%cv(iVar,ifl)
 !              grad(XCOORD,iGrad,ifl) = grad(XCOORD,iGrad,ifl) + wx*dVar
 !              grad(YCOORD,iGrad,ifl) = grad(YCOORD,iGrad,ifl) + wy*dVar
 ! END TEMPORARY

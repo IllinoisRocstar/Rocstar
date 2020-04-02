@@ -136,8 +136,8 @@ MODULE RFLU_ModNSCBC
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -466,8 +466,8 @@ END SUBROUTINE RFLU_NSCBC_CompFirstPatchFlux
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -793,8 +793,8 @@ END SUBROUTINE RFLU_NSCBC_CompPatchFlux
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -1261,8 +1261,8 @@ END SUBROUTINE RFLU_NSCBC_CompRhs
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -1604,8 +1604,8 @@ END SUBROUTINE RFLU_NSCBC_CompRhsFF
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -1672,8 +1672,8 @@ END SUBROUTINE RFLU_NSCBC_CompRhsIFTotAng
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -2006,8 +2006,8 @@ END SUBROUTINE RFLU_NSCBC_CompRhsIFVelTemp
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -2072,8 +2072,8 @@ END SUBROUTINE RFLU_NSCBC_CompRhsIJ
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -2138,8 +2138,8 @@ END SUBROUTINE RFLU_NSCBC_CompRhsNSWHeat
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -2204,8 +2204,8 @@ END SUBROUTINE RFLU_NSCBC_CompRhsNSWTemp
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -2537,8 +2537,8 @@ END SUBROUTINE RFLU_NSCBC_CompRhsOF
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -2736,7 +2736,7 @@ END SUBROUTINE RFLU_NSCBC_CompRhsSW
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region data
+!   pRegion     Pointer to region data
 !
 ! Output: None.
 !
@@ -2816,8 +2816,8 @@ END FUNCTION RFLU_NSCBC_DecideHaveNSCBC
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -2970,8 +2970,8 @@ END SUBROUTINE RFLU_NSCBC_InitFF
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -3094,8 +3094,8 @@ END SUBROUTINE RFLU_NSCBC_InitIFTotAng
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -3214,8 +3214,8 @@ END SUBROUTINE RFLU_NSCBC_InitIFVelTemp
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -3282,8 +3282,8 @@ END SUBROUTINE RFLU_NSCBC_InitIJ
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -3349,8 +3349,8 @@ END SUBROUTINE RFLU_NSCBC_InitNSWHeat
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -3416,8 +3416,8 @@ END SUBROUTINE RFLU_NSCBC_InitNSWTemp
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -3537,8 +3537,8 @@ END SUBROUTINE RFLU_NSCBC_InitOF
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !

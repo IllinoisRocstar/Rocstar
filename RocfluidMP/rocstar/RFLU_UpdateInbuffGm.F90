@@ -27,8 +27,8 @@
 ! Description: None.
 !
 ! Input: 
-!   globalGenx	Pointer to global data
-!   dAlpha    	Relative time step
+!   globalGenx        Pointer to global data
+!   dAlpha            Relative time step
 !
 ! Output: None.
 !

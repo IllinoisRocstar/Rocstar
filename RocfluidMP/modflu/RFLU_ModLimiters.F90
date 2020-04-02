@@ -84,15 +84,15 @@ MODULE RFLU_ModLimiters
 !
 ! Input:
 !   pRegion     Pointer to region data
-!   iBegVar	Beginning index in var array
-!   iEndVar	Beginning index in var array
-!   iBegGrad	Beginning index in grad array
-!   iEndGrad	Beginning index in grad array
-!   var		Variables to be limited
-!   grad	Gradients of variables
+!   iBegVar     Beginning index in var array
+!   iEndVar     Beginning index in var array
+!   iBegGrad    Beginning index in grad array
+!   iEndGrad    Beginning index in grad array
+!   var         Variables to be limited
+!   grad        Gradients of variables
 !
 ! Output:
-!   lim        	Limiter
+!   lim         Limiter
 !
 ! Notes: None.
 !
@@ -293,15 +293,15 @@ SUBROUTINE RFLU_ComputeLimiterBarthJesp(pRegion,iBegVar,iEndVar,iBegGrad, &
 !
 ! Input:
 !   pRegion     Pointer to region data
-!   iBegVar	Beginning index in var array
-!   iEndVar	Beginning index in var array
-!   iBegGrad	Beginning index in grad array
-!   iEndGrad	Beginning index in grad array
-!   var		Variables to be limited
-!   grad	Gradients of variables
+!   iBegVar     Beginning index in var array
+!   iEndVar     Beginning index in var array
+!   iBegGrad    Beginning index in grad array
+!   iEndGrad    Beginning index in grad array
+!   var         Variables to be limited
+!   grad        Gradients of variables
 !
 ! Output:
-!   lim        	Limiter
+!   lim         Limiter
 !
 ! Notes: None.
 !
@@ -518,11 +518,11 @@ SUBROUTINE RFLU_ComputeLimiterVenkat(pRegion,iBegVar,iEndVar,iBegGrad, &
 !
 ! Input:
 !   pRegion     Pointer to region
-!   iBegGrad	Beginning index of gradient array
-!   iEndGrad	Ending index of gradient array
+!   iBegGrad    Beginning index of gradient array
+!   iEndGrad    Ending index of gradient array
 !
 ! Output: 
-!   lim		Limiter
+!   lim         Limiter
 !
 ! Notes: None.
 !
@@ -664,13 +664,13 @@ END SUBROUTINE RFLU_DestroyLimiter
 !
 ! Input:
 !   pRegion     Pointer to region
-!   iBegGrad	Beginning index of grad array
-!   iEndGrad	Ending index of grad array
-!   grad	Gradient array
-!   lim		Limiter
+!   iBegGrad    Beginning index of grad array
+!   iEndGrad    Ending index of grad array
+!   grad        Gradient array
+!   lim         Limiter
 !
 ! Output: 
-!   grad	Limited gradient array
+!   grad        Limited gradient array
 !
 ! Notes: None.
 !

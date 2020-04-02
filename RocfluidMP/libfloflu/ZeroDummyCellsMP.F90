@@ -47,12 +47,7 @@ SUBROUTINE ZeroDummyCellsMP( region )
   USE ModGlobal, ONLY     : t_global
   USE ModError
   USE ModParameters
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_ZeroDummyCells
-#endif
-#ifdef RFLU
   USE ModInterfaces, ONLY: RFLU_ZeroVirtualCellVars
-#endif
 #ifdef TURB
   USE TURB_ModParameters
   USE ModInterfacesTurbulence, ONLY: TURB_RansZeroDummyCells
@@ -64,17 +59,12 @@ SUBROUTINE ZeroDummyCellsMP( region )
   TYPE(t_region), TARGET :: region
 
 ! ... local variables
-#ifdef RFLO
-  INTEGER :: iLev
-#endif
   LOGICAL :: peulUsed,specUsed
 
   REAL(RFREAL), POINTER :: rhs(:,:), rhsPeul(:,:)
 
   TYPE(t_global), POINTER :: global
-#ifdef RFLU
   TYPE(t_region), POINTER :: pRegion
-#endif
 
 !******************************************************************************
 
@@ -88,35 +78,10 @@ SUBROUTINE ZeroDummyCellsMP( region )
   peulUsed = global%peulUsed
   specUsed = global%specUsed
 
-#ifdef RFLO
-  iLev = region%currLevel
-  rhs  => region%levels(iLev)%mixt%rhs
-#ifdef PEUL
-  rhsPEul => region%levels(iLev)%peul%rhs
-#endif
-#endif
-
-#ifdef RFLU
   pRegion => region
-#endif
 
 ! zero out residuals in dummy cells -------------------------------------------
 
-#ifdef RFLO
-  CALL RFLO_ZeroDummyCells( region,rhs )
-#ifdef PEUL
-  IF (peulUsed) CALL RFLO_ZeroDummyCells( region,rhsPEul )
-#endif
-#ifdef TURB
-  IF (region%mixtInput%flowModel == FLOW_NAVST .AND. &
-      region%mixtInput%turbModel /= TURB_MODEL_NONE .AND. &
-      region%turbInput%modelClass == MODEL_RANS) THEN
-    CALL TURB_RansZeroDummyCells( region )
-  ENDIF
-#endif
-#endif
-
-#ifdef RFLU
   CALL RFLU_ZeroVirtualCellVars(pRegion,pRegion%mixt%rhs)
 #ifdef SPEC
   IF ( specUsed .EQV. .TRUE. ) THEN
@@ -129,7 +94,6 @@ SUBROUTINE ZeroDummyCellsMP( region )
        pRegion%turbInput%modelClass == MODEL_RANS) THEN
     CALL RFLU_ZeroVirtualCellVars(pRegion,pRegion%turb%rhs)
   END IF ! pRegion%mixtInput%flowModel
-#endif
 #endif
 
 ! finalize ====================================================================

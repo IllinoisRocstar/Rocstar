@@ -12,20 +12,20 @@
 #
 ################################################################################
 
-SRCCXX+=	main.C
+SRCCXX+=        main.C
 
-SRCF90+=	RFLU_ModCENTAUR.F90\
-		RFLU_ModCOBALT.F90\
-		RFLU_ModGAMBIT.F90\
-		RFLU_ModMESH3D.F90\
-		RFLU_ModPartitionRegion.F90\
-		RFLU_ModPartitionRegionUtils.F90\
-		RFLU_ModVGRIDns.F90\
-		RFLU_PrintHeader.F90\
-		RFLU_ReadConvGridWrapper.F90\
-		RFLU_USER_EnforcePatchCoords.F90\
-		RFLU_WriteVersionString.F90\
-		BuildVersionString.F90\
+SRCF90+=        RFLU_ModCENTAUR.F90\
+                RFLU_ModCOBALT.F90\
+                RFLU_ModGAMBIT.F90\
+                RFLU_ModMESH3D.F90\
+                RFLU_ModPartitionRegion.F90\
+                RFLU_ModPartitionRegionUtils.F90\
+                RFLU_ModVGRIDns.F90\
+                RFLU_PrintHeader.F90\
+                RFLU_ReadConvGridWrapper.F90\
+                RFLU_USER_EnforcePatchCoords.F90\
+                RFLU_WriteVersionString.F90\
+                BuildVersionString.F90\
                 rflupart.F90
 
 ################################################################################

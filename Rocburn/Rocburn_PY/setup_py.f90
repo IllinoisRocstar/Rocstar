@@ -48,8 +48,8 @@ CONTAINS
 
 !***************************************************************************
     SUBROUTINE burn_init_0d(bp, comm, IN_DIR, nx_read,To_read)
- 
-      INCLUDE 'mpif.h'
+
+      USE mpi
 
       TYPE(parameter_structure),POINTER  :: bp
       INTEGER, INTENT(IN)    :: comm
@@ -88,7 +88,7 @@ CONTAINS
 !
     SUBROUTINE read_properties(bp,IN_DIR)
 
-      INCLUDE 'mpif.h'
+      USE mpi
 
       TYPE(parameter_structure),POINTER :: bp
       CHARACTER*(*), INTENT(IN)          :: IN_DIR
@@ -256,8 +256,9 @@ CONTAINS
 
       SUBROUTINE grid(bp)
 
-        IMPLICIT NONE  
-        INCLUDE 'mpif.h'
+        USE mpi
+
+        IMPLICIT NONE
 !----------------------------------------------------------------------
         TYPE(parameter_structure),POINTER  :: bp
         INTEGER            :: gridtype, numx
@@ -356,8 +357,9 @@ CONTAINS
 !******************************************************
       SUBROUTINE READTABLE(bp,IN_DIR)
 
-        IMPLICIT NONE  
-        INCLUDE 'mpif.h'
+        USE mpi
+
+        IMPLICIT NONE
 !----------------------------------------------------------------------
         TYPE(parameter_structure),POINTER  :: bp
         REAL(DBL) ::  Ts,pread,g,rb,fx2,alfaEFF
@@ -502,8 +504,9 @@ CONTAINS
 !******************************************************
       SUBROUTINE STEADYTEMP(bp,TIN,pIN,out,rb,g)
 
-        IMPLICIT NONE  
-        INCLUDE 'mpif.h'
+        USE mpi
+
+        IMPLICIT NONE
 !----------------------------------------------------------------------
         TYPE(parameter_structure),POINTER  :: bp
         INTEGER :: jj,kk

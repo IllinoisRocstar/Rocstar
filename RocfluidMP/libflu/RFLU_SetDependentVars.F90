@@ -98,7 +98,7 @@ SUBROUTINE RFLU_SetDependentVars(pRegion,icgBeg,icgEnd)
   INTEGER :: iSpec
   REAL(RFREAL) :: Bg2,Bl2,Bp,Bt,Bv2,Cg2,Cl2,cpg,cpm,Cv2,cvg,cvl,Cvm,cvv, &
                   gcg,gcm,gcv,gm,immg,mmg,mmm,phip,po,rl,ro,rv,rYg,rYi,rYl, &
-		  rYv,to,vfg,vfl,vfv,Yg
+                  rYv,to,vfg,vfl,vfv,Yg
   REAL(RFREAL), DIMENSION(:,:), POINTER :: pCvSpec
   TYPE(t_spec_type), POINTER :: pSpecType
 #endif

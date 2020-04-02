@@ -44,12 +44,7 @@ SUBROUTINE ReadViscositySection( regions )
 
   USE ModDataTypes
   USE ModDataStruct, ONLY: t_region
-#ifdef RFLO  
-  USE ModInterfaces, ONLY : ReadRegionSection
-#endif
-#ifdef RFLU
   USE ModInterfaces, ONLY : ReadSection
-#endif
   USE ModError
   USE ModParameters
   IMPLICIT NONE
@@ -61,13 +56,8 @@ SUBROUTINE ReadViscositySection( regions )
   INTEGER, PARAMETER :: NKEYS = 4
   CHARACTER(10) :: keys(NKEYS)
  
-#ifdef RFLO 
-  INTEGER :: brbeg, brend
-#endif 
-#ifdef RFLU
   INTEGER :: iReg
-#endif 
- 
+
   LOGICAL :: defined(NKEYS)
  
   REAL(RFREAL) :: vals(NKEYS)
@@ -84,28 +74,7 @@ SUBROUTINE ReadViscositySection( regions )
   keys(3) = 'REFTEMP'
   keys(4) = 'SUTHCOEF'
 
-#ifdef RFLO
-  CALL ReadRegionSection( regions(1)%global,IF_INPUT,NKEYS,keys,vals, &
-                          brbeg,brend,defined )
-
-  IF (defined(1).eqv..true.) &
-    regions(brbeg:brend)%mixtInput%viscModel = NINT(vals(1))
-
-  IF (defined(2).eqv..true.) THEN
-    regions(brbeg:brend)%mixtInput%refVisc   = ABS(vals(2))
-  ELSE
-    regions(brbeg:brend)%mixtInput%refVisc   = -1._RFREAL
-  ENDIF
-  
-  IF (defined(3).eqv..true.) &
-    regions(brbeg:brend)%mixtInput%refTemp   = ABS(vals(3))
-  
-  IF (defined(4).eqv..true.) &
-    regions(brbeg:brend)%mixtInput%suthCoef  = ABS(vals(4))    
-#endif
-
-#ifdef RFLU
-  CALL ReadSection( regions(1)%global,IF_INPUT,NKEYS,keys,vals,defined ) 
+  CALL ReadSection( regions(1)%global,IF_INPUT,NKEYS,keys,vals,defined )
   
   IF ( defined(1) .EQV. .TRUE. ) THEN
     DO iReg = LBOUND(regions,1),UBOUND(regions,1)
@@ -134,7 +103,6 @@ SUBROUTINE ReadViscositySection( regions )
       regions(iReg)%mixtInput%suthCoef = ABS(vals(4))
     END DO ! iReg
   END IF ! defined 
-#endif 
 
 ! finalize
 

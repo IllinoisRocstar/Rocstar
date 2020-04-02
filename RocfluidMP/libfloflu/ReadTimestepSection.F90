@@ -114,12 +114,6 @@ SUBROUTINE ReadTimestepSection( global )
   IF (defined(10).eqv..true.) global%timeStampPrep = ABS(vals(10))
 #endif
   IF (defined(11).eqv..true.) global%currentIter   = INT(ABS(vals(11))+0.5_RFREAL)
-#ifdef RFLO
-  IF (defined(12).eqv..true.) THEN
-                               global%solverType = SOLV_EXPLICIT
-    IF (vals(12) > 0.9_RFREAL) global%solverType = SOLV_IMPLICIT
-  ENDIF
-#endif
   IF (defined(13).eqv..true.) global%tstepOrder = MAX(2,INT(ABS(vals(13))+0.5_RFREAL))
   IF (defined(14).eqv..true.) global%maxSubIter = MAX(1,INT(ABS(vals(14))+0.5_RFREAL))
   IF (defined(15).eqv..true.) global%tolSubIter = ABS(vals(15))
@@ -133,17 +127,7 @@ SUBROUTINE ReadTimestepSection( global )
   IF ( defined(18) .eqv..true.) THEN 
     global%rkScheme = INT(ABS(vals(18)) + 0.5_RFREAL)
   END IF ! defined
-#ifdef RFLO
-  IF (defined(19).eqv..true.) THEN
-    IF (vals(19) < 0.9_RFREAL) THEN
-      global%dtFixed = .false.
-    ELSE
-      global%dtFixed = .true.
-    ENDIF
-  ENDIF
-#endif
 
-#ifdef RFLU
 #ifndef GENX
   IF ( defined(10) .EQV. .TRUE. ) THEN
     global%currentTime = global%timeStamp
@@ -165,7 +149,6 @@ SUBROUTINE ReadTimestepSection( global )
   IF ( defined(17) .EQV. .TRUE. ) THEN 
     global%dtMinLimit = ABS(vals(17))
   END IF ! defined 
-#endif
 
 ! finalize
 

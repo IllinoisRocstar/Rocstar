@@ -15,44 +15,44 @@
 SRCCXX+=        main.C
 
 ifeq (,$(findstring NO_TECPLOT,$(FPPFLAGS)))
-  SRCCXX+= 	tecwrap.C
+  SRCCXX+=      tecwrap.C
 endif
 
-SRCF90=		RFLU_ModENSIGHT.F90\
-		RFLU_ModENSIGHTUtils.F90\
-		RFLU_ModExtractFlowData.F90\
-		RFLU_ModExtractFlowDataUtils.F90\
-		RFLU_ModMergeRegions.F90\
-		RFLU_ModPlottingVars.F90
+SRCF90=         RFLU_ModENSIGHT.F90\
+                RFLU_ModENSIGHTUtils.F90\
+                RFLU_ModExtractFlowData.F90\
+                RFLU_ModExtractFlowDataUtils.F90\
+                RFLU_ModMergeRegions.F90\
+                RFLU_ModPlottingVars.F90
 
 ifeq (,$(findstring NO_TECPLOT,$(FPPFLAGS)))
-  SRCF90+= 	RFLU_ModTECPLOT.F90\
-		RFLU_ModTECPLOTUtils.F90
+  SRCF90+=      RFLU_ModTECPLOT.F90\
+                RFLU_ModTECPLOTUtils.F90
 endif
 
-SRCF90+= 	BuildVersionString.F90\
-		RFLU_AllocateMemoryVert.F90\
-		RFLU_AllocMemSolWrapper.F90\
-		RFLU_AllocMemVertWrapper.F90\
-      		RFLU_ComputeExactFlowError.F90\
-      		RFLU_ComputeExactFlowProbeError.F90\
-      		RFLU_ComputeVertexVariables.F90\
-		RFLU_DeallocateMemoryVert.F90\
-		RFLU_DeallocMemSolWrapper.F90\
-		RFLU_DeallocMemVertWrapper.F90\
-		RFLU_DecideBuildGeometry.F90\
-		RFLU_DecideBuildStencilsWeights.F90\
-		RFLU_InterpolateWrapper.F90\
-		RFLU_MergePostProcessRegions.F90\
-		RFLU_PostProcessRegions.F90\
-		RFLU_PostProcessRegionsCommon1.F90\
-		RFLU_PostProcessRegionsCommon2.F90\
-		RFLU_PostProcessRegions_ENS.F90\
-		RFLU_PrintHeader.F90\
-		RFLU_ReadPostInfo.F90\
-		RFLU_SetPatchPlotFlags.F90\
-		RFLU_WriteVersionString.F90\
-		rflupost.F90
+SRCF90+=        BuildVersionString.F90\
+                RFLU_AllocateMemoryVert.F90\
+                RFLU_AllocMemSolWrapper.F90\
+                RFLU_AllocMemVertWrapper.F90\
+                RFLU_ComputeExactFlowError.F90\
+                RFLU_ComputeExactFlowProbeError.F90\
+                RFLU_ComputeVertexVariables.F90\
+                RFLU_DeallocateMemoryVert.F90\
+                RFLU_DeallocMemSolWrapper.F90\
+                RFLU_DeallocMemVertWrapper.F90\
+                RFLU_DecideBuildGeometry.F90\
+                RFLU_DecideBuildStencilsWeights.F90\
+                RFLU_InterpolateWrapper.F90\
+                RFLU_MergePostProcessRegions.F90\
+                RFLU_PostProcessRegions.F90\
+                RFLU_PostProcessRegionsCommon1.F90\
+                RFLU_PostProcessRegionsCommon2.F90\
+                RFLU_PostProcessRegions_ENS.F90\
+                RFLU_PrintHeader.F90\
+                RFLU_ReadPostInfo.F90\
+                RFLU_SetPatchPlotFlags.F90\
+                RFLU_WriteVersionString.F90\
+                rflupost.F90
 
 ################################################################################
 #

@@ -49,9 +49,9 @@
   SUBROUTINE APN_input_0d(G_APN, Indir)
 
     USE M_Rocburn_APN_Global_Data
+    USE mpi
 
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
 
 !
 !   Global data for Rocburn_1D_APN passed as a pointer

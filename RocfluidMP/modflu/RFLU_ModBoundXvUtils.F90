@@ -129,7 +129,7 @@ MODULE RFLU_ModBoundXvUtils
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -223,8 +223,8 @@ END SUBROUTINE RFLU_BXV_ComputeVarsCv
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -326,8 +326,8 @@ END SUBROUTINE RFLU_BXV_CompEnergyPatch
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
-!   pPatch 	Pointer to patch
+!   pRegion     Pointer to region
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -674,7 +674,7 @@ END SUBROUTINE RFLU_BXV_CreateVarsTStep
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -751,7 +751,7 @@ END SUBROUTINE RFLU_BXV_DestroyVarsCv
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -827,7 +827,7 @@ END SUBROUTINE RFLU_BXV_DestroyVarsDv
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -912,7 +912,7 @@ END SUBROUTINE RFLU_BXV_DestroyVarsTStep
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -1227,7 +1227,7 @@ END SUBROUTINE RFLU_BXV_NullifyVarsTStep
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -1465,7 +1465,7 @@ END SUBROUTINE RFLU_BXV_ReadVarsASCII
 ! Description: None.
 !
 ! Input:
-!   pRegion	Pointer to region
+!   pRegion     Pointer to region
 !
 ! Output: None.
 !
@@ -1848,7 +1848,7 @@ END SUBROUTINE RFLU_BXV_SetDependentVars
 !
 ! Input:
 !   pRegion     Pointer to region
-!   pPatch	Pointer to patch
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !
@@ -1992,7 +1992,7 @@ END SUBROUTINE RFLU_BXV_SetDependentVarsPatch
 !
 ! Input:
 !   pRegion     Pointer to region
-!   pPatch	Pointer to patch
+!   pPatch      Pointer to patch
 !
 ! Output: None.
 !

@@ -43,13 +43,6 @@ MODULE ModInterfaces
   USE ModInterfacesMixt
   USE ModInterfacesUtil
 
-#ifdef RFLO
-  USE RFLO_ModInterfacesExternal
-  USE RFLO_ModInterfacesLibrary
-  USE RFLO_ModInterfacesSolver
-#endif
-
-#ifdef RFLU
   USE RFLU_ModInterfacesCommon
 #ifdef GENX
   USE RFLU_ModInterfacesExternal
@@ -57,7 +50,6 @@ MODULE ModInterfaces
   USE RFLU_ModInterfacesLibrary
   USE RFLU_ModInterfacesSolver
   USE RFLU_ModInterfacesUtilities
-#endif
 
   IMPLICIT NONE
 
@@ -98,14 +90,6 @@ MODULE ModInterfaces
     USE ModDataStruct, ONLY : t_region
     TYPE(t_region) :: region
   END SUBROUTINE ConvectiveFluxesMP
-
-#ifdef RFLO
-  SUBROUTINE ExplicitMultistage( regions,ftermNew,residFterm )
-    USE ModDataStruct, ONLY : t_region
-    TYPE(t_region), POINTER :: regions(:)
-    LOGICAL :: ftermNew, residFterm
-  END SUBROUTINE ExplicitMultistage
-#endif
 
   SUBROUTINE GlobalCommunicationMP( regions )
     USE ModDataStruct, ONLY : t_region

@@ -101,17 +101,17 @@ SUBROUTINE RVAV_ReadComparisonsSection( global )
         ALLOCATE( valsS2(nRows,nCols),stat=errorFlag )
         global%error = errorFlag
         IF (global%error /= 0) CALL ErrorStop( global, ERR_ALLOCATE,__LINE__ )
-	
+
         defined = .true.
 
         DO ival=1,globalRVAV%nComparisons
-	
+
 ! ... read in the first row corresponding to stream one (S1)
           READ(IF_RVAV_INPUT,*,err=10,end=10) (valsS1(ival,n), n=1,nCols)
-	  
+
 ! ... read in the second row corresponding to stream two (S2)
           READ(IF_RVAV_INPUT,*,err=10,end=10) (valsS2(ival,n), n=1,nCols)
-	  
+
 ! ... assign values that are read in to RVAVcompare(ival)%<fields>
 ! ... NOTE: data type RVAVcompare is defined in RVAV_ModGlobal.F90
 
@@ -172,7 +172,7 @@ SUBROUTINE RVAV_ReadComparisonsSection( global )
             WRITE(STDOUT,'(A,I5)')   '  kjumpS3 = ',globalRVAV%RVAVcompare(ival)%kjumpS2
             WRITE(STDOUT,'(/,A)')    'END ReadComparisonSection'
           END IF ! verbLevel
-	  
+
         ENDDO ! ival
 
         DEALLOCATE( valsS1,stat=errorFlag )
@@ -181,7 +181,7 @@ SUBROUTINE RVAV_ReadComparisonsSection( global )
         DEALLOCATE( valsS2,stat=errorFlag )
         global%error = errorFlag
         IF (global%error /= 0) CALL ErrorStop( global,ERR_DEALLOCATE,__LINE__ )
-	
+
       ENDIF ! nComparisons
     ENDIF   ! line
 
