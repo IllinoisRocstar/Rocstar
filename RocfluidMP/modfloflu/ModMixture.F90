@@ -48,16 +48,12 @@ MODULE ModMixture
     INTEGER :: flowModel,fluidModel
     LOGICAL :: moveGrid,externalBc,computeTv,frozenFlag
 
-#ifdef RFLU
     INTEGER :: dimens
-#endif
 
-#ifdef RFLU
     INTEGER :: nCv,nDv,nGv,nGvAct,nTv
     INTEGER :: nGrad
     INTEGER :: indCp,indMfMixt,indMol,indSd
     REAL(RFREAL) :: prLam,prTurb,scnLam,scnTurb
-#endif
 
 ! - turbulence modeling
 
@@ -73,15 +69,10 @@ MODULE ModMixture
     INTEGER      :: timeScheme, ldiss(5)
     REAL(RFREAL) :: cfl, smoocf, vis2, vis4, pSwitchOmega, limFac, epsEntr
     REAL(RFREAL) :: ark(5), grk(5), trk(5), betrk(5)
-#ifdef RFLO
-    INTEGER      :: faceEdgeAvg
-#endif
-#ifdef RFLU
     INTEGER :: spaceOrderBFaces
     INTEGER :: cReconstCells,cReconstFaces,reconst,stencilDimensCells, &
                stencilDimensFaces,stencilDimensBFaces
     REAL(RFREAL) :: cReconstCellsWeight,cReconstFacesWeight,dissFact,tolerICT
-#endif
 
 ! - flow initialization 
 
@@ -93,16 +84,11 @@ MODULE ModMixture
                     prepRealVal9,prepRealVal10,prepRealVal11,prepRealVal12, &
                     prepRealVal13,prepRealVal14,prepRealVal15,prepRealVal16
     REAL(RFREAL) :: iniDens,iniPress,iniTemp,iniVelX,iniVelY,iniVelZ
-#ifdef RFLO
-    REAL(RFREAL) :: iniXsplit,iniVelX2,iniVelY2,iniVelZ2,iniPress2,iniDens2
-#endif
 
-#ifdef RFLU
 ! - grid motion
 
     INTEGER :: moveGridNIter,moveGridType
     REAL(RFREAL) :: moveGridSFact
-#endif
 
 ! - gas model
 
@@ -119,11 +105,6 @@ MODULE ModMixture
 
   TYPE t_mixt
 
-#ifdef RFLO
-    INTEGER :: nDv, nTv, nGv, nGrad, indCp, indMol
-    REAL(RFREAL) :: prLam, prTurb, scnLam, scnTurb
-#endif
-
     REAL(RFREAL), POINTER :: cv(:,:), cvOld(:,:), cvn(:,:), cvn1(:,:), cvn2(:,:)
     REAL(RFREAL), POINTER :: dv(:,:), tv(:,:), gv(:,:)
     REAL(RFREAL), DIMENSION(:,:), POINTER :: lim
@@ -133,11 +114,6 @@ MODULE ModMixture
 #ifdef STATS
     REAL(RFREAL), POINTER :: tav(:,:), tavVert(:,:)
 #endif
-#ifdef RFLO
-    REAL(RFREAL), POINTER :: gradi(:,:), gradj(:,:), gradk(:,:)
-    REAL(RFREAL), POINTER :: srad(:,:), epsIrs(:,:)
-#endif
-#ifdef RFLU
     INTEGER :: cvState
     INTEGER, DIMENSION(:), POINTER :: cvInfo
     REAL(RFREAL), DIMENSION(:), POINTER :: mfMixt,vfMixt 
@@ -145,7 +121,6 @@ MODULE ModMixture
     REAL(RFREAL), DIMENSION(:,:,:), POINTER :: gradCell,gradFace
     REAL(RFREAL), POINTER :: sd(:,:)
     REAL(RFREAL), POINTER :: cvOld1(:,:),cvOld2(:,:)
-#endif
 
   END TYPE t_mixt
 

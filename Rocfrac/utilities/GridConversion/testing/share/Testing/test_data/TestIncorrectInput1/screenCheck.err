@@ -1,9 +1,0 @@
-gridConversion:Error: element shape value of 10 is invalid.
-gridConversion:Error: Valid shape values:
-gridConversion:Error:   2: bar
-gridConversion:Error:   3: triangle
-gridConversion:Error:   4: quadrilateral
-gridConversion:Error:   5: tetrahedron
-gridConversion:Error:   7: triangular prism
-gridConversion:Error:   8: hexahedron
-gridConversion:Error:   9: pyramid

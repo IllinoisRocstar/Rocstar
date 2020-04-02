@@ -54,7 +54,6 @@ SUBROUTINE ConvectiveFluxesMP( region )
   USE ModInterfacesEulerian, ONLY : PEUL_ConvectiveFluxes
 #endif
 #ifdef SPEC
-#ifdef RFLU
   USE RFLU_ModConvertCv, ONLY: RFLU_ScalarConvertCvCons2Prim, &
                                RFLU_ScalarConvertCvPrim2Cons
   USE ModInterfaces, ONLY: RFLU_ScalarFirst, &
@@ -62,7 +61,6 @@ SUBROUTINE ConvectiveFluxesMP( region )
                            RFLU_ScalarFirstPatch, &
                            RFLU_ScalarSecondPatch, &
                            RFLU_ScalarInitRhs
-#endif
 #endif
 #ifdef TURB
   USE ModInterfacesTurbulence, ONLY : TURB_RansConvectiveFluxes
@@ -87,10 +85,8 @@ SUBROUTINE ConvectiveFluxesMP( region )
   INTEGER :: iPatch,spaceDiscr,spaceOrder
   TYPE(t_global), POINTER :: global
 
-#ifdef RFLU
   TYPE(t_patch), POINTER :: pPatch
   TYPE(t_region), POINTER :: pRegion
-#endif
 
 ! *****************************************************************************
 ! Start
@@ -132,7 +128,6 @@ SUBROUTINE ConvectiveFluxesMP( region )
 ! =============================================================================
 
   IF ( global%specUsed .EQV. .TRUE. ) THEN
-#ifdef RFLU
     pRegion => region%pRegion
 
     CALL RFLU_ScalarConvertCvCons2Prim(pRegion,pRegion%spec%cv, &
@@ -184,7 +179,6 @@ SUBROUTINE ConvectiveFluxesMP( region )
 
     CALL RFLU_ScalarConvertCvPrim2Cons(pRegion,pRegion%spec%cv, &
                                        pRegion%spec%cvState)
-#endif
   END IF ! global%specUsed
 #endif
 

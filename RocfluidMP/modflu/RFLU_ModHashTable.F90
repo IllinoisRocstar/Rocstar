@@ -1190,10 +1190,10 @@ MODULE RFLU_ModHashTable
           ELSE 
             IF ( bcType /= BC_SYMMETRY .AND. bcType /= BC_PERIODIC ) THEN 
               pGrid%f2c(2,ifg) = CELL_TYPE_BND
-	    ELSE 
-	      IF ( icg <= pGrid%nCells ) THEN 
-	        pGrid%f2c(2,ifg) = CELL_TYPE_BND
-	      END IF ! icg
+            ELSE
+              IF ( icg <= pGrid%nCells ) THEN
+                pGrid%f2c(2,ifg) = CELL_TYPE_BND
+              END IF ! icg
             END IF ! bcType
           END IF ! pGrid%f2c
 

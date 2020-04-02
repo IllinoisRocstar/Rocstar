@@ -27,7 +27,7 @@
 ! Description: None.
 !
 ! Input: 
-!   region     	Dimensions of patches, types of BCs, flow variables
+!   region      Dimensions of patches, types of BCs, flow variables
 !
 ! Output: None.
 !
@@ -131,13 +131,13 @@ SUBROUTINE RFLU_PutBoundaryValuesAlpha(region)
          global%verbLevel >= VERBOSE_HIGH ) THEN 
       IF ( pPatch%bcCoupled == BC_NOT_COUPLED ) THEN
         WRITE(STDOUT,'(A,3X,A,1X,I3,1X,A)') SOLVER_NAME,'Patch:',iPatch, & 
-	                                    '(not interacting)'
+                                            '(not interacting)'
       ELSE IF ( pPatch%bcCoupled == BC_NOT_BURNING ) THEN 
         WRITE(STDOUT,'(A,3X,A,1X,I3,1X,A)') SOLVER_NAME,'Patch:',iPatch, & 
-	                                    '(interacting)'      
+                                            '(interacting)'
       ELSE IF ( pPatch%bcCoupled == BC_BURNING ) THEN
         WRITE(STDOUT,'(A,3X,A,1X,I3,1X,A)') SOLVER_NAME,'Patch:',iPatch, & 
-	                                    '(interacting and burning)'          
+                                            '(interacting and burning)'
       END IF ! pPatch%bcCoupled                 
     END IF ! global%myProcid 
 
@@ -198,13 +198,13 @@ SUBROUTINE RFLU_PutBoundaryValuesAlpha(region)
         
         fs  = pPatch%gs(indGs*ifl)
         fsu = RFLU_DescaleGridSpeed(pRegion,fs)
-		
+
         IF ( gasModel == GAS_MODEL_TCPERF ) THEN
           cp = pGv(GV_MIXT_CP ,indCp *c1)
           mm = pGv(GV_MIXT_MOL,indMol*c1)
 
           minj = pMixtVals(BCDAT_INJECT_MFRATE,distrib*ifl)
-	
+
           IF ( minj > 0.0_RFREAL ) THEN ! Surface burning
             tinj = pMixtVals(BCDAT_INJECT_TEMP,distrib*ifl)
 
@@ -212,9 +212,9 @@ SUBROUTINE RFLU_PutBoundaryValuesAlpha(region)
 
             CALL RFLU_SetRindStateInjectPerf(cp,mm,nx,ny,nz,minj,tinj,pl, &
                                              fsu,rl,dummyReal,dummyReal, &
-		  			     dummyReal,dummyReal)					     				     
+                                             dummyReal,dummyReal)
           ELSE ! Surface NOT burning
-            rl = pCv(CV_MIXT_DENS,c1)					                     
+            rl = pCv(CV_MIXT_DENS,c1)
           END IF ! minj
         ELSE 
           CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)
@@ -242,7 +242,7 @@ SUBROUTINE RFLU_PutBoundaryValuesAlpha(region)
           WRITE(STDOUT,'(A,5X,A)') SOLVER_NAME,'Minimum/maximum values:'     
           WRITE(STDOUT,'(A,7X,A,2(1X,E15.8))') SOLVER_NAME,'rhofAlp: ', & 
                 MINVAL(pPatch%rhofAlp(1:pPatch%nBFaces)), & 
-                MAXVAL(pPatch%rhofAlp(1:pPatch%nBFaces))				
+                MAXVAL(pPatch%rhofAlp(1:pPatch%nBFaces))
         END IF ! pPatch%nBFaces
       END IF ! global%myProcid     
     END IF ! pPatch%bcCoupled    

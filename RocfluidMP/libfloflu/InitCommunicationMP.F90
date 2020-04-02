@@ -49,16 +49,8 @@ SUBROUTINE InitCommunicationMP( regions,iReg,istage )
   USE ModGlobal, ONLY     : t_global
   USE ModError
   USE ModParameters
-#ifdef RFLO
-  USE RFLO_ModBoundaryConditions, ONLY : RFLO_BoundaryConditionsSend
-#endif
 #ifdef PEUL
   USE ModInterfacesEulerian, ONLY : PEUL_BoundaryConditionsSend
-#endif
-#ifdef TURB
-#ifdef RFLO
-  USE ModInterfacesTurbulence, ONLY : TURB_RFLO_RansBndConditionsSend
-#endif
 #endif
 
   IMPLICIT NONE
@@ -94,23 +86,6 @@ SUBROUTINE InitCommunicationMP( regions,iReg,istage )
     subdt   = (ark(istage) - ark(istage - 1))*global%dtMin
     subtime = global%currentTime + ark(istage)*global%dtMin
   ENDIF ! istage
-
-! send conservative variables to other processors -----------------------------
-
-#ifdef RFLO
-  CALL RFLO_BoundaryConditionsSend( regions,iReg )
-
-#ifdef PEUL
-  IF ( global%peulUsed ) &
-    CALL PEUL_BoundaryConditionsSend( regions,iReg )
-#endif
-
-#ifdef TURB
-  IF (regions(iReg)%mixtInput%flowModel == FLOW_NAVST .AND. &
-      regions(iReg)%mixtInput%turbModel /= TURB_MODEL_NONE) &
-    CALL TURB_RFLO_RansBndConditionsSend( regions,iReg )
-#endif
-#endif
 
 ! finalize ====================================================================
 

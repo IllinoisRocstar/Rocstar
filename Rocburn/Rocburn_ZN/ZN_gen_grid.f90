@@ -59,8 +59,9 @@
 
     USE M_Rocburn_ZN_Global_Data
 
+    USE mpi
+
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
 
     TYPE (G_BURN_1D), POINTER :: G_ZN
     INTEGER, INTENT(IN) :: gridtype, numx

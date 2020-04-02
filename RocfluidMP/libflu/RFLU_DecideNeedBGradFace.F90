@@ -27,8 +27,8 @@
 ! Description: None.
 !
 ! Input:
-!   pRegion			Pointer to region data
-!   pPatch                      Pointer to Patch data
+!   pRegion     Pointer to region data
+!   pPatch      Pointer to Patch data
 !
 ! Output: 
 !

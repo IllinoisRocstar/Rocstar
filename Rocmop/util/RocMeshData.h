@@ -62,8 +62,7 @@ using std::ios;
 
 #include "com.h"
 
-COM_EXTERN_MODULE(SimIN);
-
+COM_EXTERN_MODULE(SimIN)
 
 class RocMeshData
 {

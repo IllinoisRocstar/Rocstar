@@ -27,9 +27,9 @@
 #include "../Rocsurf/test/IM_Reader.h"
 #include "Remesher_Simmetrix.h"
 
-COM_EXTERN_MODULE( Rocin);
-COM_EXTERN_MODULE( Rocout);
-COM_EXTERN_MODULE( Rocprop);
+COM_EXTERN_MODULE(Rocin)
+COM_EXTERN_MODULE(Rocout)
+COM_EXTERN_MODULE(Rocprop)
 
 using namespace std;
 

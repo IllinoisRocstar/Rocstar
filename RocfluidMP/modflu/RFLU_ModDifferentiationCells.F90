@@ -386,9 +386,9 @@ MODULE RFLU_ModDifferentiationCells
 ! DEBUG
 !    DO icg = 1,pGrid%nCellsTot
 !      DO iVar = iBegVar,iEndVar
-!	var(iVar,icg) = REAL(4*(iVar-1)  ,RFREAL)			 & 
-!		      + REAL(4*(iVar-1)+1,RFREAL)*pGrid%cofg(XCOORD,icg) & 
-!		      + REAL(4*(iVar-1)+2,RFREAL)*pGrid%cofg(YCOORD,icg) 
+!        var(iVar,icg) = REAL(4*(iVar-1)  ,RFREAL)                         &
+!                      + REAL(4*(iVar-1)+1,RFREAL)*pGrid%cofg(XCOORD,icg) &
+!                      + REAL(4*(iVar-1)+2,RFREAL)*pGrid%cofg(YCOORD,icg)
 !      END DO ! iVar
 !    END DO ! icg
 ! END DEBUG
@@ -445,9 +445,9 @@ MODULE RFLU_ModDifferentiationCells
 ! DEBUG
 !    DO iGrad = iBegGrad,iEndGrad
 !      WRITE(*,*) iGrad,MINVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		        MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		        MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		        MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot))
+!                        MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                        MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                        MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot))
 !    END DO ! iGrad
 !    
 !    STOP
@@ -748,9 +748,9 @@ MODULE RFLU_ModDifferentiationCells
 ! DEBUG
 !    DO icg = 1,pGrid%nCellsTot
 !      DO iVar = iBegVar,iEndVar
-!	var(iVar,icg) = REAL(4*(iVar-1)  ,RFREAL)			 & 
-!		      + REAL(4*(iVar-1)+1,RFREAL)*pGrid%cofg(XCOORD,icg) & 
-!		      + REAL(4*(iVar-1)+2,RFREAL)*pGrid%cofg(YCOORD,icg) 
+!        var(iVar,icg) = REAL(4*(iVar-1)  ,RFREAL)                         &
+!                      + REAL(4*(iVar-1)+1,RFREAL)*pGrid%cofg(XCOORD,icg) &
+!                      + REAL(4*(iVar-1)+2,RFREAL)*pGrid%cofg(YCOORD,icg)
 !      END DO ! iVar
 !    END DO ! icg
 ! END DEBUG
@@ -770,7 +770,7 @@ MODULE RFLU_ModDifferentiationCells
       DO iGrad = iBegGrad,iEndGrad
         grad(XCOORD,iGrad,icg) = 0.0_RFREAL
         grad(YCOORD,iGrad,icg) = 0.0_RFREAL
-	grad(ZCOORD,iGrad,icg) = 0.0_RFREAL ! Set z-component to zero
+        grad(ZCOORD,iGrad,icg) = 0.0_RFREAL ! Set z-component to zero
       END DO ! iGrad
 
       icg3 = pGrid%c2cs(icg)%cellMembs(1)
@@ -867,9 +867,9 @@ MODULE RFLU_ModDifferentiationCells
 ! DEBUG
 !    DO iGrad = iBegGrad,iEndGrad
 !      WRITE(*,*) iGrad,MINVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), & 
-!		       MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot))
+!                       MINVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(XCOORD,iGrad,1:pGrid%nCellsTot)), &
+!                       MAXVAL(grad(YCOORD,iGrad,1:pGrid%nCellsTot))
 !    END DO ! iGrad
 !    
 !    STOP
@@ -1009,9 +1009,9 @@ MODULE RFLU_ModDifferentiationCells
       endisl = pGrid%c2cs(icg)%nCellMembs 
 
       DO iGrad = iBegGrad,iEndGrad
-	grad(XCOORD,iGrad,icg) = 0.0_RFREAL
-	grad(YCOORD,iGrad,icg) = 0.0_RFREAL
-	grad(ZCOORD,iGrad,icg) = 0.0_RFREAL
+        grad(XCOORD,iGrad,icg) = 0.0_RFREAL
+        grad(YCOORD,iGrad,icg) = 0.0_RFREAL
+        grad(ZCOORD,iGrad,icg) = 0.0_RFREAL
       END DO ! iGrad
 
       icg3 = pGrid%c2cs(icg)%cellMembs(1)
@@ -1060,8 +1060,8 @@ MODULE RFLU_ModDifferentiationCells
         grad(XCOORD,iGrad,icg) = grad(XCOORD,iGrad,icg) + wtx*dVar
         grad(YCOORD,iGrad,icg) = grad(YCOORD,iGrad,icg) + wty*dVar
         grad(ZCOORD,iGrad,icg) = grad(ZCOORD,iGrad,icg) + wtz*dVar
-	
-        iGrad = iGrad + 1          
+
+        iGrad = iGrad + 1
         
         DO iVar = iBegVar+1,iEndVar
           dVar = var(iVar,icg2) - var(iVar,icg)
@@ -1656,8 +1656,8 @@ MODULE RFLU_ModDifferentiationCells
 !        CALL RFLU_ComputeGradCells_2D(pRegion,iBegVar,iEndVar,iBegGrad, &
 !                                      iEndGrad,var,grad)
         CALL RFLU_ComputeGradCellsFast_2D(pRegion,iBegVar,iEndVar,iBegGrad, &
-                                          iEndGrad,var,grad)				      
-                                         
+                                          iEndGrad,var,grad)
+
         IF ( pRegion%grid%nCellsConstr > 0 ) THEN                               
           CALL RFLU_ComputeGradCellsConstr(pRegion,iBegVar,iEndVar,iBegGrad, &
                                            iEndGrad,varInfo,var,grad)

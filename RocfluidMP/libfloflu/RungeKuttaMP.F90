@@ -50,7 +50,6 @@ SUBROUTINE RungeKuttaMP( regions )
   USE ModError
   USE ModParameters
 
-#ifdef RFLU
   USE RFLU_ModBoundXvUtils
   USE RFLU_ModGridSpeedUtils, ONLY: RFLU_DescaleGridSpeeds, &
                                     RFLU_ScaleGridSpeeds, &
@@ -60,7 +59,6 @@ SUBROUTINE RungeKuttaMP( regions )
   USE RFLU_ModNSCBC
   USE RFLU_ModRelatedPatches, ONLY: RFLU_RELP_TransformWrapper
   USE RFLU_ModTime, ONLY: RFLU_SetTimeRK
-#endif
 
   USE ModInterfaces, ONLY : AfterUpdateMP, &
                             CellGradientsMP, ConvectiveFluxesMP, &
@@ -69,7 +67,6 @@ SUBROUTINE RungeKuttaMP( regions )
                             SourceTermsMP, UpdateBoundaryConditionsMP, &
                             UpdateDependentVarsMP, ViscousFluxesMP, &
                             ZeroDummyCellsMP, ZeroResidualsMP
-#ifdef RFLU
   USE ModInterfaces, ONLY : RFLU_EquilibriumEulerian, &
                             RFLU_SetVarsContWrapper, &
                             RFLU_SetVarsDiscWrapper, & 
@@ -80,7 +77,6 @@ SUBROUTINE RungeKuttaMP( regions )
 
 #ifdef PLAG
   USE PLAG_RFLU_ModComm
-#endif
 #endif
 
   IMPLICIT NONE
@@ -108,15 +104,8 @@ SUBROUTINE RungeKuttaMP( regions )
   
 
   DO istage=1,global%nrkSteps
-#ifdef RFLO
-    DO iReg=1,global%nRegions
-      IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-          regions(iReg)%active==ACTIVE) THEN              ! on my processor
-#endif
-#ifdef RFLU
     DO iRegLocal=1,global%nRegionsLocal
       iReg = iRegLocal
-#endif
 
 ! ----- set pointer and get models --------------------------------------------
 
@@ -125,7 +114,6 @@ SUBROUTINE RungeKuttaMP( regions )
         flowModel  = regions(iReg)%mixtInput%flowModel
         regions(iReg)%irkStep = istage
 
-#ifdef RFLU
 ! ----- Set RK time -----------------------------------------------------------
 
         CALL RFLU_SetTimeRK(pRegion,iStage)
@@ -133,7 +121,7 @@ SUBROUTINE RungeKuttaMP( regions )
 ! ----- RFLU fill GENX incoming buffers ---------------------------------------
 
 #ifdef GENX
-	CALL RFLU_GENX_InitBFLAG(pRegion)
+        CALL RFLU_GENX_InitBFLAG(pRegion)
 #endif
         CALL RFLU_UpdateBoundaryValues(regions(iReg),istage)
 
@@ -141,7 +129,6 @@ SUBROUTINE RungeKuttaMP( regions )
 
         CALL RFLU_SetGridSpeedScaleFactor(pRegion)
         CALL RFLU_ScaleGridSpeeds(pRegion)
-#endif
 
 ! ----- store previous solution; set dissipation to zero ----------------------
 
@@ -173,41 +160,25 @@ SUBROUTINE RungeKuttaMP( regions )
 
         CALL SourceTermsMP( regions(iReg) )
 
-#ifdef RFLU
 ! ----- add Equilibrium Eulerian corrections ----------------------------------
 
         CALL RFLU_EquilibriumEulerian( pRegion )
-#endif
 
 ! ----- zero out residuals in dummy cells -------------------------------------
 
         CALL ZeroDummyCellsMP( regions(iReg) )
-#ifdef RFLO
-      ENDIF  ! region on this processor and active
-#endif
-#ifdef RFLU
+
 ! ----- Descale grid speeds -----------------------------------------------------
         CALL RFLU_DescaleGridSpeeds(pRegion)
-#endif
+
     ENDDO    ! iReg
 
-
-#ifdef RFLU
     IF(global%zoomFactor > 1) THEN
        CALL RFLU_TimeZoomDriver(regions)
     ENDIF ! global%zoomFactor
-#endif
-    
 
-#ifdef RFLO
-    DO iReg=1,global%nRegions
-      IF (regions(iReg)%procid==global%myProcid .AND. &   ! region active and
-          regions(iReg)%active==ACTIVE) THEN              ! on my processor
-#endif
-#ifdef RFLU
     DO iRegLocal=1,global%nRegionsLocal
       iReg = iRegLocal
-#endif
 
 ! ----- set Region pointer
 
@@ -217,27 +188,16 @@ SUBROUTINE RungeKuttaMP( regions )
 
         CALL RKUpdateMP( regions(iReg),iReg,istage )
 
-#ifdef RFLU
         IF ( RFLU_NSCBC_DecideHaveNSCBC(pRegion) .EQV. .TRUE. ) THEN
           CALL RFLU_BXV_ComputeVarsCv(pRegion)
         END IF ! RFLU_NSCBC_DecideHaveNSCBC
-#endif
 
 ! ----- perform checks and enforce after-update conditions --------------------
 
         CALL AfterUpdateMP( pRegion,istage )
 
-
-
-#ifdef RFLO
-! ----- initiate communication kernel -----------------------------------------
-
-        CALL InitCommunicationMP( regions,iReg,istage )
-#endif
-
 ! ----- update dependent variables --------------------------------------------
 
-#ifdef RFLU
         CALL RFLU_MPI_ISendWrapper(pRegion)
         CALL RFLU_SetVarsContWrapper(pRegion,1,pRegion%grid%nCells)
 
@@ -247,27 +207,8 @@ SUBROUTINE RungeKuttaMP( regions )
           CALL RFLU_BXV_SetDependentVars(pRegion)
         END IF !
 
-#endif
-#ifdef RFLO
-        CALL UpdateDependentVarsMP(regions(iReg))
-#endif
-
-#ifdef RFLO
-      ENDIF  ! region on this processor and active
-#endif
     ENDDO    ! iReg
 
-#ifdef RFLO
-! - facilitate global non-dummy communication ---------------------------------
-
-    CALL GlobalCommunicationMP( regions )
-
-! - update boundary conditions ------------------------------------------------
-
-    CALL UpdateBoundaryConditionsMP( regions,istage )
-#endif
-
-#ifdef RFLU
     CALL RFLU_MPI_CopyWrapper(regions)
 
     DO iReg = 1,global%nRegionsLocal
@@ -295,7 +236,6 @@ SUBROUTINE RungeKuttaMP( regions )
         CALL RFLU_SetVarsDiscWrapper(pRegion)
       END DO ! iReg
     END IF ! global%plagUsed 
-#endif
 #endif
   END DO ! istage
 

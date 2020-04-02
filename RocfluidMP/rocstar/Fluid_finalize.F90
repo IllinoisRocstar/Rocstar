@@ -43,12 +43,7 @@
 SUBROUTINE Fluid_finalize( globalGenx )
 
   USE ModRocstar, ONLY       : t_globalGenx
-#ifdef RFLO  
-  USE ModInterfaces, ONLY: RFLO_EndFlowSolver
-#endif
-#ifdef RFLU
   USE ModInterfaces, ONLY: RFLU_EndFlowSolver
-#endif
 
   IMPLICIT NONE
   INCLUDE 'comf90.h'
@@ -58,12 +53,7 @@ SUBROUTINE Fluid_finalize( globalGenx )
 
 !******************************************************************************
 
-#ifdef RFLO
-  CALL RFLO_EndFlowSolver( globalGenx%regions )
-#endif
-#ifdef RFLU
   CALL RFLU_EndFlowSolver(globalGenx%levels)
-#endif
 
   CALL COM_delete_window( TRIM(globalGenx%global%winName)//'_surf' )
   CALL COM_delete_window( TRIM(globalGenx%global%winName)//'_vol' )

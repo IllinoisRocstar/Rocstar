@@ -12,36 +12,36 @@
 #
 ################################################################################
 
-  SRCF90+=	PERI_ModInterfaces.F90\
-		PERI_ModParameters.F90\
-		PERI_AllocateMemory.F90 \
-		PERI_BuildVersionString.F90\
-		PERI_CheckParamInput.F90 \
-		PERI_CnlForceTerm.F90 \
-		PERI_DerivedInputValues.F90 \
-		PERI_InitInputValues.F90 \
-		PERI_InitSolution.F90 \
-		PERI_ModHybridDES.F90 \
-		PERI_PrintUserInput.F90 \
-		PERI_ReadInputFile.F90 \
-		PERI_ReadPeriSection.F90 \
-		PERI_SolutionUpdate.F90 \
-		PERI_SourceTerms.F90 \
-		PERI_UserInput.F90 
+  SRCF90+=      PERI_ModInterfaces.F90\
+                PERI_ModParameters.F90\
+                PERI_AllocateMemory.F90 \
+                PERI_BuildVersionString.F90\
+                PERI_CheckParamInput.F90 \
+                PERI_CnlForceTerm.F90 \
+                PERI_DerivedInputValues.F90 \
+                PERI_InitInputValues.F90 \
+                PERI_InitSolution.F90 \
+                PERI_ModHybridDES.F90 \
+                PERI_PrintUserInput.F90 \
+                PERI_ReadInputFile.F90 \
+                PERI_ReadPeriSection.F90 \
+                PERI_SolutionUpdate.F90 \
+                PERI_SourceTerms.F90 \
+                PERI_UserInput.F90
 
 ifdef RFLO
-  SRCF90+=	PERI_coCnlInitSolutionFlo.F90 \
-		PERI_coCprInitSolutionFlo.F90 \
-		PERI_coCprSlowTermsFlo.F90 \
-		PERI_coPgradUpdateFlo.F90
+  SRCF90+=      PERI_coCnlInitSolutionFlo.F90 \
+                PERI_coCprInitSolutionFlo.F90 \
+                PERI_coCprSlowTermsFlo.F90 \
+                PERI_coPgradUpdateFlo.F90
 endif
 
 ifdef RFLU
-  SRCF90+=	PERI_coCnlInitSolutionFlu.F90 \
-		PERI_coCprInitSolutionFlu.F90 \
-		PERI_coCprSlowTermsFlu.F90 \
-		PERI_coPgradUpdateFlu.F90 \
-		PERI_rFLU_DeallocateMemory.F90
+  SRCF90+=      PERI_coCnlInitSolutionFlu.F90 \
+                PERI_coCprInitSolutionFlu.F90 \
+                PERI_coCprSlowTermsFlu.F90 \
+                PERI_coPgradUpdateFlu.F90 \
+                PERI_rFLU_DeallocateMemory.F90
 endif
 
 ################################################################################

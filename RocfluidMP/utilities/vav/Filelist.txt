@@ -12,11 +12,11 @@
 #
 ################################################################################
 
-SRCF90+=	RVAV_ModInterfaces.F90\
+SRCF90+=        RVAV_ModInterfaces.F90\
                 RVAV_ModDataStruct.F90\
                 RVAV_ModGlobal.F90\
                 RVAV_ModParameters.F90\
-		BuildVersionString.F90\
+                BuildVersionString.F90\
                 RVAV_BlasiusSolution.F90\
                 RVAV_ComputeAnalyticalSolution.F90\
                 RVAV_ComputeError.F90\

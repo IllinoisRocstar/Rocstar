@@ -27,11 +27,11 @@
 ! Description: None.
 !
 ! Input: 
-!   globalGenx   	Pointer to global data
-!   timeSystem		System time
-!   dTimeSystem		System time step
-!   genxHandleBc	Handle for BC update
-!   genxHandleGm	Handle for geometry update.
+!   globalGenx          Pointer to global data
+!   timeSystem          System time
+!   dTimeSystem         System time step
+!   genxHandleBc        Handle for BC update
+!   genxHandleGm        Handle for geometry update.
 !
 ! Output: None.
 !

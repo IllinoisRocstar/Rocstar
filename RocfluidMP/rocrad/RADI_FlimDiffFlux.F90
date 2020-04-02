@@ -45,16 +45,8 @@ SUBROUTINE RADI_FlimDiffFlux( region )
 
   USE ModDataTypes
   USE ModDataStruct, ONLY : t_region
-#ifdef RFLO
-  USE ModInterfaces, ONLY : RFLO_GetDimensPhys, RFLO_GetCellOffset, &
-                            RFLO_GetNodeOffset, RFLO_CalcGradVector
-
-#include "Indexing.h"
-#endif
-#ifdef RFLU
-  USE RFLU_ModDifferentiation, ONLY: RFLU_ComputeGradFacesBak, & 
+  USE RFLU_ModDifferentiation, ONLY: RFLU_ComputeGradFacesBak, &
                                      RFLU_ComputeGradFacesPatchesBak
-#endif
   USE RADI_ModInterfaces, ONLY : RADI_FlimDiffFluxPatch
   USE ModError
   USE ModParameters
@@ -62,12 +54,7 @@ SUBROUTINE RADI_FlimDiffFlux( region )
   IMPLICIT NONE
 
 ! ... parameters
-#ifdef RFLO
-  TYPE(t_region) :: region
-#endif
-#ifdef RFLU
   TYPE(t_region), POINTER :: region
-#endif
 
 ! ... loop variables
   INTEGER :: i, j, k, iC, ipatch

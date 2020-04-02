@@ -2824,7 +2824,7 @@ MODULE RFLU_ModRocstarIO
 ! Description: None.
 !
 ! Input:
-!   pGlobal		Pointer to Global structure
+!   pGlobal     Pointer to Global structure
 !
 ! Output: None.
 !

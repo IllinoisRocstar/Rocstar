@@ -61,13 +61,13 @@ SUBROUTINE PLAG_ProcessEulerField( regions, iReg, nPclsSum )
   USE ModPartLag,    ONLY : t_plag
   USE PLAG_ModInterfacesPost, ONLY : RFLO_CopyGeometryDummy,   &
                                      RFLO_GenerateCoarseGrids, &
-				     RFLO_GetCellOffset,       &
-				     RFLO_GetDimensPhysNodes,  &
+                                     RFLO_GetCellOffset,       &
+                                     RFLO_GetDimensPhysNodes,  &
                                      RFLO_GetDimensDummy,      &
                                      RFLO_GetDimensDummyNodes, &
-				     RFLO_GetNodeOffset,       &
-				     RFLO_GetCellOffset,       &
-				     RFLO_GetDimensPhys,       &
+                                     RFLO_GetNodeOffset,       &
+                                     RFLO_GetCellOffset,       &
+                                     RFLO_GetDimensPhys,       &
                                      RFLO_ReadGridRegion, Aver
 
   USE ModParameters
@@ -1210,7 +1210,7 @@ SUBROUTINE PLAG_ProcessEulerField( regions, iReg, nPclsSum )
      WRITE(fnameTec,'(A,ES11.5,A)') &
      TRIM(global%casename)//'.plag_eulerVarsTec_',currentTime,'.dat'
      OPEN(IF_PLOT_PLAGEUL_TEC,FILE=fnameTec,STATUS='unknown',FORM='formatted',&
-	  iostat=errorFlag)
+          iostat=errorFlag)
      global%error = errorFlag
      IF (global%error /= 0) &
        CALL ErrorStop( global,ERR_FILE_OPEN,__LINE__,fnameTec )     
@@ -1361,10 +1361,10 @@ SUBROUTINE PLAG_ProcessEulerField( regions, iReg, nPclsSum )
     WRITE(IF_PLOT_PLAGEUL_TEC,1020,err=10) grid%xyz(XCOORD,ijkN),            &
                                            grid%xyz(YCOORD,ijkN),            &
                                            grid%xyz(ZCOORD,ijkN),            &
-				           densNum,densNumSqr,               &
+                                           densNum,densNumSqr,               &
                                            diamL,diamL3,diamL4,              &
-				           massL,u,v,w,temp,                 &
-				           massSqrL,uSqr,vSqr,wSqr,tempSqr,  &
+                                           massL,u,v,w,temp,                 &
+                                           massSqrL,uSqr,vSqr,wSqr,tempSqr,  &
                                           (comp(iCont),iCont=1,nCont),       &
                                           (compSqr(iCont),iCont=1,nCont)
 
@@ -1384,7 +1384,7 @@ SUBROUTINE PLAG_ProcessEulerField( regions, iReg, nPclsSum )
      WRITE(fname,'(A,ES11.5,A)') &
      TRIM(global%casename)//'.plag_eulerVars_',currentTime,'.dat'
      OPEN(IF_PLOT_PLAGEUL,FILE=fname,STATUS='unknown',FORM='formatted',&
-	  iostat=errorFlag)
+          iostat=errorFlag)
      global%error = errorFlag
      IF (global%error /= 0) &
        CALL ErrorStop( global,ERR_FILE_OPEN,__LINE__,fname )
@@ -1476,11 +1476,11 @@ SUBROUTINE PLAG_ProcessEulerField( regions, iReg, nPclsSum )
     tempSqr = cvSqrEuler(4,ic)
 
     WRITE(IF_PLOT_PLAGEUL,1020,err=10) xcell,ycell,zcell,               &
-				       densNum,densNumSqr,              &
+                                       densNum,densNumSqr,              &
                                        diamL,diamL3,diamL4,             &
-				       massL,xMom,yMom,zMom,temp,       &
-				       massSqrL,xmomSqr,yMomSqr,        &
-				       zMomSqr,tempSqr,                 &
+                                       massL,xMom,yMom,zMom,temp,       &
+                                       massSqrL,xmomSqr,yMomSqr,        &
+                                       zMomSqr,tempSqr,                 &
                                       (mass(iCont,ic),iCont=1,nCont),   &
                                       (massSqr(iCont,ic),iCont=1,nCont)
 

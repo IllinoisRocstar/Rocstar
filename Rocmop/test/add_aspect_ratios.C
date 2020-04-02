@@ -32,24 +32,20 @@
 using namespace std;
 
 // Necessary for handling modules in static or dynamic fashion
-COM_EXTERN_MODULE( SimIN);
-COM_EXTERN_MODULE( SimOUT);
-COM_EXTERN_MODULE( Rocmop);
-COM_EXTERN_MODULE( SurfMap);
-COM_EXTERN_MODULE( Simpal);
+COM_EXTERN_MODULE(SimIN)
+COM_EXTERN_MODULE(SimOUT)
+COM_EXTERN_MODULE(Rocmop)
+COM_EXTERN_MODULE(SurfMap)
+COM_EXTERN_MODULE(Simpal)
 
 // Get the MPI rank of the process
 int get_comm_rank( MPI_Comm comm) {
-  int rank;
-  int ierr = MPI_Comm_rank( comm, &rank); assert( ierr == 0);
-  return rank;
+  return COMMPI_Comm_rank(comm);
 }
 
 // Get the size of the MPI communicator
 int get_comm_size( MPI_Comm comm) {
-  int size;
-  int ierr = MPI_Comm_size( comm, &size); assert( ierr == 0);
-  return size;
+  return COMMPI_Comm_size(comm);
 }
 
 

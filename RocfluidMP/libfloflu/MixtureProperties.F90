@@ -77,17 +77,6 @@ SUBROUTINE MixtureProperties( region,inBeg,inEnd,gasUpdate )
 
 ! set local quantities to avoid duplicate calls -------------------------------
 
-#ifdef RFLO
-  iLev      =  region%currLevel
-  indCp     =  region%levels(iLev)%mixt%indCp
-  indMol    =  region%levels(iLev)%mixt%indMol
-  prLam     =  region%levels(iLev)%mixt%prLam
-  cv        => region%levels(iLev)%mixt%cv
-  dv        => region%levels(iLev)%mixt%dv
-  gv        => region%levels(iLev)%mixt%gv
-  tv        => region%levels(iLev)%mixt%tv
-#endif
-#ifdef RFLU
   indCp     =  region%mixtInput%indCp
   indMol    =  region%mixtInput%indMol
   prLam     =  region%mixtInput%prLam
@@ -95,7 +84,6 @@ SUBROUTINE MixtureProperties( region,inBeg,inEnd,gasUpdate )
   dv        => region%mixt%dv
   gv        => region%mixt%gv
   tv        => region%mixt%tv
-#endif
 
   gasModel = region%mixtInput%gasModel
   computeTv = region%mixtInput%computeTv

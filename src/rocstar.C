@@ -36,90 +36,86 @@ using namespace std;
 #include "Rocprof.H"
 #endif
 
-void rocstar_driver( int, int, bool);
+void rocstar_driver(int, int, bool);
 
 struct Command_Options {
-  Command_Options() : verbose(1),nrun(0),debug(false) {}
+  Command_Options() : verbose(1), remeshed(0), nrun(0), debug(false) {}
 
-  int  verbose;
-  int  remeshed;
-  int  nrun;
+  int verbose;
+  int remeshed;
+  int nrun;
   bool debug;
 };
 
-void
-ReportUsage()
-{
+void ReportUsage() {
   std::cout << "rocstar [-h -d -v [0-2] -r [n] ]" << std::endl
-	    << std::endl
-	    << "Rocstar Help" << std::endl
-	    << "------------------------" << std::endl
-	    << " -h: help - prints this message" << std::endl
-	    << " -v: verbosity - optional verbosity level (default = 1)" << std::endl
-	    << " -r: runs - number of times to automatically restart (default = 0)" << std::endl
+            << std::endl
+            << "Rocstar Help" << std::endl
+            << "------------------------" << std::endl
+            << " -h: help - prints this message" << std::endl
+            << " -v: verbosity - optional verbosity level (default = 1)" << std::endl
+            << " -r: runs - number of times to automatically restart (default = 0)" << std::endl
             << " -d: debug - turns on debugging messages for the run" << std::endl
-	    << "------------------------" << std::endl;
-
+            << "------------------------" << std::endl;
 }
 
-void
-parse_commandline( int argc, char *argv[], Command_Options &opts) {
+void parse_commandline(int argc, char *argv[], Command_Options &opts) {
   int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  for ( int i=1; i<argc; ++i) {
-    if ( std::strcmp(argv[i], "-v") == 0) {
-      if ( argc>i+1 && argv[i+1][0]>='0' && argv[i+1][0]<='9')
-      { opts.verbose = std::atoi( argv[i+1]); ++i; }
-    }
-    else if ( std::strcmp(argv[i], "-remeshed") == 0) {
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  for (int i = 1; i < argc; ++i) {
+    if (std::strcmp(argv[i], "-v") == 0) {
+      if (argc > i + 1 && argv[i + 1][0] >= '0' && argv[i + 1][0] <= '9') {
+        opts.verbose = std::atoi(argv[i + 1]);
+        ++i;
+      }
+    } else if (std::strcmp(argv[i], "-remeshed") == 0) {
       opts.remeshed = 1;
-    }
-    else if ( std::strcmp(argv[i], "-r") == 0) {
+    } else if (std::strcmp(argv[i], "-r") == 0) {
       opts.nrun = 1;
-      if ( argc>i+1 && argv[i+1][0]>='1' && argv[i+1][0]<='9')
-      { opts.nrun = std::atoi( argv[i+1]); ++i; }
-    }
-    else if ( std::strcmp(argv[i], "-d") == 0){
+      if (argc > i + 1 && argv[i + 1][0] >= '1' && argv[i + 1][0] <= '9') {
+        opts.nrun = std::atoi(argv[i + 1]);
+        ++i;
+      }
+    } else if (std::strcmp(argv[i], "-d") == 0) {
       opts.debug = true;
-    }
-    else if ( std::strcmp(argv[i], "-debug") == 0){
+    } else if (std::strcmp(argv[i], "-debug") == 0) {
       opts.debug = true;
-    }
-    else if (rank == 0) {
-      if(std::strcmp(argv[i],"-h"))
-	std::cerr << "Rocstar: Unknown option " << argv[i] << std::endl;
+    } else if (rank == 0) {
+      if (std::strcmp(argv[i], "-h") != 0)
+        std::cerr << "Rocstar: Unknown option " << argv[i] << std::endl;
       ReportUsage();
     }
   }
-  if(opts.verbose > 0 && rank == 0)
+  if (opts.verbose > 0 && rank == 0)
     std::cout << RocstarSplash << std::endl;
 }
 
-int
-main( int argc, char *argv[]) {
-
-
+int main(int argc, char *argv[]) {
   /* Start MPI. */
-  MPI_Init( &argc, &argv);
+  MPI_Init(&argc, &argv);
   int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 #ifdef ROCPROF
-  Rocprof_Init("Rocstar",rank);
+  Rocprof_Init("Rocstar", rank);
 #endif
-  /* Initialize Roccom */
-  COM_init( &argc, &argv);
 
+  /* Initialize IMPACT::COM. */
+  COM_init(&argc, &argv);
+
+  /* Parse command line arguments. */
   Command_Options opts;
-  parse_commandline( argc, argv, opts);
+  parse_commandline(argc, argv, opts);
 
+  /* Run Rocstar Driver with automatic restart. */
   int nrun = 1;
-  rocstar_driver( opts.verbose, opts.remeshed, opts.debug);
-  while (nrun < opts.nrun){
-    if(rank == 0) std::cout << " Rocstar automatic restart " << nrun++ << std::endl;
-    rocstar_driver(opts.verbose,opts.remeshed, opts.debug);
+  rocstar_driver(opts.verbose, opts.remeshed, opts.debug);
+  while (nrun < opts.nrun) {
+    if (rank == 0) std::cout << " Rocstar automatic restart " << nrun++ << std::endl;
+    rocstar_driver(opts.verbose, opts.remeshed, opts.debug);
   }
-  /* Finalize Roccom. */
+
+  /* Finalize IMPACT::COM. */
   COM_finalize();
 
 #ifdef ROCPROF
@@ -130,9 +126,3 @@ main( int argc, char *argv[]) {
 
   return 0;
 }
-
-
-
-
-
-

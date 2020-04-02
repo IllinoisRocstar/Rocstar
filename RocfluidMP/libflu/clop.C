@@ -68,23 +68,23 @@ CheckOps(const vector<string> &args,string &badop)
     bool longo = false;
     if((*ai)[0] == '-'){
       if((*ai)[1] == '-'){
-	longo = true;
-	option_string = (*ai).substr(2);
+        longo = true;
+        option_string = (*ai).substr(2);
       }
       list<clop>::const_iterator oi = cloption_list.begin();
       while(oi != cloption_list.end() && !found){
-	if(longo){
-	  if(oi->longop() == option_string)
-	    found = true;
-	}
-	else
-	  if((*ai)[1] == oi->shortop())
-	    found =  true;
-	oi++;
+        if(longo){
+          if(oi->longop() == option_string)
+            found = true;
+        }
+        else
+          if((*ai)[1] == oi->shortop())
+            found =  true;
+        oi++;
       }
       if(!found){
-	badop = *ai;
-	return(false);
+        badop = *ai;
+        return(false);
       }
     }
     ai++;
@@ -110,15 +110,15 @@ GetOp(const string &ops,const vector<string> &args)
   while(ai != args.end()){
     if((*ai)[0] == '-'){
       if((*ai)[1] != '-'){
-	if((*ai)[1] == oi->shortop()){
-	  return true;
-	}
+        if((*ai)[1] == oi->shortop()){
+          return true;
+        }
       }
       else if((*ai)[1] == '-'){
-	string op((*ai).substr(2));
-	if(op == oi->longop()){
-	  return true;
-	}
+        string op((*ai).substr(2));
+        if(op == oi->longop()){
+          return true;
+        }
       }
     }
     ai++;
@@ -147,29 +147,29 @@ GetOp(const string &ops,string &rv,const vector<string> &args)
   while(ai != args.end()){
     if((*ai)[0] == '-'){
       if((*ai)[1] != '-'){
-	if((*ai)[1] == oi->shortop()){
-	  ai++;
-	  if(ai == args.end())
-	    return true;
-	  else {
-	    if((*ai)[0] != '-')
-	      rv = *ai;
-	    return true;
-	  }
-	}
+        if((*ai)[1] == oi->shortop()){
+          ai++;
+          if(ai == args.end())
+            return true;
+          else {
+            if((*ai)[0] != '-')
+              rv = *ai;
+            return true;
+          }
+        }
       }
       else if((*ai)[1] == '-'){
-	string op((*ai).substr(2));
-	if(op == oi->longop()){
-	  ai++;
-	  if(ai == args.end())
-	    return true;
-	  else {
-	    if((*ai)[0] != '-')
-	      rv = *ai;
-	    return true;
-	  }
-	}
+        string op((*ai).substr(2));
+        if(op == oi->longop()){
+          ai++;
+          if(ai == args.end())
+            return true;
+          else {
+            if((*ai)[0] != '-')
+              rv = *ai;
+            return true;
+          }
+        }
       }
     }
     ai++;

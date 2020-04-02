@@ -24,77 +24,46 @@
 #ifndef _SOLIDAGENT_H_
 #define _SOLIDAGENT_H_
 
-#include "Agent.h"
+#include "RocstarAgent.h"
 
-class InterpolateBase;
+const int NO_SHEER = 1;
+const int WITH_SHEER = 2;
 
-const int NO_SHEER=1;
-const int WITH_SHEER=2;
-
-class SolidAgent: public Agent {
+class SolidAgent : public RocstarAgent {
 public:
+  SolidAgent(RocstarCoupling *coup, std::string mod, std::string obj,
+             MPI_Comm com, bool withFluid = false);
 
-  SolidAgent(Coupling *coup, std::string mod, std::string obj, MPI_Comm com, int withFluid=0);
+  void read_restart_data() override;
+  void output_visualization_files(double t) override; // not implemented
 
-    // read control files
-  virtual void input( double t);
+  int compute_integrals() override;
 
-  virtual void load_module();
-  virtual void unload_module();
-  virtual void init_module(double t, double dt);
-  virtual void finalize();
-
-  virtual void create_buffer_all();
-
-  virtual void read_restart_data();
-  virtual void output_restart_files( double t);
-
-  virtual int compute_integrals();
-
-    // not implemented
-  virtual void output_visualization_files( double t);
-protected:
-  // Window name.
-//  static const char *window_name;  
 public:
-  std::string isolid_i;
+  std::string solidBufBase; // a window for intermediate buffers for fluid-solid
+                            // interface
+  std::string solidBuf;     // a window for solid/fluid interaction
+  std::string propBufAll;   // for surface propagation (containing all panes)
+  std::string propBuf;      // for surface propagation
 
-  std::string isolid_all;		// for registering dataitems
-  std::string isolid_b;			// buring
-  std::string isolid_nb;		// non-buring
-  std::string isolid_ni;		// noninteracting
-
-  std::string solidBufBase;		// a window for intermediate buffers for fluid-solid interface
-  std::string solidBuf;			// a window for solid/fluid interaction
-  std::string propBufAll;		// for surface propagation (containing all panes)
-  std::string propBuf;			// for surface propagation
-
-    // for input
-  std::string isolid;
-  std::string solid;
-
-   // Rocin windows
-  std::string solidSurfIN;
-  std::string solidVolIN;
-
+private:
   std::string solidBufBak;
   std::string solidVolBak;
 
-  int with_fluid;			// flag: coupled
-  int withALE;				// TODO init it
+  bool with_fluid; // flag: coupled
+public:
+  bool with_ALE; // TODO init it
   int rhos_mode;
   int size_ts;
   int traction_mode;
 
-  int y_hdl;				// for compute distances
+private:
+  int y_hdl; // for compute distances
+
+private:
+  void finalize_windows() override;
+
+  void create_buffer_all() override;
 };
 
-
-
 #endif
-
-
-
-
-
-

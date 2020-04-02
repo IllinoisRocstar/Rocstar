@@ -86,7 +86,6 @@ SUBROUTINE ReadPrepSection(global)
 ! Specify keywords and search for them
 ! ******************************************************************************
 
-#ifdef RFLU
   nVals = NVALS_MAX
 
   keys(1) = 'PARTMODE'
@@ -100,7 +99,6 @@ SUBROUTINE ReadPrepSection(global)
       global%prepPartMode = PARTITION_MODE_IMPOSED
     END IF ! NINT(vals)
   END IF ! defined
-#endif
 
 ! ******************************************************************************
 ! End

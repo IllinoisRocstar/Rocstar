@@ -81,14 +81,14 @@ MODULE RFLU_ModPartitionRegionUtils
 ! Description: None.
 !
 ! Input:
-!   pRegion	        Pointer to region
-!   pRegionSerial	Pointer to serial region	
-!   vc			List of virtual cells (empty)
-!   nCellsVirtMax	Maximum allowable number of virtual cells  
+!   pRegion             Pointer to region
+!   pRegionSerial       Pointer to serial region
+!   vc                  List of virtual cells (empty)
+!   nCellsVirtMax       Maximum allowable number of virtual cells
 !
 ! Output: 
-!   vc			List of virtual cells 
-!   nCellsVirt   	Number of virtual cells
+!   vc                  List of virtual cells
+!   nCellsVirt          Number of virtual cells
 !
 ! Notes: None.
 !
@@ -221,14 +221,14 @@ MODULE RFLU_ModPartitionRegionUtils
 !   4. Loop over existing virtual cells and add layers.
 !
 ! Input:
-!   pRegion	        Pointer to region
-!   pRegionSerial	Pointer to serial region	
-!   vc			List of virtual cells (empty)
-!   nCellsVirtMax	Maximum allowable number of virtual cells  
+!   pRegion             Pointer to region
+!   pRegionSerial       Pointer to serial region
+!   vc                  List of virtual cells (empty)
+!   nCellsVirtMax       Maximum allowable number of virtual cells
 !
 ! Output: 
-!   vc			List of virtual cells 
-!   nCellsVirt   	Number of virtual cells
+!   vc                  List of virtual cells
+!   nCellsVirt          Number of virtual cells
 !
 ! Notes: None.
 !

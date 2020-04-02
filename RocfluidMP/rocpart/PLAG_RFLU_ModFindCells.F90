@@ -1459,21 +1459,21 @@ SUBROUTINE PLAG_RFLU_FindCellsTrajFast(pRegion,iPclBeg,iPclEnd)
               
               pPlag%aiv(AIV_PLAG_ICELLS,iPcl) = icg
               
-	      iPatch = pGrid%avf2p(ifl)
-	      
-	      IF ( iPatch /= CRAZY_VALUE_INT ) THEN ! Transform coordinates
-	        pPatch => pRegion%patches(iPatch)
-		
-		IF ( pPatch%bcType == BC_PERIODIC ) THEN 
-		  CALL RFLU_RELP_TransformVector(pRegion,pPatch,xLocOld, &
-		                                 yLocOld,zLocOld)
-		  CALL RFLU_RELP_TransformVector(pRegion,pPatch,xLocNew, &
-		                                 yLocNew,zLocNew)						 
-		ELSE
-		  CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)
-		END IF ! pPatch%bcType
-	      END IF ! iPatch	      
-	      
+              iPatch = pGrid%avf2p(ifl)
+              
+              IF ( iPatch /= CRAZY_VALUE_INT ) THEN ! Transform coordinates
+                pPatch => pRegion%patches(iPatch)
+                
+                IF ( pPatch%bcType == BC_PERIODIC ) THEN 
+                  CALL RFLU_RELP_TransformVector(pRegion,pPatch,xLocOld, &
+                                                 yLocOld,zLocOld)
+                  CALL RFLU_RELP_TransformVector(pRegion,pPatch,xLocNew, &
+                                                 yLocNew,zLocNew)                                                 
+                ELSE
+                  CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)
+                END IF ! pPatch%bcType
+              END IF ! iPatch              
+              
               EXIT trajLoop                  
             CASE DEFAULT
               CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)
@@ -1582,27 +1582,27 @@ SUBROUTINE PLAG_RFLU_FindCellsTrajFast(pRegion,iPclBeg,iPclEnd)
 ! ==============================================================================        
 
     IF ( (global%checkLevel == CHECK_HIGH) .AND. &
-	 (pPlag%aiv(AIV_PLAG_STATUS,iPcl) == PLAG_STATUS_KEEP) ) THEN
+         (pPlag%aiv(AIV_PLAG_STATUS,iPcl) == PLAG_STATUS_KEEP) ) THEN
       CALL RFLU_ICT_TestInCellFancy(pRegion,xLocNew,yLocNew,zLocNew,icg, &
-				    inCellCheckFlag,ilocOut,ifgOut)
+                                    inCellCheckFlag,ilocOut,ifgOut)
 
       IF ( inCellCheckFlag .EQV. .FALSE. ) THEN 
-	WRITE(STDERR,'(A,1X,A,1X,I6)') SOLVER_NAME,'Particle index:',iPcl
-	WRITE(STDERR,'(A,1X,A,1X,I6)') SOLVER_NAME,'Cell which failed test:', & 
-						   icg
-	WRITE(STDERR,'(A,1X,A,2(1X,I6))') SOLVER_NAME, &
-					  'Face which failed test:', & 
-					  ilocOut,ifgOut								 
-	WRITE(STDERR,'(A,1X,A,3(1X,E23.16))') SOLVER_NAME, &
-					      'Particle old location:', &
-					      xLocOld,yLocOld,zLocOld
-	WRITE(STDERR,'(A,1X,A,3(1X,E23.16))') SOLVER_NAME, &
-					      'Particle new location:', &
-					      xLocNew,yLocNew,zLocNew
+        WRITE(STDERR,'(A,1X,A,1X,I6)') SOLVER_NAME,'Particle index:',iPcl
+        WRITE(STDERR,'(A,1X,A,1X,I6)') SOLVER_NAME,'Cell which failed test:', & 
+                                                   icg
+        WRITE(STDERR,'(A,1X,A,2(1X,I6))') SOLVER_NAME, &
+                                          'Face which failed test:', & 
+                                          ilocOut,ifgOut                                                                 
+        WRITE(STDERR,'(A,1X,A,3(1X,E23.16))') SOLVER_NAME, &
+                                              'Particle old location:', &
+                                              xLocOld,yLocOld,zLocOld
+        WRITE(STDERR,'(A,1X,A,3(1X,E23.16))') SOLVER_NAME, &
+                                              'Particle new location:', &
+                                              xLocNew,yLocNew,zLocNew
 
-	WRITE(errorString,'(I6)') iPcl
-	CALL ErrorStop(global,ERR_PLAG_PCL_NOT_FOUND,__LINE__, & 
-		       TRIM(errorString))	    
+        WRITE(errorString,'(I6)') iPcl
+        CALL ErrorStop(global,ERR_PLAG_PCL_NOT_FOUND,__LINE__, & 
+                       TRIM(errorString))            
       END IF ! inCellCheckFlag
     END IF ! global%checkLevel    
     
@@ -1783,7 +1783,7 @@ SUBROUTINE PLAG_RFLU_FindCellsTrajSafe(pRegion,iPclBeg,iPclEnd)
 
       IF ( distTot <= 0.0_RFREAL ) THEN       
         pPlag%aiv(AIV_PLAG_ICELLS,iPcl) = icg
-	
+        
         EXIT trajLoop
         
 ! --- Distance remaining: Keep searching ---------------------------------------        
@@ -1832,20 +1832,20 @@ SUBROUTINE PLAG_RFLU_FindCellsTrajSafe(pRegion,iPclBeg,iPclEnd)
               
               pPlag%aiv(AIV_PLAG_ICELLS,iPcl) = icg  
               
-	      iPatch = pGrid%avf2p(ifl)
-	      
-	      IF ( iPatch /= CRAZY_VALUE_INT ) THEN ! Transform coordinates
-	        pPatch => pRegion%patches(iPatch)
-		
-		IF ( pPatch%bcType == BC_PERIODIC ) THEN 
-		  CALL RFLU_RELP_TransformVector(pRegion,pPatch,xLocOld, &
-		                                 yLocOld,zLocOld)
-		  CALL RFLU_RELP_TransformVector(pRegion,pPatch,xLocNew, &
-		                                 yLocNew,zLocNew)						 
-		ELSE
-		  CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)
-		END IF ! pPatch%bcType
-	      END IF ! iPatch
+              iPatch = pGrid%avf2p(ifl)
+              
+              IF ( iPatch /= CRAZY_VALUE_INT ) THEN ! Transform coordinates
+                pPatch => pRegion%patches(iPatch)
+                
+                IF ( pPatch%bcType == BC_PERIODIC ) THEN 
+                  CALL RFLU_RELP_TransformVector(pRegion,pPatch,xLocOld, &
+                                                 yLocOld,zLocOld)
+                  CALL RFLU_RELP_TransformVector(pRegion,pPatch,xLocNew, &
+                                                 yLocNew,zLocNew)                                                 
+                ELSE
+                  CALL ErrorStop(global,ERR_REACHED_DEFAULT,__LINE__)
+                END IF ! pPatch%bcType
+              END IF ! iPatch
 
               EXIT trajLoop                             
             CASE DEFAULT
@@ -1955,27 +1955,27 @@ SUBROUTINE PLAG_RFLU_FindCellsTrajSafe(pRegion,iPclBeg,iPclEnd)
 ! ==============================================================================        
 
     IF ( (global%checkLevel == CHECK_HIGH) .AND. &
-	 (pPlag%aiv(AIV_PLAG_STATUS,iPcl) == PLAG_STATUS_KEEP) ) THEN
+         (pPlag%aiv(AIV_PLAG_STATUS,iPcl) == PLAG_STATUS_KEEP) ) THEN
       CALL RFLU_ICT_TestInCellFancy(pRegion,xLocNew,yLocNew,zLocNew,icg, &
-				    inCellCheckFlag,ilocOut,ifgOut)
+                                    inCellCheckFlag,ilocOut,ifgOut)
 
       IF ( inCellCheckFlag .EQV. .FALSE. ) THEN 
-	WRITE(STDERR,'(A,1X,A,1X,I6)') SOLVER_NAME,'Particle index:',iPcl
-	WRITE(STDERR,'(A,1X,A,1X,I6)') SOLVER_NAME,'Cell which failed test:', & 
-						   icg
-	WRITE(STDERR,'(A,1X,A,2(1X,I6))') SOLVER_NAME, &
-					  'Face which failed test:', & 
-					  ilocOut,ifgOut								 
-	WRITE(STDERR,'(A,1X,A,3(1X,E23.16))') SOLVER_NAME, &
-					      'Particle old location:', &
-					      xLocOld,yLocOld,zLocOld
-	WRITE(STDERR,'(A,1X,A,3(1X,E23.16))') SOLVER_NAME, &
-					      'Particle new location:', &
-					      xLocNew,yLocNew,zLocNew
+        WRITE(STDERR,'(A,1X,A,1X,I6)') SOLVER_NAME,'Particle index:',iPcl
+        WRITE(STDERR,'(A,1X,A,1X,I6)') SOLVER_NAME,'Cell which failed test:', & 
+                                                   icg
+        WRITE(STDERR,'(A,1X,A,2(1X,I6))') SOLVER_NAME, &
+                                          'Face which failed test:', & 
+                                          ilocOut,ifgOut                                                                 
+        WRITE(STDERR,'(A,1X,A,3(1X,E23.16))') SOLVER_NAME, &
+                                              'Particle old location:', &
+                                              xLocOld,yLocOld,zLocOld
+        WRITE(STDERR,'(A,1X,A,3(1X,E23.16))') SOLVER_NAME, &
+                                              'Particle new location:', &
+                                              xLocNew,yLocNew,zLocNew
 
-	WRITE(errorString,'(I6)') iPcl
-	CALL ErrorStop(global,ERR_PLAG_PCL_NOT_FOUND,__LINE__, & 
-		       TRIM(errorString))	    
+        WRITE(errorString,'(I6)') iPcl
+        CALL ErrorStop(global,ERR_PLAG_PCL_NOT_FOUND,__LINE__, & 
+                       TRIM(errorString))            
       END IF ! inCellCheckFlag
     END IF ! global%checkLevel    
     
@@ -1990,7 +1990,7 @@ SUBROUTINE PLAG_RFLU_FindCellsTrajSafe(pRegion,iPclBeg,iPclEnd)
      
     pPlag%cvOld(CV_PLAG_XPOS,iPcl) = xLocOld
     pPlag%cvOld(CV_PLAG_YPOS,iPcl) = yLocOld
-    pPlag%cvOld(CV_PLAG_ZPOS,iPcl) = zLocOld                  	      
+    pPlag%cvOld(CV_PLAG_ZPOS,iPcl) = zLocOld                                
   END DO ! iPcl
 
 ! ******************************************************************************

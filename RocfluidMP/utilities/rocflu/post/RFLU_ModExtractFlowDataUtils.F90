@@ -97,13 +97,13 @@ MODULE RFLU_ModExtractFlowDataUtils
 !   which is then taken to be shock location.
 !
 ! Input:
-!   pRegion		Pointer to region
-!   icgBeg		Beginning cell index
-!   icgEnd		Ending cell index
-!   nCellsX		Number of cells in x-direction
+!   pRegion     Pointer to region
+!   icgBeg      Beginning cell index
+!   icgEnd      Ending cell index
+!   nCellsX     Number of cells in x-direction
 !
 ! Output: 
-!   xs			Shock location
+!   xs          Shock location
 !
 ! Notes: 
 !   1. This routine can be used for 2d cases, but then the array numbering must

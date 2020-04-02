@@ -50,7 +50,6 @@ SUBROUTINE CellGradientsMP(region)
   USE ModGlobal, ONLY: t_global
   USE ModDataStruct, ONLY: t_region
 
-#ifdef RFLU
   USE RFLU_ModConvertCv, ONLY: RFLU_ConvertCvCons2Prim, &
                                RFLU_ConvertCvPrim2Cons, &
                                RFLU_ScalarConvertCvCons2Prim, &
@@ -64,7 +63,6 @@ SUBROUTINE CellGradientsMP(region)
                               RFLU_DestroyLimiter
   USE RFLU_ModWENO, ONLY: RFLU_WENOGradCellsWrapper, & 
                           RFLU_WENOGradCellsXYZWrapper                              
-#endif
 
   IMPLICIT NONE
 
@@ -84,13 +82,11 @@ SUBROUTINE CellGradientsMP(region)
 
   TYPE(t_global), POINTER :: global
 
-#ifdef RFLU
   INTEGER :: varInfoMixt(CV_MIXT_DENS:CV_MIXT_PRES)
   TYPE(t_region), POINTER :: pRegion
 #ifdef SPEC
   INTEGER :: errorFlag,iSpec
   INTEGER, DIMENSION(:), ALLOCATABLE :: varInfoSpec
-#endif
 #endif
 
 ! ******************************************************************************
@@ -102,7 +98,6 @@ SUBROUTINE CellGradientsMP(region)
   CALL RegisterFunction(global,'CellGradientsMP',&
   'CellGradientsMP.F90')
 
-#ifdef RFLU
 ! ******************************************************************************
 ! Compute cell gradients
 ! ******************************************************************************
@@ -299,7 +294,6 @@ SUBROUTINE CellGradientsMP(region)
     END IF ! global%specUsed
 #endif
   END IF ! pRegion%mixtInput%spaceOrder
-#endif
 
 ! ******************************************************************************
 ! End

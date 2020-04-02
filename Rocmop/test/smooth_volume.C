@@ -33,24 +33,20 @@
 using namespace std;
 
 // Necessary for handling modules in static or dynamic fashion
-COM_EXTERN_MODULE( SimIN);
-COM_EXTERN_MODULE( SimOUT);
-COM_EXTERN_MODULE( Rocmop);
-COM_EXTERN_MODULE( SurfMap);
-COM_EXTERN_MODULE( Simpal);
+COM_EXTERN_MODULE(SimIN)
+COM_EXTERN_MODULE(SimOUT)
+COM_EXTERN_MODULE(Rocmop)
+COM_EXTERN_MODULE(SurfMap)
+COM_EXTERN_MODULE(Simpal)
 
 // Get the MPI rank of the process
 int get_comm_rank( MPI_Comm comm) {
-  int rank;
-  int ierr = MPI_Comm_rank( comm, &rank); assert( ierr == 0);
-  return rank;
+  return COMMPI_Comm_rank(comm);
 }
 
 // Get the size of the MPI communicator
 int get_comm_size( MPI_Comm comm) {
-  int size;
-  int ierr = MPI_Comm_size( comm, &size); assert( ierr == 0);
-  return size;
+  return COMMPI_Comm_size(comm);
 }
 
 
@@ -70,7 +66,7 @@ int main(int argc, char *argv[]) {
   std::cout << "niter = " << niter << "\ninvert_tets = " << invert_tets << "\n\n";
 
   MPI_Comm comm = MPI_COMM_WORLD;
-  int size_of_p = get_comm_size(comm);
+  //int size_of_p = get_comm_size(comm);
   int myrank = get_comm_rank(comm);
     
   COM_init( &argc, &argv);
@@ -84,13 +80,13 @@ int main(int argc, char *argv[]) {
 
   // GET FUNCTION HANDLES
   int OUT_write = COM_get_function_handle( "OUT.write_dataitem");
-  int OUT_add = COM_get_function_handle( "OUT.add_dataitem");
+  //int OUT_add = COM_get_function_handle( "OUT.add_dataitem");
   int IN_read = COM_get_function_handle( "IN.read_by_control_file");
-  int MOP_init = COM_get_function_handle( "MOP.initialize");
-  int MOP_det = COM_get_function_handle( "MOP.determine_physical_border");
+  //int MOP_init = COM_get_function_handle( "MOP.initialize");
+  //int MOP_det = COM_get_function_handle( "MOP.determine_physical_border");
   int MOP_set = COM_get_function_handle ( "MOP.set_value");
   int MOP_smth = COM_get_function_handle( "MOP.smooth");
-  int MOP_asp = COM_get_function_handle( "MOP.add_aspect_ratios");
+  //int MOP_asp = COM_get_function_handle( "MOP.add_aspect_ratios");
   int BLAS_add = COM_get_function_handle("BLAS.add");
 
   // SET OUTPUT LEVELS

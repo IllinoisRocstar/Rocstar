@@ -25,46 +25,18 @@
 #ifndef _BUILTIN_COUPLINGS_H_
 #define _BUILTIN_COUPLINGS_H_
 
-#include "Coupling.h"
+#include "RocstarCoupling.h"
 
-class FluidAlone: public Coupling {
- public:
-  FluidAlone(const char *, MPI_Comm com, Control_parameters *p, const RocmanControl_parameters *mp);
+DECLARE_NEW_COUPLING_SCHEME_NO_BURN(FluidAlone);
 
- protected:
-  double flm_temp;
-};
+DECLARE_NEW_COUPLING_SCHEME_WITH_BURN(FluidBurnAlone);
 
-class FluidBurnAlone: public Coupling {
- public:
-  FluidBurnAlone(const char *, const char *, MPI_Comm com, Control_parameters *p, const RocmanControl_parameters *mp);
+DECLARE_NEW_COUPLING_SCHEME_NO_BURN(SolidAlone);
 
- protected:
-  double flm_temp;
-};
+DECLARE_NEW_COUPLING_SCHEME_WITH_BURN(SolidBurnAlone);
 
+DECLARE_NEW_FULLY_COUPLING_SCHEME_NO_BURN(SolidFluidSPC);
 
-#define DECLARE_NEW_COUPLING_SCHEME( New_scheme)			\
-  class New_scheme : public Coupling {					\
-  public:								\
-    New_scheme(MPI_Comm com, Control_parameters *p, const RocmanControl_parameters *mp);		\
-    New_scheme(const char *, MPI_Comm com, Control_parameters *p, const RocmanControl_parameters *mp);\
-    New_scheme(const char *, const char *, MPI_Comm com, Control_parameters *p, const RocmanControl_parameters *mp);		\
-    New_scheme(const char *, const char *, const char*, MPI_Comm com, Control_parameters *p, const RocmanControl_parameters *mp);	\
-  };
-
-DECLARE_NEW_COUPLING_SCHEME( SolidAlone);
-
-DECLARE_NEW_COUPLING_SCHEME( SolidBurn);
-
-DECLARE_NEW_COUPLING_SCHEME( SolidFluidSPC);
-
-DECLARE_NEW_FULLY_COUPLING_SCHEME( SolidFluidBurnSPC);
+DECLARE_NEW_FULLY_COUPLING_SCHEME_WITH_BURN(SolidFluidBurnSPC);
 
 #endif
-
-
-
-
-
-

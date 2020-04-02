@@ -48,12 +48,7 @@ SUBROUTINE RADI_FlimConvectiveFluxes( region ) ! PUBLIC
   USE ModError
   USE ModParameters
   USE RADI_ModParameters
-#ifdef RFLO
-  USE ModInterfaces,      ONLY : RFLO_GetDimensDummy, RFLO_GetCellOffset
-  USE RADI_ModInterfaces, ONLY : RADI_FloFlimCentFlux
 
-#include "Indexing.h"
-#endif
   IMPLICIT NONE
 
 ! ... parameters
@@ -66,11 +61,6 @@ SUBROUTINE RADI_FlimConvectiveFluxes( region ) ! PUBLIC
   INTEGER :: ibc, iec, discrType, discrOrder, idxbeg, idxend
   REAL(RFREAL), POINTER :: diss(:,:), rhs(:,:)
 
-#ifdef RFLO
-  INTEGER :: idcbeg, idcend, jdcbeg, jdcend, kdcbeg, kdcend
-  INTEGER :: iLev, iCOff, ijCOff
-#endif
-
 !******************************************************************************
 
   CALL RegisterFunction( region%global,'RADI_FlimConvectiveFluxes',&
@@ -80,25 +70,11 @@ SUBROUTINE RADI_FlimConvectiveFluxes( region ) ! PUBLIC
 
 ! get dimensions and pointers -------------------------------------------------
 
-#ifdef RFLO
-  iLev = region%currLevel
-
-  CALL RFLO_GetDimensDummy( region,iLev,idcbeg,idcend,jdcbeg,jdcend, &
-                            kdcbeg,kdcend )
-  CALL RFLO_GetCellOffset( region,iLev,iCOff,ijCOff )
-  ibc = IndIJK(idcbeg,jdcbeg,kdcbeg,iCOff,ijCOff)
-  iec = IndIJK(idcend,jdcend,kdcend,iCOff,ijCOff)
-
-  diss => region%levels(iLev)%radi%diss
-  rhs  => region%levels(iLev)%radi%rhs
-#endif
-#ifdef RFLU
   ibc = 1
   iec = region%grid%nCellsTot
   
   diss => region%radi%diss
   rhs  => region%radi%rhs  
-#endif
 
   discrType  = region%radiInput%spaceDiscr
   discrOrder = region%radiInput%spaceOrder
@@ -115,16 +91,6 @@ SUBROUTINE RADI_FlimConvectiveFluxes( region ) ! PUBLIC
       rhs(idx,ic) = -diss(idx,ic)
     ENDDO
   ENDDO
-
-! 2nd-order central scheme ----------------------------------------------------
-
-#ifdef RFLO
-  IF (discrType ==FLD_DISCR_CEN) THEN
-    IF (discrOrder==FLD_DISCR_ORD1 .OR. discrOrder==FLD_DISCR_ORD2) THEN
-      CALL RADI_FloFlimCentFlux( region )
-    ENDIF
-  ENDIF
-#endif
 
 ! finalize --------------------------------------------------------------------
 

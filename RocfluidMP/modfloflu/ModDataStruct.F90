@@ -48,29 +48,6 @@ MODULE ModDataStruct
   USE ModInteract, ONLY   : t_inrt_input
   USE ModMixture, ONLY    : t_mixt, t_mixt_input
 
-#ifdef RFLO
-#ifdef RADI
-  USE ModRadiation, ONLY  : t_radi, t_radi_input
-#endif
-#ifdef PLAG
-  USE ModPartLag, ONLY    : t_plag, t_plag_input
-  USE ModPartLag, ONLY    : t_buffer_plag
-#endif
-#ifdef SPEC
-!  USE ModSpecies, ONLY    : t_spec, t_spec_input
-#endif
-#ifdef PEUL
-  USE ModPartEul, ONLY    : t_peul, t_peul_input
-#endif
-#ifdef TURB
-  USE ModTurbulence, ONLY : t_turb, t_turb_input
-#endif
-#ifdef PERI
-  USE ModPeriodic, ONLY   : t_peri, t_peri_input
-#endif
-#endif
-
-#ifdef RFLU
   USE ModRadiation, ONLY: t_radi,t_radi_input
   USE ModPartLag, ONLY: t_plag,t_plag_input
   USE ModPartLag, ONLY: t_buffer_plag
@@ -78,7 +55,6 @@ MODULE ModDataStruct
   USE ModSpecies, ONLY: t_spec,t_spec_input
   USE ModTurbulence, ONLY: t_turb,t_turb_input
   USE ModPeriodic, ONLY: t_peri,t_peri_input
-#endif
 
 #ifdef PETSC
 
@@ -93,123 +69,7 @@ MODULE ModDataStruct
 
   IMPLICIT NONE
 
-#ifdef RFLO
-
-! edge & corner cells
-
-  TYPE t_dCellSrc
-    LOGICAL :: rotate
-    INTEGER :: srcRegion, srcCell
-    INTEGER :: srcIndexMapMat(3,4)
-#ifdef PLAG
-    TYPE(t_buffer_plag) :: bufferExchPlag
-#endif
-  END TYPE t_dCellSrc
-
-  TYPE t_dCell
-    LOGICAL :: interact
-    INTEGER :: degenrt, interType
-    TYPE(t_dCellSrc), POINTER :: cells(:)
-  END TYPE t_dCell
-
-  TYPE t_dCellTransf
-    INTEGER :: nCells, iRequest
-    REAL(RFREAL), POINTER :: buff(:)
-    INTEGER :: iRequestMetrics
-    REAL(RFREAL), POINTER :: buffMetrics(:)
-#ifdef PLAG
-    INTEGER :: nBuffSizePlag, iRequestPlag
-    INTEGER, POINTER :: buffPlagI(:)
-    REAL(RFREAL), POINTER :: buffPlagR(:)
-#endif
-  END TYPE t_dCellTransf
-
-! grid level related data
-
-  TYPE t_level
-    REAL(RFREAL), POINTER :: dt(:)
-
-    TYPE(t_grid) :: grid, gridOld, gridOld2
-    TYPE(t_mixt) :: mixt
-#ifdef TURB
-    TYPE(t_turb) :: turb
-#endif
-#ifdef SPEC
-!    TYPE(t_spec) :: spec
-#endif
-#ifdef RADI
-    TYPE(t_radi) :: radi
-#endif
-#ifdef PEUL
-    TYPE(t_peul) :: peul
-#endif
-#ifdef PLAG
-    TYPE(t_plag) :: plag, plagTemp
-#endif
-#ifdef PERI
-    TYPE(t_peri) :: peri
-#endif
-
-    TYPE(t_patch), POINTER :: patches(:)
-
-    TYPE(t_dCell)                :: edgeCells(12), cornerCells(8)
-    TYPE(t_dCellTransf), POINTER :: sendEcCells(:), recvEcCells(:)
-#ifdef RADI
-    TYPE(t_dCellTransf), POINTER :: sndRadiEcCells(:), rcvRadiEcCells(:)
-#endif
-#ifdef TURB
-    TYPE(t_dCellTransf), POINTER :: sndTurbEcCells(:), rcvTurbEcCells(:)
-#endif
-#ifdef PEUL
-    TYPE(t_dCellTransf), POINTER :: sndPeulEcCells(:), rcvPeulEcCells(:)
-#endif
-  END TYPE t_level
-
-! region related data
-
-  TYPE t_region
-    INTEGER :: localNumber, active, procid, iRegionGlobal
-    INTEGER :: nDumCells, nEdgeCells, nPatches, nGridLevels
-    INTEGER :: startLevel, currLevel, irkStep
-    INTEGER :: blockShape
-    INTEGER :: dimWork1D, dimWork2D(2)
-
-    REAL(RFREAL), POINTER :: work1D(:), work2D(:,:)
-
-    TYPE(t_rand_data) :: randData
-
-    TYPE(t_mixt_input)          :: mixtInput
-#ifdef TURB
-    TYPE(t_turb_input)          :: turbInput
-#endif
-#ifdef SPEC
-!    TYPE(t_spec_input)          :: specInput
-#endif
-#ifdef PEUL
-    TYPE(t_peul_input)          :: peulInput
-#ifndef PLAG
-    TYPE(t_inrt_input), POINTER :: inrtInput
-#endif
-#endif
-#ifdef PLAG
-    TYPE(t_plag_input)          :: plagInput
-    TYPE(t_inrt_input), POINTER :: inrtInput
-#endif
-#ifdef RADI
-    TYPE(t_radi_input)          :: radiInput
-#endif
-#ifdef PERI
-    TYPE(t_peri_input)          :: periInput
-#endif
-    TYPE(t_level),      POINTER :: levels(:)
-    TYPE(t_global),     POINTER :: global
-
-  END TYPE t_region
-#endif
-
 ! *****************************************************************************
-
-#ifdef RFLU
 
 ! region-related data
 
@@ -283,7 +143,6 @@ MODULE ModDataStruct
   END TYPE t_level
 
   TYPE(t_level), DIMENSION(:), ALLOCATABLE :: levels
-#endif
 
 END MODULE ModDataStruct
 

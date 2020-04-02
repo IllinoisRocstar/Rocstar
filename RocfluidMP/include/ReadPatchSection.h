@@ -21,24 +21,13 @@
 ! * USE OR OTHER DEALINGS WITH THE SOFTWARE.                          *
 ! *********************************************************************
 INTERFACE
-#ifdef RFLO
-  SUBROUTINE ReadPatchSection( global,fileID,nvals,keys,vals,brbeg,brend, &
-                               prbeg,prend,distrib,fname,defined )
-#endif
-#ifdef RFLU
   SUBROUTINE ReadPatchSection( global,fileID,nvals,keys,vals, &
                                prbeg,prend,distrib,fname,bcName,defined )
-#endif
     USE ModDataTypes
     USE ModGlobal, ONLY : t_global
-#ifdef RFLO
-    INTEGER      :: brbeg, brend
-#endif    
     INTEGER      :: fileID, nvals, prbeg, prend, distrib
     CHARACTER(*) :: keys(nvals), fname
-#ifdef RFLU
     CHARACTER(*) :: bcName
-#endif    
     LOGICAL      :: defined(nvals)
     REAL(RFREAL) :: vals(nvals)
     TYPE(t_global), POINTER :: global

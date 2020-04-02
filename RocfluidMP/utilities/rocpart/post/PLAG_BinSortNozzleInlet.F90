@@ -87,12 +87,12 @@ SUBROUTINE PLAG_BinSortNozzleInlet ( iReg, iLev, region, iRegBin )
   REAL(RFREAL), DIMENSION(0:500) :: diamBin, diamBinLog,weightBin
   REAL(RFREAL), DIMENSION(0:500) :: diam32Bin,diam43Bin,&
                                     diam2Bin,diam3Bin,diam4Bin,massAlBin,&
-				    massAlOxBin,massTotBin
+                                    massAlOxBin,massTotBin
   REAL(RFREAL), DIMENSION(0:500) :: xMomBin,yMomBin,zMomBin
   REAL(RFREAL), DIMENSION(0:500) :: uVelBin,vVelBin,wVelBin
   REAL(RFREAL), DIMENSION(0:500) :: diam32BinLog,diam43BinLog,&
                                     diam2BinLog,diam3BinLog,diam4BinLog,&
-				    massAlBinLog,massAlOxBinLog,massTotBinLog
+                                    massAlBinLog,massAlOxBinLog,massTotBinLog
   REAL(RFREAL), DIMENSION(0:500) :: xMomBinLog,yMomBinLog,zMomBinLog
   REAL(RFREAL), DIMENSION(0:500) :: uVelBinLog,vVelBinLog,wVelBinLog
   REAL(RFREAL), POINTER :: cv(:,:), dv(:,:)
@@ -272,9 +272,9 @@ SUBROUTINE PLAG_BinSortNozzleInlet ( iReg, iLev, region, iRegBin )
   DO iBin = 1, nBins
     WRITE(IF_PLOT,1020,err=10) iBin*5,sizeBin(iBin),&
                                NINT(compAlBin(iBin)*100.0_RFREAL),&
-			       NINT(compAlOxBin(iBin)*100.0_RFREAL), &
-			       NINT(diam32Bin(iBin)),NINT(diam43Bin(iBin)),&
-			       uVelBin(iBin),vVelBin(iBin),wVelBin(iBin)
+                               NINT(compAlOxBin(iBin)*100.0_RFREAL), &
+                               NINT(diam32Bin(iBin)),NINT(diam43Bin(iBin)),&
+                               uVelBin(iBin),vVelBin(iBin),wVelBin(iBin)
   ENDDO ! iBin
 
   CLOSE(IF_PLOT,iostat=errorFlag)
@@ -302,8 +302,8 @@ SUBROUTINE PLAG_BinSortNozzleInlet ( iReg, iLev, region, iRegBin )
   DO iBin = 1, nBins
     WRITE(IF_PLOT,1030,err=10) iBin*5,sizeBin(iBin),&
                                massAlBin(iBin),massAlOxBin(iBin),massTotBin(iBin),&
-			       diam2Bin(iBin),diam3Bin(iBin),diam4Bin(iBin),&
-			       xMomBin(iBin),yMomBin(iBin),zMomBin(iBin)
+                               diam2Bin(iBin),diam3Bin(iBin),diam4Bin(iBin),&
+                               xMomBin(iBin),yMomBin(iBin),zMomBin(iBin)
   ENDDO ! iBin
 
   CLOSE(IF_PLOT,iostat=errorFlag)

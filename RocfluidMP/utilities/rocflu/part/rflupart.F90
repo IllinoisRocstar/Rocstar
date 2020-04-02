@@ -27,8 +27,8 @@
 ! Description: None.
 !
 ! Input: 
-!   caseString	String with casename
-!   verbLevel	Verbosity level
+!   caseString  String with casename
+!   verbLevel   Verbosity level
 !
 ! Output: None.
 !
@@ -165,6 +165,14 @@ SUBROUTINE rflupart(caseString,verbLevel)
   CALL RFLU_GENX_StoreCommunicator(global,MPI_COMM_WORLD)
   CALL RFLU_GENX_HardCodeWindowName(global)
 #endif
+
+  ! AEG: MPI_Init is missing when in GENX mode.
+  CALL MPI_Init(errorFlag)
+  global%error = errorFlag
+  IF ( global%error /= ERR_NONE ) THEN
+    CALL ErrorStop(global,ERR_MPI_OUTPUT,__LINE__)
+  END IF ! global%error
+  ! AEG end
 
   ! MS TODO The verbosity level is not propagated to RFLU properly
   !global%verbLevel = 3
@@ -505,7 +513,7 @@ SUBROUTINE rflupart(caseString,verbLevel)
       CALL RFLU_WriteGridWrapper(pRegion)
 
 #ifdef GENX
-      CALL RFLU_GENX_DestroyGridSurf(pRegion) 
+      CALL RFLU_GENX_DestroyGridSurf(pRegion)
       CALL RFLU_DestroyBVertexLists(pRegion)
 #endif
       
@@ -513,8 +521,8 @@ SUBROUTINE rflupart(caseString,verbLevel)
       
       IF ( global%solverType == SOLV_IMPLICIT_NK ) THEN 
         CALL RFLU_COL_CreateColoring(pRegion)
-	CALL RFLU_COL_BuildColoring(pRegion,pRegionSerial)
-	CALL RFLU_COL_WriteColoring(pRegion)
+        CALL RFLU_COL_BuildColoring(pRegion,pRegionSerial)
+        CALL RFLU_COL_WriteColoring(pRegion)
         CALL RFLU_COL_DestroyColoring(pRegion)
       END IF ! global%solverType      
       

@@ -31,11 +31,11 @@ c
       SUBROUTINE ZN_burning_rate (P, qr, To, qr_old, fr_old, 
      &                         Toa, rb, Ts, fr)
   
+      USE mpi
 !     USE burn_global_data
 !     USE burn_rate_table_data
-      IMPLICIT NONE
 
-      INCLUDE 'mpif.h'
+      IMPLICIT NONE
 
       REAL(DBL) :: rb, Ts, fr, Toa
       REAL(DBL) :: P, qr, To

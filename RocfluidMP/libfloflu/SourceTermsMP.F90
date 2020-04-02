@@ -49,21 +49,17 @@ SUBROUTINE SourceTermsMP( region )
   USE ModError
   USE ModParameters
 
-#ifdef RFLU
   USE RFLU_ModConvertCv, ONLY: RFLU_ConvertCvCons2Prim, &
                                RFLU_ConvertCvPrim2Cons
-#endif
 
 #ifdef INRT
   USE ModInterfacesInteract, ONLY : INRT_SourceTerms
 #endif
-#ifdef RFLU
 #ifdef PLAG
   USE ModInterfacesLagrangian, ONLY: PLAG_RFLU_CorrectMixtProperties
 #endif
 #ifdef SPEC
   USE SPEC_RFLU_ModChemistry, ONLY: SPEC_RFLU_IntegrateChemSrcTerm
-#endif
 #endif
 #ifdef PEUL
   USE ModInterfacesEulerian, ONLY : PEUL_SourceTerms
@@ -88,9 +84,7 @@ SUBROUTINE SourceTermsMP( region )
 
 ! ... local variables
   TYPE(t_global), POINTER :: global
-#ifdef RFLU
   TYPE(t_region), POINTER :: pRegion
-#endif
 
 ! ******************************************************************************
 
@@ -103,7 +97,6 @@ SUBROUTINE SourceTermsMP( region )
   
   CALL SourceTerms( region )
 
-#ifdef RFLU
   pRegion => region
   CALL RFLU_ConvertCvCons2Prim(pRegion,CV_MIXT_STATE_DUVWP)
   
@@ -112,7 +105,6 @@ SUBROUTINE SourceTermsMP( region )
     CALL PLAG_RFLU_CorrectMixtProperties(pRegion)
   END IF ! global%plagUsed
 #endif  
-#endif
 
 #ifdef INRT
   IF (global%inrtUsed) THEN
@@ -137,8 +129,6 @@ SUBROUTINE SourceTermsMP( region )
   ENDIF
 #endif
 
-
-#ifdef RFLU
   pRegion => region
 
   CALL RFLU_ConvertCvPrim2Cons(pRegion,CV_MIXT_STATE_CONS)
@@ -171,7 +161,6 @@ SUBROUTINE SourceTermsMP( region )
 ! END TEMPORARY
     END IF ! pRegion%specInput%sourceFlag
   END IF ! global%specUsed
-#endif
 #endif
 
 ! finalize

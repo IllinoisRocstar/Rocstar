@@ -47,19 +47,9 @@
 !
 !******************************************************************************
 
-#ifdef RFLO
-SUBROUTINE RADI_InitSolution( iReg,region )
-#endif
-#ifdef RFLU
 SUBROUTINE RADI_InitSolution
-#endif
 
   USE ModDataTypes
-#ifdef RFLO
-  USE ModDataStruct, ONLY      : t_region
-
-#include "Indexing.h"
-#endif
   USE ModGlobal, ONLY          : t_global
 !  USE RADI_ModInterfaces, ONLY : RADI_AngularMesh, RADI_CalcDirWeights
   USE ModError
@@ -67,7 +57,6 @@ SUBROUTINE RADI_InitSolution
   IMPLICIT NONE
 
 ! ... parameters
-  TYPE(t_region) :: region
   INTEGER        :: iReg
 
 ! ... local variables
@@ -77,36 +66,13 @@ SUBROUTINE RADI_InitSolution
 
 !******************************************************************************
 
-  global => region%global
   CALL RegisterFunction( global,'RADI_InitSolution',&
   'RADI_InitSolution.F90' )
 
 ! initiate solution, perform initial works and works needed to be done 
 ! everytime the grid change
 
-#ifdef RFLO
-  iLev      = region%currLevel
-  radiModel = region%radiInput%radiModel
-
-  region%levels(iLev)%radi%qri     = 0._RFREAL
-  region%levels(iLev)%radi%qrj     = 0._RFREAL
-  region%levels(iLev)%radi%qrk     = 0._RFREAL
-  region%levels(iLev)%radi%radInt  = 0._RFREAL
-  region%levels(iLev)%radi%radCoef = 0._RFREAL
-  region%levels(iLev)%radi%wvInt   = 0._RFREAL
-  region%levels(iLev)%radi%goFact  = 0._RFREAL
-
-  IF ((radiModel == RADI_MODEL_RTEGRAY)  .OR. &
-      (radiModel == RADI_MODEL_RTEBAND)) THEN
-!    CALL RADI_angularMesh( region )
-!    CALL RADI_calcDirWeights( region )
-  ENDIF
-
-#endif
-#ifdef RFLU
   radiModel = radiInput%radiModel
-
-#endif
 
 ! finalize --------------------------------------------------------
 

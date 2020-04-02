@@ -35,9 +35,9 @@
 
 using namespace std;
 
-COM_EXTERN_MODULE( Rocmop);
-COM_EXTERN_MODULE( Rocout);
-COM_EXTERN_MODULE( Rocblas);
+COM_EXTERN_MODULE(Rocmop)
+COM_EXTERN_MODULE(Rocout)
+COM_EXTERN_MODULE(Rocblas)
 
 int main(int argc, char*argv[])
 {
@@ -301,7 +301,7 @@ int main(int argc, char*argv[])
       // Obtain attribute handles
       int HDL_mesh = COM_get_attribute_handle("unstr_temp.mesh");
 
-      #if 0
+      #if ENABLE_DEBUG // M.A.P. --> previously disabled
 
       // Write out the mesh in its initial configuration
       cout << "Writing initial mesh configuration\n";
@@ -337,7 +337,7 @@ int main(int argc, char*argv[])
       }
 
 
-      #if 0
+      #if ENABLE_DEBUG // M.A.P. --> previously disabled
       // Writing out the smoothed mesh configuration
       cout << "Writing out smoothed configuration\n";
       COM_call_function(OUT_write, "unstr_temp_smoothed", &HDL_mesh,

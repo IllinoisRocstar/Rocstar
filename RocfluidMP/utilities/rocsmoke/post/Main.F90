@@ -145,12 +145,12 @@ PROGRAM PEUL_ROCFLO_Post
 
 ! read argument list ----------------------------------------------------------
 
-  CALL GETARG(1,global%casename)
-  CALL GETARG(2,pltType)
-  CALL GETARG(3,level)
-  CALL GETARG(4,stamp)
-  CALL GETARG(5,outFmt)
-  CALL GETARG(6,nPeulStr)
+  CALL GET_COMMAND_ARGUMENT(1,global%casename)
+  CALL GET_COMMAND_ARGUMENT(2,pltType)
+  CALL GET_COMMAND_ARGUMENT(3,level)
+  CALL GET_COMMAND_ARGUMENT(4,stamp)
+  CALL GET_COMMAND_ARGUMENT(5,outFmt)
+  CALL GET_COMMAND_ARGUMENT(6,nPeulStr)
 
   IF (LEN_TRIM(global%casename)==0 .OR. &
       LEN_TRIM(pltType)==0         .OR. &

@@ -90,8 +90,6 @@ MODULE RFLU_ModNewtonKrylov
 
   IMPLICIT NONE
 
-  INCLUDE 'mpif.h'
-
 ! DEBUG
 !#ifdef GENX
 !  INCLUDE 'rocmanf90.h'

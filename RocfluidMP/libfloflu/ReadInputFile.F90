@@ -72,11 +72,9 @@ SUBROUTINE ReadInputFile(regions)
 #ifdef INRT
   USE ModInterfacesInteract, ONLY: INRT_ReadMaterialInput
 #endif
-#ifdef RFLU
   USE ModInterfaces, ONLY: ReadPrepSection, &
                            ReadTimeZoomingSection, &
                            ReadRocketSection
-#endif
 #ifdef STATS
   USE ModInterfacesStatistics, ONLY: ReadStatisticSection
 #endif
@@ -139,10 +137,8 @@ SUBROUTINE ReadInputFile(regions)
         CALL ReadRandomSection(global)
       CASE ('# FLOWMODEL')
         CALL ReadFlowSection(regions)
-#ifdef RFLU
       CASE ('# MIXTURE')
         CALL ReadMixtureSection(regions)
-#endif
       CASE ('# VISCMODEL')
         CALL ReadViscositySection(regions)
       CASE ('# ACCELERATION')
@@ -163,11 +159,6 @@ SUBROUTINE ReadInputFile(regions)
         CALL ReadInitFlowSection(regions) 
       CASE ('# POST') 
         CALL ReadPostSection(global)
-#ifdef RFLO
-      CASE ('# GRIDMOTION')
-        CALL ReadGridMotionSection(global)
-#endif
-#ifdef RFLU
       CASE ('# TRANSFORM')
         CALL ReadTransformSection(global)      
       CASE ('# GRIDMOTION')
@@ -178,7 +169,6 @@ SUBROUTINE ReadInputFile(regions)
         CALL ReadRocketSection(global)
       CASE ('# TIMEZOOMING')
         CALL ReadTimeZoomingSection(global)
-#endif
 #ifdef STATS
       CASE ('# STATISTICS')
         CALL ReadStatisticSection(global)

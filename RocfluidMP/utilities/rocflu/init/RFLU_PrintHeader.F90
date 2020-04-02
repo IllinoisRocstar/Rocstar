@@ -27,7 +27,7 @@
 ! Description: None.
 !
 ! Input: 
-!   global	Pointer to global data
+!   global      Pointer to global data
 !
 ! Output: None.
 !

@@ -1,2 +1,3 @@
-build?
+*build*/
 *.o
+CMakeFiles/cmake.check_cache
