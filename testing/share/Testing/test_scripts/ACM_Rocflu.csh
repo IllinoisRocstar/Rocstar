@@ -27,7 +27,7 @@ echo ${PATH}
 pwd
 $3/rocprep -A -b -m -u 1 1 -n 4 -d ./ACM_data -t ./ACM_4
 cd ./ACM_4
-/usr/bin/mpiexec.mpich -np 4 $3/rocstar
+mpirun -np 4 $3/rocstar
 
 cd ..
 
