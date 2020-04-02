@@ -57,6 +57,10 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
 # Installation Directories
 include(GNUInstallDirs)
 
+# rpath settings
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # Set configure options ########################################################
 
 option(BUILD_SHARED_LIBS "Build shared libraries." ON)
@@ -204,24 +208,15 @@ if(BUILD_DOCUMENTATION)
       MAIN_DEPENDENCY ${doxyfile} ${doxyfile_in}
       COMMENT "Generating documentation")
   add_custom_target(Docs DEPENDS ${documentation})
-  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Docs/RocstarQuickStart.pdf
-       DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Docs/)
-  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Docs/legacy
-       DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Docs/)
-  install(DIRECTORY ${PROJCT_BINARY_DIR}/Docs
-          DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Rocstar)
-else()
-  # Install the Docs directory regardless of building the doxygen files
-  # Rocstar comes with documentation from the Git repository already
-  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Docs/
-          DESTINATION ${CMAKE_BINARY_DIR}/Docs/)
-  install(DIRECTORY ${PROJECT_SOURCE_DIR}/Docs
-          DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Rocstar)
 endif(BUILD_DOCUMENTATION)
 
 # Install the Docs directory regardless of building the doxygen files
 # Rocstar comes with documentation from the Git repository already
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Docs DESTINATION share/Rocstar)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Docs/legacy
+    ${CMAKE_CURRENT_SOURCE_DIR}/Docs/RocstarQuickStart.pdf
+    ${CMAKE_CURRENT_SOURCE_DIR}/Docs/RocstarTutorial.pdf
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Docs/)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Docs DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
 # Packaging ####################################################################
 
