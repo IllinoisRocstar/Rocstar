@@ -1,13 +1,9 @@
-//
-// Created by agondolo on 9/11/18.
-//
-
 #ifndef _ROCSTAR_CONTROL_PARAMETERS_HPP_
 #define _ROCSTAR_CONTROL_PARAMETERS_HPP_
 
 #include "com.h"
 
-#define MAXLEN 128
+const int MAXLEN = 128;
 
 class Control_parameters {
 public:

@@ -21,18 +21,3 @@ RocstarAgent::RocstarAgent(RocstarCoupling *cp, std::string mod,
   with_gm = wgm;
   dobackup = true;
 }
-
-/*
-RocstarAgent::~RocstarAgent() {
-}
-*/
-
-void RocstarAgent::init_subscheduler(double t) {
-  MAN_DEBUG(1, ("Rocman: %sAgent::init_subscheduler called.\n",
-                get_agent_name().c_str()));
-
-  callMethod(&UserScheduler::init_actions, t);
-
-  MAN_DEBUG(1, ("Rocman: %sAgent::init_subscheduler done.\n",
-                get_agent_name().c_str()));
-}

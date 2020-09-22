@@ -43,7 +43,7 @@
 FluidAlone::FluidAlone(MPI_Comm com, const Control_parameters *p,
                        const RocmanControl_parameters *mp,
                        const std::string &module)
-    : RocstarCoupling("FluidAloneNoBurn", com, p, mp, module) {
+    : RocstarCoupling("FluidAlone", com, p, mp, module) {
   maxPredCorr = param->maxNumPredCorrCycles;
 
   // Create agents
@@ -209,7 +209,7 @@ FluidBurnAlone::FluidBurnAlone(MPI_Comm com, const Control_parameters *p,
   // UPDATE_INBUFF_GM_FLUID()
   fluid_agent->add_gmaction(new ComputeMeshMotion(
       fluid_agent, propBufAll + ".vm",
-      fluid_agent->get_surface_window() + ".du_alp", zoom));
+      fluid_agent->get_surf_win() + ".du_alp", zoom));
 
   // Register main physics action
   scheduler->add_action(fluid_agent->get_main_action());
@@ -440,7 +440,7 @@ SolidFluidSPC::SolidFluidSPC(MPI_Comm com, const Control_parameters *p,
 
   // INIT_INBUFF_SOLID()
   solid_agent->add_bcinitaction(
-      new LoadTransfer_FS(fluid_agent, solid_agent, fluidBufNG + ".ts",
+      new LoadTransfer_FS(fluid_agent, solid_agent, fluid_agent->get_surf_win_i() + ".ts",
                           solidBuf + ".ts", solidBuf + ".pf"));
 
   // INIT_INTERP_HANDLES() in solid_agent.f90
@@ -464,24 +464,32 @@ SolidFluidSPC::SolidFluidSPC(MPI_Comm com, const Control_parameters *p,
 
   // INIT_INBUFF_FLUID
   fluid_agent->add_bcinitaction(new MeshMotionTransfer_SF(
+      fluid_agent, solid_agent, solidBuf + ".u", fluid_agent->get_surf_win_i() + ".total_disp",
+      fluid_agent->get_surf_win_i() + ".vm"));
+
+  fluid_agent->add_bcinitaction(new DeformationVelTransfer_SF(
+      fluid_agent, solid_agent, solidBuf + ".vs", fluid_agent->get_surf_win_i() + ".vs"));
+/*
+  fluid_agent->add_bcinitaction(new MeshMotionTransfer_SF(
       fluid_agent, solid_agent, solidBuf + ".u", fluidBufNG + ".total_disp",
       fluidBufNG + ".vm"));
 
   fluid_agent->add_bcinitaction(new DeformationVelTransfer_SF(
       fluid_agent, solid_agent, solidBuf + ".vs", fluidBufNG + ".vs"));
+*/
 
   // fluid boundary conditions
   fluid_agent->add_bcaction(new DummyAction(), 1);
 
   // INIT_INTERP_HANDLES() in "fluid_agent.f90"
   fluid_agent->add_bcaction(new Interpolate_Linear(fluid_agent, fluid_agent,
-                                                   fluidBufNG + ".vs", order),
+                                                   fluid_agent->get_surf_win_i() + ".vs", order),
                             2);
 
   // UPDATE_INBUFF_GM_FLUID()
   fluid_agent->add_gmaction(new ComputeMeshMotion(
       fluid_agent, propBufAll + ".vm",
-      fluid_agent->get_surface_window() + ".du_alp", zoom));
+      fluid_agent->get_surf_win() + ".du_alp", zoom));
 
   // fluid main Physics routine
   scheduler->add_action(fluid_agent->get_main_action());
@@ -496,7 +504,7 @@ SolidFluidBurnSPC::SolidFluidBurnSPC(MPI_Comm com, const Control_parameters *p,
                                      const std::string &fluidmodule,
                                      const std::string &solidmodule,
                                      const std::string &burnmodule)
-    : FullyCoupling("FluidSolidBurnSPC", com, p, mp, fluidmodule, solidmodule,
+    : FullyCoupling("SolidFluidBurnSPC", com, p, mp, fluidmodule, solidmodule,
                     burnmodule) {
   maxPredCorr = param->maxNumPredCorrCycles;
 
@@ -699,7 +707,7 @@ SolidFluidBurnSPC::SolidFluidBurnSPC(MPI_Comm com, const Control_parameters *p,
   // UPDATE_INBUFF_GM_FLUID()
   fluid_agent->add_gmaction(new ComputeMeshMotion(
       fluid_agent, fluid_propBufAll + ".vm",
-      fluid_agent->get_surface_window() + ".du_alp", zoom));
+      fluid_agent->get_surf_win() + ".du_alp", zoom));
 
   // fluid main Physics routine
   scheduler->add_action(fluid_agent->get_main_action());

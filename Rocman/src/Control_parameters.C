@@ -1,13 +1,10 @@
-//
-// Created by agondolo on 9/11/18.
-//
+#include "Control_parameters.h"
 
-#include <cstring>
 #include <cstdio>
+#include <cstring>
+#include <iostream>
 #include <limits>
 #include <sys/stat.h>
-
-#include "Control_parameters.h"
 
 #include "rocman.h"
 
@@ -66,7 +63,7 @@ double get_restart_time(const std::string &restart_file) {
 void init_profiling(Control_parameters &param, int comm_rank) {
   std::string fname = "RocstarProfile";
   int data = comm_rank;
-  int u = 10;  // <0, 99>
+  int u = 10; // <0, 99>
   int c = 2;
   int numProcs = COMMPI_Comm_size(param.communicator);
   while (numProcs >= u * 10) {
@@ -83,7 +80,7 @@ void init_profiling(Control_parameters &param, int comm_rank) {
   param.timingDataFile = param.timingDataDir;
   param.timingDataFile += fname;
 
-  int status = 1;  // new
+  int status = 1; // new
   FILE *fd;
   if (param.current_time == 0.0) {
     fd = fopen(param.timingDataFile.c_str(), "w");
@@ -92,7 +89,7 @@ void init_profiling(Control_parameters &param, int comm_rank) {
     if (fd == NULL)
       fd = fopen(param.timingDataFile.c_str(), "w");
     else
-      status = 0;  // old
+      status = 0; // old
   }
   if (fd == NULL) {
     param.timingDataFile = "./";
@@ -111,8 +108,8 @@ void init_profiling(Control_parameters &param, int comm_rank) {
                 << param.timingDataFile.c_str() << "!" << std::endl;
       MPI_Abort(MPI_COMM_WORLD, -1);
     } else if (param.controlVerb > 1)
-      printf("Rocstar: Rank %d using %s instead for timing data!\n",
-             comm_rank, param.timingDataFile.c_str());
+      printf("Rocstar: Rank %d using %s instead for timing data!\n", comm_rank,
+             param.timingDataFile.c_str());
   }
 
   int NumProcs;
@@ -216,8 +213,8 @@ void Control_parameters::read() {
   if (AutoRestart)
     current_time = get_restart_time("Restart.txt");
 
-  init_time = current_time;  // init time, remain constant
-  iOutput = (int) ((1.000001 * current_time) / outputIntervalTime) + 1;
+  init_time = current_time; // init time, remain constant
+  iOutput = (int)((1.000001 * current_time) / outputIntervalTime) + 1;
 
   COM_delete_window(winname.c_str());
 
@@ -225,18 +222,16 @@ void Control_parameters::read() {
   const std::string &outputModule = output_module;
   if (outputModule == "Rocout") {
     MAN_DEBUG(3, ("[%d] Rocstar: load_module SimOUT.\n",
-        COMMPI_Comm_rank(communicator)));
+                  COMMPI_Comm_rank(communicator)));
     COM_LOAD_MODULE_STATIC_DYNAMIC(SimOUT, "OUT");
-  }
 #ifdef WITH_PANDA
-    else if (outputModule == "Rocpanda") {
-      MAN_DEBUG(3, ("[%d] Rocstar: load_module Rocpanda.\n",
-          COMMPI_Comm_rank(communicator)));
-      COM_LOAD_MODULE_STATIC_DYNAMIC(Rocpanda, "OUT");
-      // Rocpanda server processes won't return
-    }
+  } else if (outputModule == "Rocpanda") {
+    MAN_DEBUG(3, ("[%d] Rocstar: load_module Rocpanda.\n",
+                  COMMPI_Comm_rank(communicator)));
+    COM_LOAD_MODULE_STATIC_DYNAMIC(Rocpanda, "OUT");
+    // Rocpanda server processes won't return
 #endif
-  else {
+  } else {
     if (COMMPI_Comm_rank(communicator) == 0)
       printf("Rocstar: Error: Unknown output module %s!\n", output_module);
     MPI_Abort(MPI_COMM_WORLD, -1);
@@ -251,7 +246,8 @@ void Control_parameters::read() {
   // initialize profiling file
   init_profiling(*this, myRank);
 
-  if (myRank == 0) startTime = MPI_Wtime();
+  if (myRank == 0)
+    startTime = MPI_Wtime();
   MPI_Bcast(&startTime, 1, MPI_DOUBLE, 0, communicator);
 }
 
@@ -294,7 +290,7 @@ void Control_parameters::update_start_time(int step, double t) {
   LastOutputTime = t;
   LastOutputStep = cur_step;
   // set output seq no
-  iOutput = (int) ((1.000001 * current_time) / outputIntervalTime) + 1;
+  iOutput = (int)((1.000001 * current_time) / outputIntervalTime) + 1;
 }
 
 /******************************************************************************
@@ -307,7 +303,7 @@ RocmanControl_parameters::RocmanControl_parameters() {
   separate_out = 0;
 
   order = 0;
-  traction_mode = 1;  // NO_SHEER;
+  traction_mode = 1; // NO_SHEER;
   rhoc = 1703.0;
   pressure = 6.8e6;
   burn_rate = 0.01;
@@ -331,7 +327,7 @@ RocmanControl_parameters::RocmanControl_parameters() {
 void RocmanControl_parameters::read(MPI_Comm comm, int comm_rank) {
   const std::string filename = "Rocman/RocmanControl.txt";
 
-  struct stat statBuf{};
+  struct stat statBuf {};
 
   std::string winname = "RocmanControlParam";
   COM_new_window(winname.c_str());
@@ -366,7 +362,7 @@ void RocmanControl_parameters::read(MPI_Comm comm, int comm_rank) {
   COM_window_init_done(winname.c_str());
 
   if (stat(filename.c_str(), &statBuf) == 0) {
-    if (comm_rank == 0) {  // only rank 0 reads
+    if (comm_rank == 0) { // only rank 0 reads
       //===== Read in parameter file using SimIN
       int IN_param = COM_get_function_handle("IN.read_parameter_file");
 
@@ -404,7 +400,7 @@ void RocmanControl_parameters::read(MPI_Comm comm, int comm_rank) {
   COM_call_function(OUT_set_option, "rankwidth", rankWidth);
   COM_call_function(OUT_set_option, "pnidwidth", "0");
   // Let SimOUT determine the file format
-  //COM_call_function(OUT_set_option, "format", ioFormat);
+  // COM_call_function(OUT_set_option, "format", ioFormat);
   if (async_out)
     COM_call_function(OUT_set_option, "async", "on");
   else
@@ -419,7 +415,8 @@ void RocmanControl_parameters::print() {
   printf("==========  Rocman Parameter file read ==========\n");
   printf("Rocstar: verbosity level is %d\n", verbose);
   printf("Rocstar: The order of interpolation is %d\n", order);
-  printf("Rocstar: Traction mode is %d (1 for no sheer, 2 for with sheer)\n", traction_mode);
+  printf("Rocstar: Traction mode is %d (1 for no sheer, 2 for with sheer)\n",
+         traction_mode);
   printf("Rocstar: ambient pressure is %f\n", P_ambient);
   printf("Rocstar: Solid density (Rhoc) is %f kg/m^3\n", rhoc);
   printf("Rocstar: Pressure is %f Pa\n", pressure);
@@ -427,14 +424,17 @@ void RocmanControl_parameters::print() {
   printf("Rocstar: RFC_verb: %d\n", rfc_verb);
   printf("Rocstar: Order of quadrature rule (RFC_order): %d\n", rfc_order);
   printf("Rocstar: Max iterations for iterative solver: %d\n", rfc_iter);
-  printf("Rocstar: tolerance for iterative solver (RFC_tolerance): %f\n", rfc_tol);
+  printf("Rocstar: tolerance for iterative solver (RFC_tolerance): %f\n",
+         rfc_tol);
   if (PROP_fom)
     printf("Rocstar: Using face-offsetting method for surface propagation.\n");
   else
     printf("Rocstar: Using marker-particle method for surface propagation.\n");
   if (PROPCON_enabled)
-    printf("Rocstar: Using Rocon propagation constraints, (ndiv = %d).\n", PROPCON_ndiv);
-  printf("Rocstar: Number of smoothing iterations in Rocprop: %d\n", PROP_rediter);
+    printf("Rocstar: Using Rocon propagation constraints, (ndiv = %d).\n",
+           PROPCON_ndiv);
+  printf("Rocstar: Number of smoothing iterations in Rocprop: %d\n",
+         PROP_rediter);
   printf("Rocstar: Feature-angle threshold in Rocprop: %f\n", PROP_fangle);
   printf("Rocstar: Async Input: %c\n", async_in ? 'T' : 'F');
   printf("Rocstar: Async Output: %c\n", async_out ? 'T' : 'F');

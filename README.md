@@ -6,7 +6,7 @@ Rocstar
 Rocstar is a multiphysics simulation application designed for coupled multiphysics simulations involving fluid-structure interaction (FSI) across moving, reacting interfaces. Rocstar couples multiple domain-specific simulation packages and disparately discretized domains and provides several simulation-supporting services including conservative and accurate data transfer, surface propagation, and parallel I/O. Rocstar is MPI-parallel. Rocstar was originally developed at the University of Illinois Center for Simulation of Advanced Rockets (CSAR) under Department of Energy ASCI program funding.
 
 ## Version ##
-Version 5.0.0
+Version 5.0.1
 
 Rocstar follows semantic versioning. The version will be major.minor.patch.
 We will:
@@ -36,7 +36,7 @@ Make sure to `apt install` following before you start
 
 Make sure to compile and install following packages before you start compiling RocstarMP:
 
-* IMPACT 2.1.1 (available [here](https://github.com/IllinoisRocstar/IMPACT))
+* IMPACT 2.1.3 (available [here](https://github.com/IllinoisRocstar/IMPACT))
 * METIS 4.0.3 (available [here](http://glaros.dtc.umn.edu/gkhome/fsroot/sw/metis/OLD))
 
 Follow standard compile instructions for these dependencies. Note that RocstarMP uses an older version of METIS.
