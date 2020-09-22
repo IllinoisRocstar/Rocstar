@@ -1,3 +1,7 @@
+stages:
+  - test
+  - deploy
+
 test:ubuntu18:
   image: ilrocstar/rocstar-ubuntu18:v3
   tags:
@@ -26,6 +30,10 @@ test:ubuntu18:
       -DMETIS_LIB=/home/metis-4.0.3/libmetis.a ..
     - make -j$(nproc)
     - ctest --output-on-failure
+    - cpack
+  artifacts:
+    paths:
+      - "/builds/rocstar_modern/rocstar/build/*.deb"
 
 test:ubuntu16:
   image: ilrocstar/rocstar-ubuntu16:v1
@@ -80,3 +88,28 @@ test:centos7:
       -DENABLE_TESTING=ON ..
     - make -j$(nproc)
     - ctest3 --output-on-failure
+    - cpack3 -G RPM
+  artifacts:
+    paths:
+      - "/builds/rocstar_modern/rocstar/build/*.rpm"
+
+deploy:all:
+  stage: deploy
+  only:
+    - master@rocstar_modern/rocstar
+  script: 
+    - apt-get install -y openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+
+    ##
+    ## Create the SSH directory and give it the right permissions
+    ##
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - scp -r /builds/rocstar_modern/rocstar/build/*.deb nemosys@192.168.1.122:/home/nemosys/repo
+    - scp -r /builds/rocstar_modern/rocstar/build/*.rpm nemosys@192.168.1.122:/home/nemosys/rpmrepo
+  dependencies:
+    - test:ubuntu18
+    - test:centos7

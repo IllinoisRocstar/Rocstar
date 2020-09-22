@@ -10,9 +10,13 @@ WORKDIR /rocstar/
 RUN apt install g++-7 gfortran-7 gcc-7 cmake libmpich-dev libcgns-dev libhdf5-dev libhdf4-dev liblapack-dev perl -y
 
 RUN apt install vim -y
+RUN apt install wget gnupg software-properties-common -y
 
-# Copy the TPLs ( metis-4 & IMPACT )
-COPY . /home/
+RUN sh -c "wget -O - http://nemosys-repository.illinois.rocstar/nemosys-repository-pub.gpg | apt-key add -"
+RUN add-apt-repository "deb http://nemosys-repository.illinois.rocstar/ bionic main"
+RUN apt-get update
+
 # RUN echo $(ls -la)
 
-RUN apt install /home/impact_2.1.0_amd64.deb -y
+# Install IMPACT and metis4
+RUN apt install impact metis4 -y

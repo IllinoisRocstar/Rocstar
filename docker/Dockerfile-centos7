@@ -14,11 +14,15 @@ RUN yum install vim -y
 RUN echo "source /etc/profile.d/modules.sh" >> /etc/skel/.bashrc
 RUN echo "module load mpi/mpich-3.2-x86_64" >> /etc/skel/.bashrc
 
-# Copy the TPLs ( metis-4 & IMPACT )
-COPY . /home/
+RUN echo -e "[NEMoSys] \n\
+name=NEMoSys \n\
+baseurl=http://nemosys-rpm-repository.illinois.rocstar \n\
+enabled=1 \n\
+gpgcheck=0 \n\
+" >> /etc/yum.repos.d/nemosys.repo
 
-# Install IMPACT
-RUN yum install /home/IMPACT-2.1.0-Linux.rpm -y
+# Install IMPACT and metis4
+RUN yum install impact metis-4.0.3 -y
 
 # Create a user so that the pipeline does not run as root
 ENV BASH_ENV "/etc/skel/.bashrc"
