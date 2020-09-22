@@ -28,16 +28,14 @@
 
 /* Author: Gengbin Zheng */
 
-#include <fstream>
+#include <iostream>
 #include <string>
-#include <unistd.h>
 
 #include "Control_parameters.h"
-#include "RocBlas.h"
-#include "rocman.h"
-
+#include "RocBlas-SIM.h"
 #include "builtin_couplings.h"
 #include "derived_couplings.h"
+#include "rocman.h"
 
 #if __CHARMC__
 #include "charm++.h"
@@ -325,8 +323,8 @@ void rocstar_driver(int verb, int remeshed, bool debug) {
       if (param.myRank == 0)
         std::cout << "Rocstar: Performing time 0.0 dump..." << std::endl;
     }
-    coup->update_integrals(param.current_time);
-    coup->update_distances(param.current_time);
+    // coup->update_integrals(param.current_time);
+    // coup->update_distances(param.current_time);
     coup->output_restart_files(param.current_time);
     if (debug) {
       MPI_Barrier(param.communicator);
@@ -473,8 +471,8 @@ void rocstar_driver(int verb, int remeshed, bool debug) {
     if (reached_restartdump_time(param)) {
       // MPI_Barrier(param.communicator);
       // Compute integrals and write them into files for conservation-check
-      coup->update_integrals(param.current_time);
-      coup->update_distances(param.current_time);
+      // coup->update_integrals(param.current_time);
+      // coup->update_distances(param.current_time);
 
       // invoke restart output (as well as visualization data)
       if (verb > 0) {
@@ -555,37 +553,4 @@ void rocstar_driver(int verb, int remeshed, bool debug) {
   COM_print_profile(param.timingDataFile.c_str(), header);
 
   delete coup;
-}
-
-// print double data of an dataitem on a pane
-void debug_print(const std::string &str, int pane, int pe, MPI_Comm comm,
-                 const char *memo) {
-  if (COMMPI_Comm_rank(comm) == pe) {
-    double *vm = nullptr;
-    int strid, cap;
-    printf("%s %s: before %p\n", str.c_str(), memo ? memo : "",
-           static_cast<void *>(vm));
-    COM_get_array(str.c_str(), pane, &vm, &strid, &cap);
-    printf("%s %s: after  %p\n", str.c_str(), memo ? memo : "",
-           static_cast<void *>(vm));
-    for (int i = 0; i < strid * cap; i++)
-      printf("%.17e ", vm[i]);
-    printf("\n");
-  }
-}
-
-void debug_int_print(const std::string &str, int pane, int pe, MPI_Comm comm,
-                     const char *memo) {
-  if (COMMPI_Comm_rank(comm) == pe) {
-    int *vm = nullptr;
-    int strid, cap;
-    printf("%s %s: before %p\n", str.c_str(), memo ? memo : "",
-           static_cast<void *>(vm));
-    COM_get_array(str.c_str(), pane, &vm, &strid, &cap);
-    printf("%s %s: after  %p\n", str.c_str(), memo ? memo : "",
-           static_cast<void *>(vm));
-    for (int i = 0; i < strid * cap; i++)
-      printf("%d ", vm[i]);
-    printf("\n");
-  }
 }

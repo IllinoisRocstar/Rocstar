@@ -22,9 +22,9 @@
  *********************************************************************/
 // $Id: SolidAgent.C,v 1.53 2009/05/12 20:17:48 mtcampbe Exp $
 
-#include <utility>
-
 #include "SolidAgent.h"
+
+#include <utility>
 
 #include "RocstarCoupling.h"
 #include "rocman.h"
@@ -112,8 +112,6 @@ void SolidAgent::unload_module() {
 void SolidAgent::create_buffer_all() {
   int dummy = COM_get_dataitem_handle_const(surf_window + ".vbar_alp");
   with_ALE = dummy > 0;
-  if (comm_rank == 0)
-    std::cout << "Rocstar: *** Solid with ALE is " << with_ALE << std::endl;
 
   if (with_ALE) {
     COM_new_window(propBufAll);
@@ -123,11 +121,11 @@ void SolidAgent::create_buffer_all() {
     COM_clone_dataitem(propBufAll + ".vbar_old", surf_window + ".vbar_alp");
     COM_clone_dataitem(propBufAll + ".vbar_grad", surf_window + ".vbar_alp");
     COM_new_dataitem(propBufAll + ".rb", 'e', COM_DOUBLE, 1, "m/s");
-    COM_new_dataitem(propBufAll + ".positions", 'n', COM_DOUBLE, 3, "m");
-    COM_new_dataitem(propBufAll + ".constrained", 'n', COM_INTEGER, 1, "");
-    COM_resize_array(propBufAll + ".positions");
-    COM_resize_array(propBufAll + ".constrained");
     COM_resize_array(propBufAll + ".rb");
+    COM_new_dataitem(propBufAll + ".positions", 'n', COM_DOUBLE, 3, "m");
+    COM_resize_array(propBufAll + ".positions");
+    COM_new_dataitem(propBufAll + ".constrained", 'n', COM_INTEGER, 1, "");
+    COM_resize_array(propBufAll + ".constrained");
     create_registered_window_dataitems(propBufAll);
     COM_window_init_done(propBufAll);
 
@@ -135,9 +133,8 @@ void SolidAgent::create_buffer_all() {
     std::string bc_str = surf_window + ".bcflag";
     COM_use_dataitem(propBuf + ".mesh", surf_window + ".mesh", 1, bc_str, 1);
     COM_use_dataitem(propBuf + ".pconn", propBufAll + ".pconn");
-    if (COM_get_dataitem_handle(surf_window + ".cnstr_type") > 0) {
+    if (COM_get_dataitem_handle(surf_window + ".cnstr_type") > 0)
       COM_use_dataitem(propBuf, surf_window + ".cnstr_type");
-    }
     COM_use_dataitem(propBuf + ".vbar_alp", propBufAll + ".vbar_alp");
     COM_use_dataitem(propBuf + ".vbar", propBufAll + ".vbar");
     COM_use_dataitem(propBuf + ".vbar_old", propBufAll + ".vbar_old");
@@ -184,9 +181,6 @@ void SolidAgent::create_buffer_all() {
   */
 
   // Create a window for output solid non-burning patch data
-  COM_new_window(surf_nb);
-  COM_use_dataitem(surf_nb + ".mesh", surf_window + ".mesh", 1, bcflag, 0);
-  COM_use_dataitem(surf_nb, surf_window + ".data");
   if (with_ALE) {
     COM_use_dataitem(surf_nb + ".pconn", propBufAll + ".pconn");
     COM_use_dataitem(surf_nb, propBufAll + ".vbar");
@@ -195,12 +189,10 @@ void SolidAgent::create_buffer_all() {
   }
   COM_use_dataitem(surf_nb, solidBufBase + ".ts");
   COM_use_dataitem(surf_nb, solidBufBase + ".ts_old");
-  COM_window_init_done(surf_nb);
+  create_registered_window_dataitems(surf_nb);
+  COM_window_init_done(surf_nb, 0);
 
   // Create a window for output solid interface data
-  COM_new_window(surf_b);
-  COM_use_dataitem(surf_b + ".mesh", surf_window + ".mesh", 1, bcflag, 1);
-  COM_use_dataitem(surf_b, surf_window + ".data");
   if (with_ALE) {
     COM_use_dataitem(surf_b + ".pconn", propBufAll + ".pconn");
     COM_use_dataitem(surf_b, propBufAll + ".vbar");
@@ -209,19 +201,18 @@ void SolidAgent::create_buffer_all() {
   }
   COM_use_dataitem(surf_b, solidBufBase + ".ts");
   COM_use_dataitem(surf_b, solidBufBase + ".ts_old");
-  COM_window_init_done(surf_b);
+  create_registered_window_dataitems(surf_b);
+  COM_window_init_done(surf_b, 0);
 
   // Create a window for non-solid/fluid interface
-  COM_new_window(surf_ni);
-  COM_use_dataitem(surf_ni + ".mesh", surf_window + ".mesh", 1, bcflag, 2);
-  COM_use_dataitem(surf_ni, surf_window + ".data");
   if (with_ALE) {
     COM_use_dataitem(surf_ni + ".pconn", propBufAll + ".pconn");
     COM_use_dataitem(surf_ni, propBufAll + ".vbar");
     COM_use_dataitem(surf_ni, propBufAll + ".vbar_old");
     COM_use_dataitem(surf_ni, propBufAll + ".rb");
+    create_registered_window_dataitems(surf_ni);
+    COM_window_init_done(surf_ni, 0);
   }
-  COM_window_init_done(surf_ni);
 
   // setup for pc iterations
   if (get_coupling()->get_max_ipc() > 1) {
@@ -230,6 +221,7 @@ void SolidAgent::create_buffer_all() {
     COM_use_dataitem(solidBufBak + ".mesh", solidBuf + ".mesh");
     COM_clone_dataitem(solidBufBak + ".x", solidBuf + ".x");
     COM_clone_dataitem(solidBufBak + ".y", solidBuf + ".nc");
+    create_registered_window_dataitems(solidBufBak);
     COM_window_init_done(solidBufBak);
 
     // Create window for backing up volume data
@@ -237,9 +229,10 @@ void SolidAgent::create_buffer_all() {
     COM_use_dataitem(solidVolBak + ".mesh", vol_window + ".mesh");
     COM_clone_dataitem(solidVolBak, vol_window + ".nc");
     COM_clone_dataitem(solidVolBak, vol_window + ".data");
+    create_registered_window_dataitems(solidVolBak);
     COM_window_init_done(solidVolBak);
 
-    // Initlaize the dataitem handles to be stored/restored
+    // Initialize the dataitem handles to be stored/restored
     pc_hdls.push_back({COM_get_dataitem_handle(vol_window + ".all"),
                        COM_get_dataitem_handle(solidVolBak + ".all")});
     pc_hdls.push_back({COM_get_dataitem_handle(solidBuf + ".x"),

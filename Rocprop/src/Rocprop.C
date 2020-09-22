@@ -115,9 +115,10 @@ void Rocprop::propagate( const COM::DataItem *pmesh,
 
   // If Rocprop is not yet initialized, call the initialization routine.
   SURF::Window_manifold_2 *wm = manifold();
-  if ( wm == NULL) 
-      initialize( pmesh, _parent); wm = manifold(); 
-  
+  if ( wm == NULL) {
+      initialize( pmesh, _parent); wm = manifold();
+  }
+
   COM_assertion_msg( pmesh->window() == _win,
 		     "Rocprop was initialized for a different window");
 
