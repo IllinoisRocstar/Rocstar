@@ -1,9 +1,10 @@
 #include "RocstarCoupling.h"
 
-#include "rocman.h"
-#include "Control_parameters.h"
+#include <cmath>
+#include <iostream>
 
-#include "RocstarAgent.h"
+#include "Control_parameters.h"
+#include "rocman.h"
 
 /*
 COM_EXTERN_MODULE(SurfMap)

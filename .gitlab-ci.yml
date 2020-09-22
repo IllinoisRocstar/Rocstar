@@ -3,7 +3,7 @@ stages:
   - deploy
 
 test:ubuntu18:
-  image: ilrocstar/rocstar-ubuntu18:v3
+  image: ilrocstar/rocstar-ubuntu18:v4
   tags:
     - linux
   script:
@@ -15,7 +15,8 @@ test:ubuntu18:
     - MPICH_CXX=/usr/bin/g++-7
     - MPICH_FC=/usr/bin/gfortran-7
     - >
-      cmake 
+      cmake
+      -DCMAKE_BUILD_TYPE=Release
       -DCMAKE_INSTALL_PREFIX=../install 
       -DMPI_C_COMPILER=/usr/bin/mpicc.mpich 
       -DMPI_CXX_COMPILER=/usr/bin/mpicxx.mpich 
@@ -26,8 +27,7 @@ test:ubuntu18:
       -DCMAKE_Fortran_COMPILER=mpif90.mpich 
       -DENABLE_MPI=ON
       -DENABLE_TESTING=ON 
-      -DBUILD_DOCUMENTATION=OFF 
-      -DMETIS_LIB=/home/metis-4.0.3/libmetis.a ..
+      -DBUILD_DOCUMENTATION=OFF ..
     - make -j$(nproc)
     - ctest --output-on-failure
     - cpack
@@ -35,43 +35,43 @@ test:ubuntu18:
     paths:
       - "/builds/rocstar_modern/rocstar/build/*.deb"
 
-test:ubuntu16:
-  image: ilrocstar/rocstar-ubuntu16:v1
-  tags:
-    - linux
-  script:
-    - apt update --fix-missing -y
-    - mkdir build && cd build
-    - CC=mpicc.mpich
-    - CXX=mpicxx.mpich
-    - MPICH_CC=/usr/bin/gcc-5
-    - MPICH_CXX=/usr/bin/g++-5
-    - MPICH_FC=/usr/bin/gfortran-5
-    - >
-      cmake
-      -DCMAKE_INSTALL_PREFIX=../install
-      -DMPI_C_COMPILER=/usr/bin/mpicc.mpich
-      -DMPI_CXX_COMPILER=/usr/bin/mpicxx.mpich
-      -DMPIEXEC_EXECUTABLE=/usr/bin/mpiexec.mpich
-      -DMPI_Fortran_COMPILER=/usr/bin/mpif90.mpich
-      -DCMAKE_C_COMPILER=mpicc.mpich
-      -DCMAKE_CXX_COMPILER=mpicxx.mpich
-      -DCMAKE_Fortran_COMPILER=mpif90.mpich
-      -DENABLE_MPI=ON
-      -DENABLE_TESTING=ON
-      -DBUILD_DOCUMENTATION=OFF
-      -DMETIS_LIB=/home/metis-4.0.3/libmetis.a ..
-    - make -j$(nproc)
-    - ctest --output-on-failure
+#test:ubuntu16:
+#  image: ilrocstar/rocstar-ubuntu16:v1
+#  tags:
+#    - linux
+#  script:
+#    - apt update --fix-missing -y
+#    - mkdir build && cd build
+#    - CC=mpicc.mpich
+#    - CXX=mpicxx.mpich
+#    - MPICH_CC=/usr/bin/gcc-5
+#    - MPICH_CXX=/usr/bin/g++-5
+#    - MPICH_FC=/usr/bin/gfortran-5
+#    - >
+#      cmake
+#      -DCMAKE_BUILD_TYPE=Release
+#      -DCMAKE_INSTALL_PREFIX=../install
+#      -DMPI_C_COMPILER=/usr/bin/mpicc.mpich
+#      -DMPI_CXX_COMPILER=/usr/bin/mpicxx.mpich
+#      -DMPIEXEC_EXECUTABLE=/usr/bin/mpiexec.mpich
+#      -DMPI_Fortran_COMPILER=/usr/bin/mpif90.mpich
+#      -DCMAKE_C_COMPILER=mpicc.mpich
+#      -DCMAKE_CXX_COMPILER=mpicxx.mpich
+#      -DCMAKE_Fortran_COMPILER=mpif90.mpich
+#      -DENABLE_MPI=ON
+#      -DENABLE_TESTING=ON
+#      -DBUILD_DOCUMENTATION=OFF
+#      -DMETIS_LIB=/home/metis-4.0.3/libmetis.a ..
+#    - make -j$(nproc)
+#    - ctest --output-on-failure
 
 test:centos7:
-  image: ilrocstar/rocstar-centos7:v3
+  image: ilrocstar/rocstar-centos7:v4
   tags:
     - linux
   script:
     - mkdir build && cd build
     - export PATH="/usr/lib64/mpich-3.2/bin:${PATH}"
-    - export LD_LIBRARY_PATH="/home/IMPACT-Install/lib:${LD_LIBRARY_PATH}"
     - >
       cmake3 
       -DCMAKE_BUILD_TYPE=Release
@@ -84,7 +84,6 @@ test:centos7:
       -DCMAKE_CXX_COMPILER=/usr/lib64/mpich-3.2/bin/mpicxx 
       -DCMAKE_Fortran_COMPILER=/usr/lib64/mpich-3.2/bin/mpif90 
       -DBUILD_DOCUMENTATION=OFF
-      -DMETIS_LIB=/home/metis-4.0.3/libmetis.a 
       -DENABLE_TESTING=ON ..
     - make -j$(nproc)
     - ctest3 --output-on-failure
@@ -97,7 +96,7 @@ deploy:all:
   stage: deploy
   only:
     - master@rocstar_modern/rocstar
-  script: 
+  script:
     - apt-get install -y openssh-client
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -

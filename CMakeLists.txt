@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.0)
 
 set(ROCSTAR_MAJOR_VERSION 5)
 set(ROCSTAR_MINOR_VERSION 0)
-set(ROCSTAR_PATCH_VERSION 0)
+set(ROCSTAR_PATCH_VERSION 1)
 set(ROCSTAR_EXTRA_VERSION "" CACHE STRING "ROCSTAR extra version string")
 set(ROCSTAR_VERSION "${ROCSTAR_MAJOR_VERSION}.${ROCSTAR_MINOR_VERSION}")
 set(ROCSTAR_VERSION
@@ -107,7 +107,7 @@ endif()
 # Find libraries ##########$####################################################
 
 # Finding IMPACT libs
-find_package(IMPACT REQUIRED 2.1.1)
+find_package(IMPACT REQUIRED 2.1.3)
 
 # Find MPI package or use a dummy.
 if(ENABLE_MPI)

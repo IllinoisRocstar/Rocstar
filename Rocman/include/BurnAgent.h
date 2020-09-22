@@ -41,13 +41,10 @@ public:
   std::string parentWin;
 
 public:
-  const std::string &get_surf_all() const { return surf_all; }
   std::string iburn_ng;
 
 private:
   std::string burnIntBak;
-
-  std::string burnBufOUT;
 
 public:
   bool ignmodel;

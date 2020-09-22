@@ -1,7 +1,3 @@
-//
-// Created by agondolo on 9/4/18.
-//
-
 #ifndef _ROCSTAR_ROCSTARCOUPLING_H_
 #define _ROCSTAR_ROCSTARCOUPLING_H_
 
