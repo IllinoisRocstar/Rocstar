@@ -14,7 +14,6 @@ add_library(Rocman
     src/builtin_couplings.C
     src/derived_couplings.C
     # Actions
-    src/RocstarAction.C
     src/basic_actions.C
     src/SurfDiver.C
     src/transfer_actions.C

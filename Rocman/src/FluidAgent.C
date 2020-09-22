@@ -22,12 +22,12 @@
  *********************************************************************/
 // $Id: FluidAgent.C,v 1.69 2009/09/14 14:18:27 mtcampbe Exp $
 
-#include <utility>
-
 #include "FluidAgent.h"
 
+#include <utility>
+
 #include "Control_parameters.h"
-#include "RocBlas.h"
+#include "RocBlas-SIM.h"
 #include "RocstarCoupling.h"
 #include "rocman.h"
 
@@ -52,8 +52,6 @@ FluidAgent::FluidAgent(RocstarCoupling *cp, std::string mod, std::string obj,
   // SimIN windows, Input buffer windows
   fluidPlagIn = "fluidPlagIn";
   fluidVPIn = "fluidVolIn fluidPlagIn";
-
-  ifluid_i = surf_i; // FluidBuf
 
   propBufAll = "FluidPropAll";
   fluidBufNG = "FluidBufNG"; // fluidBufNG
@@ -170,10 +168,13 @@ void FluidAgent::create_buffer_all() {
   // COM_use_dataitem(propBufAll, surf_bcflag);
   // Mesh motion velocities
   COM_new_dataitem(propBufAll + ".vm", 'n', COM_DOUBLE, 3, "m/s");
+  COM_resize_array(propBufAll + ".vm");
   COM_new_dataitem(propBufAll + ".rb", 'e', COM_DOUBLE, 1, "m/s");
+  COM_resize_array(propBufAll + ".rb");
   COM_new_dataitem(propBufAll + ".positions", 'n', COM_DOUBLE, 3, "m");
+  COM_resize_array(propBufAll + ".positions");
   COM_new_dataitem(propBufAll + ".cflag", 'n', COM_INTEGER, 1, "");
-  COM_resize_array(propBufAll + ".data");
+  COM_resize_array(propBufAll + ".cflag");
   if (COM_get_dataitem_handle(surf_window + ".cnstr_type") > 0) {
     COM_use_dataitem(propBufAll, surf_window + ".bflag");
     COM_use_dataitem(propBufAll, surf_window + ".cnstr_type");
@@ -217,21 +218,25 @@ void FluidAgent::create_buffer_all() {
    * NEW data:
    *   .rhos, .mdot, .mdot_old, .mdot_grad, .mdot_tmp, .vs, .vs_alp, .vs_old
    */
-  COM_new_window(surf_i);
-  COM_use_dataitem(surf_i, surf_window + ".mesh", 1, bcflag, 0);
-  COM_use_dataitem(surf_i, surf_window + ".mesh", 1, bcflag, 1);
+  COM_use_dataitem(surf_i, propBufAll + ".vm");
 
   COM_new_dataitem(surf_i + ".rhos", 'e', COM_DOUBLE, 1, "kg/(m^3)");
+  COM_resize_array(surf_i + ".rhos");
   COM_new_dataitem(surf_i + ".mdot", 'e', COM_DOUBLE, 1, "kg/(m^2 s)");
+  COM_resize_array(surf_i + ".mdot");
   COM_new_dataitem(surf_i + ".mdot_old", 'e', COM_DOUBLE, 1, "kg/(m^2 s)");
+  COM_resize_array(surf_i + ".mdot_old");
   COM_new_dataitem(surf_i + ".mdot_grad", 'e', COM_DOUBLE, 1, "kg/(m^2 s)");
+  COM_resize_array(surf_i + ".mdot_grad");
   COM_new_dataitem(surf_i + ".mdot_tmp", 'e', COM_DOUBLE, 1, "kg/(m^2 s)");
+  COM_resize_array(surf_i + ".mdot_tmp");
 
   COM_new_dataitem(surf_i + ".vs", 'e', COM_DOUBLE, 3, "m/s");
+  COM_resize_array(surf_i + ".vs");
   COM_new_dataitem(surf_i + ".vs_alp", 'e', COM_DOUBLE, 3, "m/s");
+  COM_resize_array(surf_i + ".vs_alp");
   COM_new_dataitem(surf_i + ".vs_old", 'e', COM_DOUBLE, 3, "m/s");
-
-  COM_resize_array(surf_i + ".data");
+  COM_resize_array(surf_i + ".vs_old");
 
   // for compute distances
   if (with_solid) {
@@ -241,7 +246,7 @@ void FluidAgent::create_buffer_all() {
   }
 
   create_registered_window_dataitems(surf_i);
-  COM_window_init_done(surf_i);
+  COM_window_init_done(surf_i, 0);
 
   /**
    * fluidBuffNG is a USE of surf_i mesh without ghosts
@@ -287,10 +292,6 @@ void FluidAgent::create_buffer_all() {
    * surf_b is a USE of surf_window mesh and data restricted to burning
    * It USE pconn and vm from propBufAll
    */
-  COM_new_window(surf_b);
-  COM_use_dataitem(surf_b, surf_window + ".mesh", 1, bcflag, 1);
-  COM_use_dataitem(surf_b, surf_window + ".data");
-
   COM_use_dataitem(surf_b, propBufAll + ".pconn");
   COM_use_dataitem(surf_b, propBufAll + ".vm");
 
@@ -307,7 +308,8 @@ void FluidAgent::create_buffer_all() {
   COM_use_dataitem(surf_b, surf_i + ".mdot");
   COM_use_dataitem(surf_b, surf_i + ".mdot_old");
 
-  COM_window_init_done(surf_b);
+  create_registered_window_dataitems(surf_b);
+  COM_window_init_done(surf_b, 0);
 
   // Create windows for output of nonburning patches, including ghosts.
   // (variables include all of fluidSurf, and vm, vm_old, vs, vs_old, ts, nc_t0,
@@ -316,10 +318,6 @@ void FluidAgent::create_buffer_all() {
    * surf_nb is a USE of surf_window mesh and data restricted to non-burning
    * It USE pconn and vm from propBufAll
    */
-  COM_new_window(surf_nb);
-  COM_use_dataitem(surf_nb, surf_window + ".mesh", 1, bcflag, 0);
-  COM_use_dataitem(surf_nb, surf_window + ".data");
-
   COM_use_dataitem(surf_nb, propBufAll + ".pconn");
   COM_use_dataitem(surf_nb, propBufAll + ".vm");
 
@@ -332,7 +330,9 @@ void FluidAgent::create_buffer_all() {
       COM_use_dataitem(surf_nb, surf_i + ".sq_dist");
     }
   }
-  COM_window_init_done(surf_nb);
+
+  create_registered_window_dataitems(surf_nb);
+  COM_window_init_done(surf_nb, 0);
 
   // Create windows for output of nonburning patches, including ghosts.
   // (variables include all of fluidSurf)
@@ -341,14 +341,11 @@ void FluidAgent::create_buffer_all() {
    * non-interacting
    * It USE pconn and vm from propBufAll
    */
-  COM_new_window(surf_ni);
   COM_use_dataitem(surf_ni, surf_window + ".mesh", 1, bcflag, 2);
   COM_use_dataitem(surf_ni, surf_window + ".data");
 
-  COM_use_dataitem(surf_ni, propBufAll + ".pconn");
-  COM_use_dataitem(surf_ni, propBufAll + ".vm");
-
-  COM_window_init_done(surf_ni);
+  create_registered_window_dataitems(surf_ni);
+  COM_window_init_done(surf_ni, 0);
 
   // setup for PC iterations
   int maxPredCorr = get_coupling()->get_max_ipc();
@@ -357,12 +354,14 @@ void FluidAgent::create_buffer_all() {
     COM_new_window(fluidBufPC);
     COM_use_dataitem(fluidBufPC, surf_i + ".mesh");
     COM_use_dataitem(fluidBufPC, surf_i + ".nc");
+    create_registered_window_dataitems(fluidBufPC);
     COM_window_init_done(fluidBufPC);
 
     // Create a window to store backed-up surface data
     COM_new_window(fluidBufBak);
     COM_use_dataitem(fluidBufBak, fluidBufPC + ".mesh");
     COM_clone_dataitem(fluidBufBak, fluidBufPC + ".nc");
+    create_registered_window_dataitems(fluidBufBak);
     COM_window_init_done(fluidBufBak);
 
     // Create a window for backing up volume data
@@ -370,6 +369,7 @@ void FluidAgent::create_buffer_all() {
     COM_use_dataitem(fluidVolBak, vol_window + ".mesh");
     COM_clone_dataitem(fluidVolBak, vol_window + ".nc");
     COM_clone_dataitem(fluidVolBak, vol_window + ".data");
+    create_registered_window_dataitems(fluidVolBak);
     COM_window_init_done(fluidVolBak);
 
     // Create a window for backing up PLAG data
@@ -378,6 +378,7 @@ void FluidAgent::create_buffer_all() {
       COM_use_dataitem(fluidPlagBak, plag_window + ".mesh");
       COM_clone_dataitem(fluidPlagBak, plag_window + ".nc");
       COM_clone_dataitem(fluidPlagBak, plag_window + ".data");
+      create_registered_window_dataitems(fluidPlagBak);
       COM_window_init_done(fluidPlagBak);
     }
 
@@ -389,6 +390,7 @@ void FluidAgent::create_buffer_all() {
     COM_clone_dataitem(fluidBufPRE, fluidBufNG + ".mdot");
     if (with_solid)
       COM_clone_dataitem(fluidBufPRE, fluidBufNG + ".ts");
+    create_registered_window_dataitems(fluidBufPRE);
     COM_window_init_done(fluidBufPRE);
 
     // Initialize the DataItem handles to be stored/restored

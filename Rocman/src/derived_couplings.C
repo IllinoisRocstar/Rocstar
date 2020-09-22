@@ -73,12 +73,15 @@ SolidFluidISS::SolidFluidISS(MPI_Comm com, const Control_parameters *p,
 
   /*
   fluid_agent->add_bcaction(
-      new Extrapolate_Linear(fluid_agent, ifluid_i + ".vs", false, order), 2);
+      new Extrapolate_Linear(fluid_agent, fluid_agent,
+                             fluid_agent->get_surf_win_i() + ".vs", false,
+                             order),
+      2);
   */
 
   fluid_agent->add_gmaction(new ComputeMeshMotion(
       fluid_agent, fluid_propBufAll + ".vm",
-      fluid_agent->get_surface_window() + ".du_alp", zoom));
+      fluid_agent->get_surf_win() + ".du_alp", zoom));
 
   // fluid main Physics routine
   scheduler->add_action(fluid_agent->get_main_action());
@@ -320,7 +323,7 @@ SolidFluidBurnEnergySPC::SolidFluidBurnEnergySPC(
   // UPDATE_INBUFF_GM_FLUID()
   fluid_agent->add_gmaction(new ComputeMeshMotion(
       fluid_agent, fluid_propBufAll + ".vm",
-      fluid_agent->get_surface_window() + ".du_alp", zoom));
+      fluid_agent->get_surf_win() + ".du_alp", zoom));
 
   // fluid main Physics routine
   scheduler->add_action(fluid_agent->get_main_action());

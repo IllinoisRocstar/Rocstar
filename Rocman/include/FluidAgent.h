@@ -52,9 +52,6 @@ private:
   std::string fluidVPIn;
 
 public:
-  std::string ifluid_i; // FluidBuf
-
-public:
   std::string propBufAll;
   std::string fluidBufNG;
   std::string propBuf;

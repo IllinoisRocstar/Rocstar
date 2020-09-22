@@ -22,9 +22,9 @@
  *********************************************************************/
 // $Id: BurnAgent.C,v 1.36 2010/02/18 21:47:40 juzhang Exp $
 
-#include <utility>
-
 #include "BurnAgent.h"
+
+#include <utility>
 
 #include "Control_parameters.h"
 #include "RocstarCoupling.h"
@@ -50,8 +50,6 @@ BurnAgent::BurnAgent(RocstarCoupling *coup, std::string mod, std::string obj,
   iburn_ng = "iburn_ng"; // burnBuf
 
   burnIntBak = "BurnIntBak";
-
-  burnBufOUT = "BurnBufOUT";
 }
 
 /* AEG: Functionality moved to parent class. The STATIC_LINK flag is now in
@@ -177,25 +175,6 @@ void BurnAgent::create_buffer_all() {
   COM_use_dataitem(iburn_ng, surf_all + ".data");
   create_registered_window_dataitems(iburn_ng);
   COM_window_init_done(iburn_ng);
-
-  // Create windows for writing interface data
-  COM_new_window(burnBufOUT);
-  COM_use_dataitem(burnBufOUT, surf_window + ".all");
-
-  COM_use_dataitem(burnBufOUT, surf_all + ".rb_old");
-  COM_use_dataitem(burnBufOUT, surf_all + ".pf_old");
-  COM_use_dataitem(burnBufOUT, surf_all + ".Tflm_old");
-  if (with_qc)
-    COM_use_dataitem(burnBufOUT, surf_all + ".qc_old");
-  if (with_qr)
-    COM_use_dataitem(burnBufOUT, surf_all + ".qr_old");
-  if (with_Tf)
-    COM_use_dataitem(burnBufOUT, surf_all + ".Tf_old");
-  if (with_Tv)
-    COM_use_dataitem(burnBufOUT, surf_all + ".Tv_old");
-  if (with_dn)
-    COM_use_dataitem(burnBufOUT, surf_all + ".dn_old");
-  COM_window_init_done(burnBufOUT);
 
   // Create a window for backing up the internal data of Rocburn
   // if predictor-corrector iteration is on.

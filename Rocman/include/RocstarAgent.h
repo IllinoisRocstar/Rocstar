@@ -1,14 +1,10 @@
-//
-// Created by agondolo on 8/31/18.
-//
-
 #ifndef _ROCSTAR_ROCSTARAGENT_H_
 #define _ROCSTAR_ROCSTARAGENT_H_
 
 #include "Agent.h"
 #include "UserScheduler.h"
 
-#define MAN_INTEG_SIZE 9
+const int MAN_INTEG_SIZE = 9;
 
 class RocstarCoupling;
 
@@ -17,8 +13,6 @@ public:
   RocstarAgent(RocstarCoupling *cp, std::string mod, std::string obj,
                std::string agent_name, std::string vol_name,
                std::string surf_name, MPI_Comm com, bool wgm = false);
-
-  void init_subscheduler(double t);
 
   virtual int compute_integrals() { return 0; }
   double *get_integrals() { return integrals; }

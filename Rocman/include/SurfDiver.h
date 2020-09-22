@@ -1,22 +1,20 @@
-//
-// Created by agondolo on 9/14/18.
-//
-
 #ifndef _ROCSTAR_SURFDIVER_HPP_
 #define _ROCSTAR_SURFDIVER_HPP_
 
-#include "RocstarAction.h"
+#include "Action.h"
 
 class FluidAgent;
 class SolidAgent;
 
 // stop and run surfdiver
-class SurfDiver : public RocstarAction {
+class SurfDiver : public Action {
  public:
   SurfDiver(FluidAgent *fag, SolidAgent *sag);
-  void init(double t);
-  virtual void run(double t, double dt, double alpha);
- protected:
+  void init(double t) override;
+  void run(double t, double dt, double alpha) override;
+  void finalize() override {}
+
+protected:
   //void read_file( const char *fname, const string &wname, double alpha);
   FluidAgent *fagent;
   SolidAgent *sagent;
@@ -32,7 +30,7 @@ class SurfDiverAfterRemeshing : public SurfDiver {
  public:
   SurfDiverAfterRemeshing(FluidAgent *fag, SolidAgent *sag) :
       SurfDiver(fag, sag) {}
-  void run(double t, double dt, double alpha);
+  void run(double t, double dt, double alpha) override;
 };
 
 #endif //_ROCSTAR_SURFDIVER_HPP_

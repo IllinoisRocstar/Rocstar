@@ -28,7 +28,7 @@
 #include "SurfDiver.h"
 
 #include "rocman.h"
-#include "RocBlas.h"
+#include "RocBlas-SIM.h"
 
 #include "RocstarCoupling.h"
 
@@ -103,7 +103,7 @@ void read_file(const char *fname, const std::string &wname, double alpha) {
 }
 
 SurfDiver::SurfDiver(FluidAgent *fag, SolidAgent *sag) :
-    RocstarAction(0, (const char **) NULL, NULL, NULL, (char *) "SurfDiver"),
+    Action({}, "SurfDiver"),
     fagent(fag), sagent(sag) {
   outdir = "Rocman/" + fagent->get_module_lname() + sagent->get_module_lname() + "/";
 }

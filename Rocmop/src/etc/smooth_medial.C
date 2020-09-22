@@ -1145,7 +1145,7 @@ compute_eigenvectors( Vector_3<double> A[3], Vector_3<double> &lambdas) {
   double ebuf[3][3];
   
   int info = dsyevq3( abuf, ebuf, &lambdas[0]);
-  COM_assertion_msg( info==0, "Computation of eigenvectos failed");
+  COM_assertion_msg( info==0, "Computation of eigenvectors failed");
 
   std::swap( ebuf[0][1], ebuf[1][0]);
   std::swap( ebuf[0][2], ebuf[2][0]);
