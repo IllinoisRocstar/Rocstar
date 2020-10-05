@@ -4,9 +4,6 @@ if(NOT BUILD_SHARED_LIBS)
   add_definitions(-DSTATIC_LINK)
 endif()
 
-# rpath settings
-#set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 add_library(Rocman
     src/rocstar_driver.C
     # Couplings
