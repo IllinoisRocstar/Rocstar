@@ -6,7 +6,7 @@ Rocstar
 Rocstar is a multiphysics simulation application designed for coupled multiphysics simulations involving fluid-structure interaction (FSI) across moving, reacting interfaces. Rocstar couples multiple domain-specific simulation packages and disparately discretized domains and provides several simulation-supporting services including conservative and accurate data transfer, surface propagation, and parallel I/O. Rocstar is MPI-parallel. Rocstar was originally developed at the University of Illinois Center for Simulation of Advanced Rockets (CSAR) under Department of Energy ASCI program funding.
 
 ## Version ##
-Version 5.0.1
+Version 5.0.2
 
 Rocstar follows semantic versioning. The version will be major.minor.patch.
 We will:

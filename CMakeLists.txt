@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.0)
 
 set(ROCSTAR_MAJOR_VERSION 5)
 set(ROCSTAR_MINOR_VERSION 0)
-set(ROCSTAR_PATCH_VERSION 1)
+set(ROCSTAR_PATCH_VERSION 2)
 set(ROCSTAR_EXTRA_VERSION "" CACHE STRING "ROCSTAR extra version string")
 set(ROCSTAR_VERSION "${ROCSTAR_MAJOR_VERSION}.${ROCSTAR_MINOR_VERSION}")
 set(ROCSTAR_VERSION
@@ -39,12 +39,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(${PROJECT_NAME} CXX C Fortran)
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin CACHE PATH "Single
- directory for all executables.")
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib CACHE PATH "Single directory
- for all libraries and archives.")
-mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
-
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Release' as none was specified.")
@@ -71,7 +65,12 @@ option(ENABLE_DEBUG "Enable debug print statements" OFF)
 #option(ENABLE_MPI "Build with MPI support." ON) # Set to always ON
 set(ENABLE_MPI ON)
 
-# Set warnings #################################################################
+# Setting compile and link options #############################################
+
+# Compiled objects output paths
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Turn on default warnings for GNU compilers.
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
@@ -85,20 +84,20 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Woverloaded-virtual -Wnon-virtual-dtor")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstrict-null-sentinel -Wredundant-decls")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow")
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfloat-conversion")
-  endif (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
+  endif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
 
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused")
 
-#[[
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wall -Wextra -Wno-unused")
-  if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 6) # Bugged till gcc-6
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wno-unused-dummy-argument")
-  endif()
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wcharacter-truncation")
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wshadow")
-]]
+  #[[
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wall -Wextra -Wno-unused")
+    if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 6) # Bugged till gcc-6
+      set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wno-unused-dummy-argument")
+    endif()
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wcharacter-truncation")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wshadow")
+  ]]
 
   # Fortran optimization warnings.
   #set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Warray-temporaries")
@@ -168,11 +167,8 @@ add_subdirectory(Rocprop)
 # Perform Testing ##############################################################
 
 if(ENABLE_TESTING)
-  include(CTest)
   enable_testing()
   add_subdirectory(testing)
-  set(BUILDNAME "${BUILDNAME}" CACHE STRING "Name of build on the dashboard.")
-  mark_as_advanced(BUILDNAME)
 endif(ENABLE_TESTING)
 
 # Build rocstar executable #####################################################
@@ -187,7 +183,7 @@ install(TARGETS rocstar
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+    )
 
 # Documentation ################################################################
 
@@ -235,15 +231,15 @@ set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 
 file(READ "/etc/os-release" OS_INFO)
 string(REGEX MATCH "Ubuntu|CentOS" DIST ${OS_INFO})
-if (DIST STREQUAL "Ubuntu")
+if(DIST STREQUAL "Ubuntu")
   set(Debian TRUE)
-elseif (DIST STREQUAL "CentOS")
+elseif(DIST STREQUAL "CentOS")
   set(CentOS TRUE)
-endif ()
+endif()
 
 if(WIN32)
   set(CPACK_GENERATOR NSIS)
-elseif (Debian)
+elseif(Debian)
   if(CMAKE_VERSION VERSION_LESS 3.10)
     message(WARNING "CMake 3.10 or above is required to build a DEB package.")
   else()
@@ -281,7 +277,7 @@ elseif (Debian)
     #set(CPACK_DEBIAN_ARCHIVE_TYPE "gnutar")  # CMake 3.7
     #set(CPACK_DEBIAN_PACKAGE_EPOCH "")  # Cmake 3.10
   endif()
-elseif (CentOS)
+elseif(CentOS)
   set(CPACK_GENERATOR RPM)
 
   # set RPM package settings
@@ -326,9 +322,9 @@ elseif (CentOS)
   # set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "")
   # set(CPACK_RPM_DEFAULT_USER "") User & group should always be root
   # set(CPACK_RPM_DEFAULT_GROUP "")
-else ()
-    message(WARNING "Package generation is currently only supported on CentOS and Ubuntu distributions")
-endif ()
+else()
+  message(WARNING "Package generation is currently only supported on CentOS and Ubuntu distributions")
+endif()
 # Lists exe and text label used for Start Menu shortcuts
 #set(CPACK_PACKAGE_EXECUTABLES "")
 # Must have matching Start Menu shortcut to create a Desktop link
