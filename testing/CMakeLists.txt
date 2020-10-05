@@ -6,8 +6,8 @@ message(STATUS "ACCESSING TEST DIRECTORY: ${CMAKE_CURRENT_SOURCE_DIR}")
 set(TEST_ENV_PATH_OPTIONS "PATH=${PROJECT_BINARY_DIR}/bin:$ENV{PATH}")
 set(TEST_ENV_LD_OPTIONS
     "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/lib:\
-${PROJECT_BINARY_DIR}/lib:\
-${IMPACT_DIR}/../../:\
+${CMAKE_BINARY_DIR}/lib:\
+${IMPACT_RUNTIME_LIBRARY_DIRS}:\
 $ENV{LD_LIBRARY_PATH}")
 
 message(STATUS "TEST_ENV_PATH_OPTIONS = ${TEST_ENV_PATH_OPTIONS}")
@@ -15,11 +15,6 @@ message(STATUS "TEST_ENV_LD_OPTIONS = ${TEST_ENV_LD_OPTIONS}")
 
 set(BUILD_SHARED_LIBS TRUE CACHE BOOL "Build static library")
 set(ENABLE_MPI TRUE CACHE BOOL "Build with MPI Support")
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin CACHE PATH "Single
- directory for all executables.")
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib CACHE PATH "Single directory
- for all libraries and archives.")
-mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 
 #adding gtest subdir with its own cmake file
 add_subdirectory(lib/googletest-master)
