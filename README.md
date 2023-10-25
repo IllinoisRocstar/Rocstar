@@ -4,6 +4,9 @@ Rocstar
 **Rocstar** **M**ulti**P**hysics simulation suite (RocstarMP)
 
 Rocstar is a multiphysics simulation application designed for coupled multiphysics simulations involving fluid-structure interaction (FSI) across moving, reacting interfaces. Rocstar couples multiple domain-specific simulation packages and disparately discretized domains and provides several simulation-supporting services including conservative and accurate data transfer, surface propagation, and parallel I/O. Rocstar is MPI-parallel. Rocstar was originally developed at the University of Illinois Center for Simulation of Advanced Rockets (CSAR) under Department of Energy ASCI program funding.
+## Support ##
+
+Rocstar has been significantly updated and improved since it's beginnings with CSAR by Illinois Rocstar LLC and others. It is currently open-source, unsupported software and is no longer being actively developed by Illinois Rocstar. The latest (last) version of the User Guide has been included with the Rocstar source at the root level. Documents in the Docs directory are older. Make sure to read this readme and the user guide for current information on compiling and running Rocstar along with the RocFOAM (OpenFOAM) and Calculix solvers.  
 
 ## Version ##
 Version 5.0.2
